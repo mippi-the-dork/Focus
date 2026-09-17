@@ -1,23 +1,24 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "1.0.0",
+	"VersionName": "1.0.1",
 	"FriendlyName": "Focus",
-	"Description": "Adds visibility, Solo, selection locking, and edit protection to the World Outliner, with settings saved across editor sessions.",
+	"Description": "Adds visibility, solo, selection locking, transform locking, and edit protection to the World Outliner. Manage actors and hierarchies together, with settings saved between editor sessions.",
 	"Category": "Editor",
-	"CreatedBy": "Mippithedork",
-	"CreatedByURL": "",
-	"DocsURL": "",
-	"MarketplaceURL": "",
-	"SupportURL": "",
-	"EngineVersion": "5.8.0",
 	"CanContainContent": false,
-	"Installed": true,
+	"IsExperimentalVersion": false,
 	"Modules": [
 		{
 			"Name": "Focus",
 			"Type": "Editor",
 			"LoadingPhase": "PostEngineInit"
 		}
-	]
+	],
+	"CreatedBy": "Mippithedork",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"IsBetaVersion": false,
+	"Installed": false
 }
