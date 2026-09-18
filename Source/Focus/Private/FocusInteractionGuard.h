@@ -1,3 +1,5 @@
+// Copyright Epic Games, Inc. All Rights Reserved.
+
 #pragma once
 
 // Private implementation included by FocusModule.cpp after its session-state definitions.

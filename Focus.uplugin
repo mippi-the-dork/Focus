@@ -11,11 +11,15 @@
 		{
 			"Name": "Focus",
 			"Type": "Editor",
-			"LoadingPhase": "PostEngineInit"
+			"LoadingPhase": "PostEngineInit",
+			"PlatformAllowList": [
+        		"Win64"
+      			]
 		}
 	],
 	"CreatedBy": "Mippithedork",
 	"CreatedByURL": "",
+	"EngineVersion": "5.8.0",
 	"DocsURL": "",
 	"MarketplaceURL": "",
 	"SupportURL": "",

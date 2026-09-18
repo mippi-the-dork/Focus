@@ -1,3 +1,5 @@
+// Copyright Epic Games, Inc. All Rights Reserved.
+
 #include "FocusEditorMode.h"
 #include "FocusState.h"
 #include "Editor.h"
