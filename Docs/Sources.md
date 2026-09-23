@@ -103,9 +103,3 @@ The Editor module loads at `PostEngineInit` and waits for the Level Editor and e
 Shutdown removes registered callbacks, the input preprocessor and ticker. Wrapped delegates and commands retain prior bindings and are restored only where Focus still owns the installed binding. Dynamic module reloading is disabled.
 
 Solo and selection icons use the supplied SVG resources through `FSlateVectorImageBrush`; shared brush ownership keeps pointers alive while row widgets use them. The protection padlock uses native editor style brushes. `FSlateIcon` is included through `Textures/SlateIcon.h`.
-
-## Third-party reference and attribution
-
-[Actor Locker by Gradess Games](https://github.com/Gradess2019/ActorLocker) is a reference for editor-mode selection gating and Outliner access. Focus does not require that plugin to be installed.
-
-Keep Focus's existing `THIRD-PARTY-NOTICES.txt`, including the Gradess Games MIT notice, in distributions. This document supplements that notice and does not replace the plugin's license or the applicable terms for Epic engine code and artwork.

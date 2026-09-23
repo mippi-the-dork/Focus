@@ -273,8 +273,20 @@ class FFocusInteractionGuard : public IInputProcessor
         auto Blocked = [WeakItem] { return FocusInteraction::LabelLocked(WeakItem); };
         Walk(Widget.ToSharedRef(), [&](const TSharedRef<SWidget>& Child) {
             if (Child->GetType() != FName(TEXT("SInlineEditableTextBlock"))) return true;
+            const auto Inline = StaticCastSharedRef<SInlineEditableTextBlock>(Child);
+
+            // A newly-created Outliner folder enters Unreal's native inline-rename
+            // session before Focus's periodic discovery can install its Edit Lock
+            // gate. Reparenting that live text widget while it is already editing
+            // invalidates Slate's focus/capture path: the caret remains visible, but
+            // typing, Enter, Escape and Delete stop reaching the editor. Let Unreal
+            // completely own any rename session that is already in progress. We do
+            // not cache Row.Label here, so Synchronize() will install the gate on a
+            // later pass after the native edit session has finished.
+            if (Inline->IsInEditMode()) return false;
+
             if (InstallGate(Child, Blocked, true)) BindRename(Item, nullptr, Child, Blocked);
-            Row.Label = StaticCastSharedRef<SInlineEditableTextBlock>(Child);
+            Row.Label = Inline;
             return false;
         });
     }
