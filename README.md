@@ -6,10 +6,10 @@ Focus expands the standard World Outliner with tools for hiding, isolating, sele
 
 Control individual Actors, entire folders, attached hierarchies, groups, or multi-selections without leaving the Outliner.
 
-![Unreal Engine](https://img.shields.io/badge/Unreal%20Engine-5.8.x-black?logo=unrealengine)  
-![Platform](https://img.shields.io/badge/Platform-Windows%2064--bit-blue)  
-![Type](https://img.shields.io/badge/Plugin-Editor%20Only-green)  
-![Version](https://img.shields.io/badge/Version-1.0.3-blue)  
+![Unreal Engine](https://img.shields.io/badge/Unreal%20Engine-5.8.x-black?logo=unrealengine)
+![Platform](https://img.shields.io/badge/Platform-Windows%2064--bit-blue)
+![Type](https://img.shields.io/badge/Plugin-Editor%20Only-green)
+![Version](https://img.shields.io/badge/Version-1.0.3-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 ![Focus controls in the Unreal Engine World Outliner](Doc/Images/Focus-Hero.png)
