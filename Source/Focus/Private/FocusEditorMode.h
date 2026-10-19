@@ -3,12 +3,11 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Tools/UEdMode.h"
-#include "Tools/LegacyEdModeInterfaces.h"
 #include "FocusEditorMode.generated.h"
 
-/** Experimental selection gate. No custom viewport or Motion Design dependency. */
+/** Editor selection/command protection only. Does not claim legacy viewport or widget input. */
 UCLASS(Transient)
-class UFocusEditorMode : public UEdMode, public ILegacyEdModeViewportInterface
+class UFocusEditorMode : public UEdMode
 {
     GENERATED_BODY()
 public:
@@ -19,7 +18,4 @@ public:
     virtual bool IsSelectionDisallowed(AActor* Actor, bool Selecting) const override;
     virtual bool ProcessEditDelete() override;
     virtual bool ProcessEditCut() override;
-    // Consume standard gizmo deltas when a protected actor/component is selected.
-    virtual bool InputDelta(FEditorViewportClient* ViewportClient, FViewport* Viewport,
-        FVector& Drag, FRotator& Rotation, FVector& Scale) override;
 };

@@ -1,6 +1,6 @@
 # Focus sources and implementation notes
 
-API and engine-source references for Focus's Outliner controls, visibility isolation, selection and edit protection, shared settings, and editor lifecycle. These notes describe the implementation targeting Unreal Engine 5.8.2.
+API and engine-source references for Focus's Outliner controls, visibility isolation, selection and edit protection, shared settings, and editor lifecycle. These notes describe the implementation targeting Unreal Engine 5.8.x.
 
 ## Public API references
 
@@ -70,7 +70,7 @@ Explicit editor hiding still applies. Primitive filtering does not guarantee iso
 
 The protection padlock cycles Unlocked, Transform Lock and Edit Lock. Edit Lock includes transform protection. Selection Lock is a separate flag.
 
-Transform protection combines the native movement-lock flag, standard viewport input handling, Details read-only rules and `FFocusTransformGuard`. The guard keeps movement-scoped world-transform snapshots and responds to movement, property and transaction notifications. This supports protection when parent/group operations would otherwise move locked descendants.
+Transform protection combines the native movement-lock flag, Details read-only rules and `FFocusTransformGuard`. The Focus editor mode does not implement the legacy viewport input interface, and does not handle `InputDelta`; it therefore does not require switching the Level Editor to legacy gizmos. The guard keeps movement-scoped world-transform snapshots and responds to movement, property and transaction notifications. This supports protection when parent/group operations would otherwise move locked descendants.
 
 Blueprint execution is checked through the tracked script-frame chain. Blueprint-authored transform changes are accepted, and restoration avoids running through component reconstruction. Undo/Redo resets temporary movement snapshots rather than treating history replay as a new forbidden edit.
 

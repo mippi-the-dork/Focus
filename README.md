@@ -9,7 +9,7 @@ Control individual Actors, entire folders, attached hierarchies, groups, or mult
 ![Unreal Engine](https://img.shields.io/badge/Unreal%20Engine-5.8.x-black?logo=unrealengine)
 ![Platform](https://img.shields.io/badge/Platform-Windows%2064--bit-blue)
 ![Type](https://img.shields.io/badge/Plugin-Editor%20Only-green)
-![Version](https://img.shields.io/badge/Version-1.0.3-blue)
+![Version](https://img.shields.io/badge/Version-1.0.4-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 ![Focus controls in the Unreal Engine World Outliner](Doc/Images/Focus-Hero.png)
@@ -258,6 +258,8 @@ Transform Lock protects an Actor's:
 
 Other properties remain editable.
 
+Focus uses native Actor movement locking and a movement/transaction guard rather than replacing Unreal's viewport transform gizmo. The same Focus controls are available while using Unreal Engine's legacy or Interactive Tools Framework (ITF) gizmo system.
+
 This is useful when an Actor is in the correct place but still needs to remain otherwise editable.
 
 ---
@@ -464,7 +466,7 @@ For most users, the Fab or GitHub Release installation is recommended.
 
 ## Fab / Epic Games Launcher
 
-> **Availability:** Use this installation method once Focus is available through Fab.
+> Use this method if Focus is available in your Fab library.
 
 1. Add **Focus** to your library on Fab.
     
@@ -506,7 +508,7 @@ Download the latest package matching your Unreal Engine version and platform.
 For example:
 
 ```text
-Focus-v1.0.3-UE5.8.2-Win64.zip
+Focus-vX.Y.Z-UE5.8.x-Win64.zip
 ```
 
 ### 2. Close Unreal Editor
@@ -653,13 +655,13 @@ Rebuild the project if the source has changed.
 
 # Compatibility
 
-The current Focus release targets:
+Focus supports the following target configuration:
 
 |||
 |---|---|
-|**Focus Version**|1.0.3|
+|**Focus Version**|1.0.4|
 |**Unreal Engine**|5.8.x|
-|**Primary Development Version**|5.8.2|
+
 |**Platform**|Windows 64-bit|
 |**Plugin Type**|Editor|
 |**Runtime Dependency**|None|
@@ -690,7 +692,11 @@ When a Focus control is used:
 
 Focus protection operates entirely inside the editor.
 
-It does not add gameplay components or runtime systems to the packaged game.
+Selection Lock and Delete/Cut protection are handled by the Focus editor mode. Transform Lock and Edit Lock use Unreal's native movement-lock behavior together with Focus's transform and property-change guards. Focus does not require the legacy editor-mode viewport-input interface, so its editor mode does not force Unreal Engine to disable Interactive Tools Framework (ITF) gizmos.
+
+Focus does not replace or configure Unreal's transform gizmo, and its editor protections depend on the editing operation using supported engine notifications. Specialized tools can operate outside those paths, as described in **Limitations**.
+
+Focus does not add gameplay components or runtime systems to the packaged game.
 
 ---
 
@@ -887,7 +893,7 @@ Focus is intended to remain a focused World Outliner utility, so additions shoul
 
 Focus is distributed under the **MIT License**.
 
-See [`LICENSE`](https://chatgpt.com/c/LICENSE) for details.
+See the [repository license](https://github.com/mippi-the-dork/Focus/blob/main/LICENSE) for details.
 
 ---
 
@@ -900,3 +906,4 @@ The plugin was built around a simple workflow problem:
 > As a level becomes more complicated, it should become easier to control what you can see, select, and accidentally change.
 
 Focus puts those controls directly in the World Outliner, where scene organization already happens.
+
