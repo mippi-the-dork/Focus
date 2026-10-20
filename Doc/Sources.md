@@ -13,6 +13,8 @@ API and engine-source references for Focus's Outliner controls, visibility isola
 | [FCommandChange](https://dev.epicgames.com/documentation/unreal-engine/API/Runtime/Core/FCommandChange) | Explicit before/after changes restore Focus metadata and live state during Undo and Redo. |
 | [FMetaData](https://dev.epicgames.com/documentation/en-us/unreal-engine/API/Runtime/CoreUObject/FMetaData) | Per-object key/value storage in the owning package for shared Focus settings. |
 
+The native quick-property controls use `UDeveloperSettings` for user-configurable appearance, `FProperty` reflection to check per-instance eligibility, native component setters such as `SetSimulatePhysics`, `SetGenerateOverlapEvents`, `SetLightingChannels`, `SetCanEverAffectNavigation`, `SetMobility`, and `SetForcedLodModel`, and `FScopedTransaction` for grouped property changes. Category visibility is saved per user and project in `GEditorPerProjectIni`. Focus Quick Properties does not store copies of Unreal property values.
+
 Other public interfaces used by the implementation include `ISceneOutlinerColumn`, `FActorTreeItem`, `FFolderTreeItem`, `UEdMode`, `FUICommandList`, `IInputProcessor`, `FSceneViewExtensionBase`, `FPropertyEditorModule`, `SSubobjectEditor`, and `FActorPickerModeModule`.
 
 The module dependencies are Core, CoreUObject, Engine, Slate, SlateCore, InputCore, UnrealEd, EditorFramework, LevelEditor, SceneOutliner, PropertyEditor, RenderCore, Projects, SubobjectEditor, and ActorPickerMode. The module uses explicit/shared PCHs. It has no Motion Design, Surface or Actor Locker dependency.
@@ -48,7 +50,9 @@ Epic's Motion Design/Avalanche Outliner and viewport sources were also consulted
 
 The visible column label is **Focus**. The internal column ID remains `Focus.PrototypeControls` to preserve existing column preferences. This identifier is not the displayed label.
 
-Rows retain weak references and periodically refresh aggregate state. Slate attributes read those aggregates. This is not an asynchronous metrics system or a guarantee of fixed frame time.
+Rows retain weak references and periodically refresh aggregate state. Slate attributes read those aggregates. Property-change notifications invalidate the affected column's snapshot promptly, while a half-second fallback reconciliation covers unreported changes. Optional property controls share loaded-scope calculations and cache component targeting by scope for each Actor in a row. This is not an asynchronous metrics system or a guarantee of fixed frame time.
+
+The Focus header includes a gear with category toggles (Visual, Interaction, Simulation, Physics Events, Lighting, World, Network, Navigation, Mobility, and LOD). Default visibility is Visual and Interaction only. Component and Actor controls display a dark-grey unavailable state if they have no instance-editable backing target. All available state colors and the existing alert red are adjustable in Editor Preferences -> Plugins -> Focus.
 
 ### Resolve actor, folder and group scope
 

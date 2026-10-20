@@ -1,6 +1,12 @@
 // Copyright Mippithedork 2026, Inc. All Rights Reserved.
 
 #include "FocusState.h"
+#include "FocusSettings.h"
+#include "FocusQuickProperties.h"
+#include "Widgets/Input/SComboButton.h"
+#include "Widgets/Input/SCheckBox.h"
+#include "Widgets/Input/SNumericEntryBox.h"
+#include "Widgets/Layout/SScrollBox.h"
 #include "FocusEditorMode.h"
 #include "Modules/ModuleManager.h"
 #include "Editor.h"
@@ -614,6 +620,8 @@ public:
 #include "FocusInteractionGuard.h"
 
 /** Resolve scope from live actors, never from filtered/materialized Outliner children. */
+class FFocusColumn;
+static TArray<TWeakPtr<FFocusColumn>> ActiveFocusColumns;
 class FFocusColumn : public ISceneOutlinerColumn
 {
     struct FRowState
@@ -621,6 +629,15 @@ class FFocusColumn : public ISceneOutlinerColumn
         TWeakPtr<ISceneOutlinerTreeItem> Item;
         int32 Total = 0;
         int32 Enabled[6] = {};
+        TArray<int32> QuickTotal;
+        TArray<int32> QuickFirst;
+        TArray<bool> QuickMixed;
+        int32 QuickState(int32 Index) const
+        {
+            if (!QuickTotal.IsValidIndex(Index) || QuickTotal[Index] == 0) return -1;
+            if (QuickMixed[Index]) return 2;
+            return QuickFirst[Index] ? 1 : 0;
+        }
         int32 State(Focus::EControl C) const
         {
             const int32 Count = Enabled[static_cast<int32>(C)];
@@ -711,6 +728,36 @@ class FFocusColumn : public ISceneOutlinerColumn
             for (const auto& Actor : Actors)
                 if (Focus::Get(Actor.Get(), static_cast<Focus::EControl>(Index))) ++Row.Enabled[Index];
         }
+        const auto& Defs = FocusQuick::Definitions();
+        Row.QuickTotal.SetNumZeroed(Defs.Num());
+        Row.QuickFirst.SetNumZeroed(Defs.Num());
+        Row.QuickMixed.Init(false, Defs.Num());
+        for (const auto& WeakActor : Actors)
+        {
+            AActor* Actor = WeakActor.Get();
+            if (!Actor) continue;
+            TArray<UObject*> TargetsByScope[7];
+            bool bFetched[7] = {};
+            for (int32 Index = 0; Index < Defs.Num(); ++Index)
+            {
+                const auto& Def = Defs[Index];
+                if (!FocusQuick::CategoryVisible(Def.Category)) continue;
+                const int32 Scope = static_cast<int32>(Def.Scope);
+                if (!bFetched[Scope])
+                {
+                    FocusQuick::GetTargets(Actor, Def, TargetsByScope[Scope]);
+                    bFetched[Scope] = true;
+                }
+                for (UObject* Target : TargetsByScope[Scope])
+                {
+                    int32 Value = 0;
+                    if (!FocusQuick::Read(Target, Def, Value)) continue;
+                    if (Row.QuickTotal[Index] == 0) Row.QuickFirst[Index] = Value;
+                    else if (Row.QuickFirst[Index] != Value) Row.QuickMixed[Index] = true;
+                    ++Row.QuickTotal[Index];
+                }
+            }
+        }
     }
     static FText Tooltip(const FRowState& Row, Focus::EControl C)
     {
@@ -730,9 +777,9 @@ class FFocusColumn : public ISceneOutlinerColumn
             const int32 S = Row->State(C);
             return FText::FromString(S == 2 ? TEXT("-") : C == EControl::Solo ? (S == 1 ? TEXT("[S]") : TEXT("(S)")) : TEXT("●"));
             }).ColorAndOpacity_Lambda([Row, C] {
-                if (Row->State(C) == 0) return FSlateColor(FLinearColor(.45f, .45f, .45f));
-                if (Row->State(C) == 2 || C == EControl::Solo) return FSlateColor(FLinearColor::White);
-                return FSlateColor(C == EControl::GameHidden ? FLinearColor::Red : FLinearColor::Yellow);
+                if (Row->State(C) == 0) return FSlateColor(GetDefault<UFocusSettings>()->DisabledColor);
+                if (Row->State(C) == 2 || C == EControl::Solo) return FSlateColor(GetDefault<UFocusSettings>()->EnabledColor);
+                return FSlateColor(C == EControl::GameHidden ? GetDefault<UFocusSettings>()->AlertColor : GetDefault<UFocusSettings>()->MixedColor);
                 });
             if (C == EControl::EditorHidden || C == EControl::GameHidden)
             {
@@ -742,9 +789,9 @@ class FFocusColumn : public ISceneOutlinerColumn
                     .HeightOverride_Lambda([Row, C] { return FOptionalSize(Row->State(C) == 2 ? 2.f : 6.f); })
                     [SNew(SImage).Image(&DotBrush).ColorAndOpacity_Lambda([Row, C] {
                     const int32 State = Row->State(C);
-                    if (State == 0) return FSlateColor(FLinearColor(.45f, .45f, .45f));
-                    if (State == 2) return FSlateColor(FLinearColor::White);
-                    return FSlateColor(C == EControl::GameHidden ? FLinearColor::Red : FLinearColor::Yellow);
+                    if (State == 0) return FSlateColor(GetDefault<UFocusSettings>()->DisabledColor);
+                    if (State == 2) return FSlateColor(GetDefault<UFocusSettings>()->EnabledColor);
+                    return FSlateColor(C == EControl::GameHidden ? GetDefault<UFocusSettings>()->AlertColor : GetDefault<UFocusSettings>()->MixedColor);
                         })];
             }
             if (C == EControl::Solo && SoloOutline.IsValid() && SoloSolid.IsValid() && SoloMixed.IsValid())
@@ -759,7 +806,7 @@ class FFocusColumn : public ISceneOutlinerColumn
                     return State == 2 ? Mixed.Get() : State == 1 ? Solid.Get() : Outline.Get();
                         }).ColorAndOpacity_Lambda([Row] {
                             return FSlateColor(Row->State(EControl::Solo) == 0 ?
-                                FLinearColor(.45f, .45f, .45f) : FLinearColor::White);
+                                GetDefault<UFocusSettings>()->DisabledColor : GetDefault<UFocusSettings>()->EnabledColor);
                             })]
                     ];
             }
@@ -767,9 +814,9 @@ class FFocusColumn : public ISceneOutlinerColumn
                 + SOverlay::Slot()[SNew(SImage).Image_Lambda([Row, C] {
                 return FAppStyle::GetBrush(Row->State(C) == 0 ? TEXT("Icons.Unlock") : TEXT("Icons.Lock"));
                     }).ColorAndOpacity_Lambda([Row, C] {
-                        if (Row->State(C) == 0) return FSlateColor(FLinearColor(.45f, .45f, .45f));
-                        if (Row->State(C) == 2) return FSlateColor(FLinearColor::White);
-                        return FSlateColor(C == EControl::Selection ? FLinearColor::White : C == EControl::Edit ? FLinearColor::Red : FLinearColor::Yellow);
+                        if (Row->State(C) == 0) return FSlateColor(GetDefault<UFocusSettings>()->DisabledColor);
+                        if (Row->State(C) == 2) return FSlateColor(GetDefault<UFocusSettings>()->EnabledColor);
+                        return FSlateColor(C == EControl::Selection ? GetDefault<UFocusSettings>()->EnabledColor : C == EControl::Edit ? GetDefault<UFocusSettings>()->AlertColor : GetDefault<UFocusSettings>()->MixedColor);
                         })]
                 + SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Bottom)
                     [SNew(STextBlock).Text(FText::FromString(TEXT("-")))
@@ -784,7 +831,7 @@ class FFocusColumn : public ISceneOutlinerColumn
                         + SOverlay::Slot()[SNew(SImage).Image_Lambda([Row, Unlocked, Locked]() -> const FSlateBrush* {
                         return Row->State(EControl::Selection) == 0 ? Unlocked.Get() : Locked.Get();
                             }).ColorAndOpacity_Lambda([Row] {
-                                return FSlateColor(Row->State(EControl::Selection) == 0 ? FLinearColor(.45f, .45f, .45f) : Row->State(EControl::Selection) == 2 ? FLinearColor::Yellow : FLinearColor::White);
+                                return FSlateColor(Row->State(EControl::Selection) == 0 ? GetDefault<UFocusSettings>()->DisabledColor : Row->State(EControl::Selection) == 2 ? GetDefault<UFocusSettings>()->MixedColor : GetDefault<UFocusSettings>()->EnabledColor);
                                 })]
                         + SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Bottom)
                         [SNew(STextBlock).Text(FText::FromString(TEXT("-")))
@@ -834,6 +881,158 @@ class FFocusColumn : public ISceneOutlinerColumn
                     return FReply::Handled();
                         })[Visual]];
     }
+    static FLinearColor QuickColor(const FRowState& Row, int32 Index)
+    {
+        const auto* Settings = GetDefault<UFocusSettings>();
+        const int32 State = Row.QuickState(Index);
+        if (State < 0) return Settings->NotApplicableColor;
+        if (State == 2) return Settings->MixedColor;
+        if (FocusQuick::Definitions()[Index].Kind == FocusQuick::EKind::Mobility) return Settings->EnabledColor;
+        return State == 1 ? Settings->EnabledColor : Settings->DisabledColor;
+    }
+    static FText QuickLabel(const FRowState& Row, int32 Index)
+    {
+        const auto& Def = FocusQuick::Definitions()[Index];
+        const int32 State = Row.QuickState(Index);
+        if (Def.Kind == FocusQuick::EKind::ForcedLOD)
+            return FText::FromString(State == 2 ? TEXT("-") : State < 0 ? TEXT("L") : FString::FromInt(Row.QuickFirst[Index]));
+        if (Def.Kind == FocusQuick::EKind::Mobility)
+        {
+            if (State == 2) return FText::FromString(TEXT("-"));
+            if (State < 0) return FText::FromString(TEXT("M"));
+            const int32 Value = Row.QuickFirst[Index];
+            return FText::FromString(Value == 0 ? TEXT("S") : Value == 1 ? TEXT("T") : TEXT("M"));
+        }
+        return FText::FromString(Def.Symbol);
+    }
+    static FText QuickTooltip(const FRowState& Row, int32 Index)
+    {
+        const auto& Def = FocusQuick::Definitions()[Index];
+        const int32 State = Row.QuickState(Index);
+        const FString Status = State == -1 ? TEXT("Not applicable to this Actor's instance-editable properties") :
+            State == 2 ? TEXT("Mixed across eligible Actors or Components") :
+            Def.Kind == FocusQuick::EKind::Mobility ? (Row.QuickFirst[Index] == 0 ? TEXT("Static") : Row.QuickFirst[Index] == 1 ? TEXT("Stationary") : TEXT("Movable")) :
+            Def.Kind == FocusQuick::EKind::ForcedLOD ? FString::Printf(TEXT("Forced LOD model %d (0 = Automatic)"), Row.QuickFirst[Index]) :
+            State == 1 ? TEXT("Enabled") : TEXT("Disabled");
+        return FText::FromString(FString(Def.Label) + TEXT("\n") + Status +
+            TEXT("\n\nFocus edits only properties exposed as instance-editable by Unreal. Applies to eligible components of the scoped Actors. Mixed values can be unified.") +
+            TEXT("\nEdit-locked Actors are skipped. All changes support Undo/Redo."));
+    }
+    static void ApplyQuick(const TSharedRef<FRowState>& Row, int32 Index, int32 NewValue)
+    {
+        const auto& Def = FocusQuick::Definitions()[Index];
+        const auto Actors = ActionActors(Row->Item);
+        const FScopedTransaction Transaction(NSLOCTEXT("Focus", "QuickControlChange", "Focus: Change actor property"));
+        for (const auto& WeakActor : Actors)
+        {
+            AActor* Actor = WeakActor.Get();
+            if (!Actor || Focus::Get(Actor, Focus::EControl::Edit)) continue;
+            TArray<UObject*> Targets;
+            FocusQuick::GetTargets(Actor, Def, Targets);
+            for (UObject* Target : Targets) FocusQuick::Write(Target, Def, NewValue);
+        }
+        RefreshRow(*Row, LoadedActors());
+        if (GEditor) GEditor->RedrawLevelEditingViewports();
+    }
+    static TSharedRef<SWidget> QuickControl(const TSharedRef<FRowState>& Row, int32 Index)
+    {
+        const auto& Def = FocusQuick::Definitions()[Index];
+        if (Def.Kind == FocusQuick::EKind::ForcedLOD)
+        {
+            return SNew(SBox).WidthOverride(44.f).HeightOverride(20.f)
+                [SNew(SNumericEntryBox<int32>)
+                 .AllowSpin(false).MinValue(0).MaxValue(255)
+                 .IsEnabled_Lambda([Row, Index] { return Row->QuickState(Index) >= 0; })
+                 .Value_Lambda([Row, Index]() -> TOptional<int32> {
+                     if (Row->QuickState(Index) < 0 || Row->QuickState(Index) == 2) return TOptional<int32>();
+                     return Row->QuickFirst[Index];
+                 })
+                 .ToolTipText_Lambda([Row, Index] { return QuickTooltip(*Row, Index); })
+                 .OnValueCommitted_Lambda([Row, Index](int32 NewValue, ETextCommit::Type) {
+                     ApplyQuick(Row, Index, FMath::Clamp(NewValue, 0, 255));
+                 })];
+        }
+        if (Def.Kind == FocusQuick::EKind::Mobility)
+        {
+            TSharedRef<SHorizontalBox> Choices = SNew(SHorizontalBox);
+            for (int32 Value = 0; Value < 3; ++Value)
+            {
+                const int32 Choice = Value;
+                const TCHAR* Caption = Value == 0 ? TEXT("S") : Value == 1 ? TEXT("T") : TEXT("M");
+                Choices->AddSlot().AutoWidth()
+                    [SNew(SBox).WidthOverride(20.f).HeightOverride(20.f)
+                     [SNew(SButton).ButtonStyle(FAppStyle::Get(), "SimpleButton")
+                      .ContentPadding(0).HAlign(HAlign_Center).VAlign(VAlign_Center)
+                      .ToolTipText_Lambda([Row, Index, Choice] {
+                          return FText::FromString(FString(FocusQuick::Definitions()[Index].Label) +
+                              (Choice == 0 ? TEXT(": Static") : Choice == 1 ? TEXT(": Stationary") : TEXT(": Movable")));
+                      })
+                      .IsEnabled_Lambda([Row, Index] { return Row->QuickState(Index) >= 0; })
+                      .OnClicked_Lambda([Row, Index, Choice] { ApplyQuick(Row, Index, Choice); return FReply::Handled(); })
+                      [SNew(STextBlock).Text(FText::FromString(Caption))
+                       .ColorAndOpacity_Lambda([Row, Index, Choice] {
+                           const auto* Settings = GetDefault<UFocusSettings>();
+                           const int32 State = Row->QuickState(Index);
+                           return FSlateColor(State < 0 ? Settings->NotApplicableColor :
+                               State == 2 ? Settings->MixedColor : Row->QuickFirst[Index] == Choice ?
+                               Settings->EnabledColor : Settings->DisabledColor);
+                       })]]];
+            }
+            return Choices;
+        }
+        return SNew(SBox).WidthOverride(20.f).HeightOverride(20.f)
+            [SNew(SButton).ButtonStyle(FAppStyle::Get(), "SimpleButton").ContentPadding(0)
+             .HAlign(HAlign_Center).VAlign(VAlign_Center)
+             .ToolTipText_Lambda([Row, Index] { return QuickTooltip(*Row, Index); })
+             .IsEnabled_Lambda([Row, Index] { return Row->QuickState(Index) >= 0; })
+             .OnClicked_Lambda([Row, Index] {
+                const auto& Def = FocusQuick::Definitions()[Index];
+                if (Def.Kind == FocusQuick::EKind::Bool)
+                    ApplyQuick(Row, Index, Row->QuickState(Index) == 1 ? 0 : 1);
+                else if (Def.Kind == FocusQuick::EKind::Mobility)
+                    ApplyQuick(Row, Index, Row->QuickState(Index) == 2 ? 0 : (Row->QuickFirst[Index] + 1) % 3);
+                else
+                    ApplyQuick(Row, Index, Row->QuickState(Index) == 2 ? 0 : (Row->QuickFirst[Index] + 1) % 9);
+                return FReply::Handled();
+             })
+             [SNew(STextBlock).Text_Lambda([Row, Index] { return QuickLabel(*Row, Index); })
+              .ColorAndOpacity_Lambda([Row, Index] { return FSlateColor(QuickColor(*Row, Index)); })]
+            ];
+    }
+    static TSharedRef<SWidget> CategoryMenu()
+    {
+        TSharedRef<SVerticalBox> Items = SNew(SVerticalBox);
+        for (int32 Index = 0; Index < static_cast<int32>(FocusQuick::ECategory::Count); ++Index)
+        {
+            const auto Category = static_cast<FocusQuick::ECategory>(Index);
+            Items->AddSlot().AutoHeight().Padding(3.f, 1.f)
+                [SNew(SCheckBox).IsChecked_Lambda([Category] {
+                    return FocusQuick::CategoryVisible(Category) ? ECheckBoxState::Checked : ECheckBoxState::Unchecked;
+                }).OnCheckStateChanged_Lambda([Category](ECheckBoxState NewState) {
+                    FocusQuick::SetCategoryVisible(Category, NewState == ECheckBoxState::Checked);
+                    for (auto& Weak : ActiveFocusColumns) if (auto Column = Weak.Pin()) Column->Invalidate();
+                })
+                [SNew(STextBlock).Text(FText::FromString(FocusQuick::CategoryName(Category)))]];
+        }
+        return SNew(SBox).WidthOverride(205.f).Padding(8.f)
+            [SNew(SVerticalBox)
+            + SVerticalBox::Slot().AutoHeight().Padding(3.f, 2.f)
+            [SNew(STextBlock).Text(NSLOCTEXT("Focus", "CategoriesHeader", "Focus Categories"))]
+            + SVerticalBox::Slot().AutoHeight()[Items]
+            + SVerticalBox::Slot().AutoHeight().Padding(3.f, 5.f, 3.f, 2.f)
+            [SNew(SButton).ButtonStyle(FAppStyle::Get(), "SimpleButton")
+             .OnClicked_Lambda([] {
+                 for (int32 Index = 0; Index < static_cast<int32>(FocusQuick::ECategory::Count); ++Index)
+                 {
+                     const auto C = static_cast<FocusQuick::ECategory>(Index);
+                     FocusQuick::SetCategoryVisible(C, C == FocusQuick::ECategory::Visual || C == FocusQuick::ECategory::Interaction);
+                 }
+                 for (auto& Weak : ActiveFocusColumns) if (auto Column = Weak.Pin()) Column->Invalidate();
+                 return FReply::Handled();
+             })[SNew(STextBlock).Text(NSLOCTEXT("Focus", "ResetCategories", "Reset to Visual + Interaction"))]]
+            ];
+    }
+
     // Edit Lock includes Transform Lock; these are three protection levels,
     // independent of Selection Lock. 3 represents a mixed hierarchy/selection.
     static int32 ProtectionState(const FRowState& Row)
@@ -899,10 +1098,10 @@ class FFocusColumn : public ISceneOutlinerColumn
                 }).ColorAndOpacity_Lambda([Row] {
                     switch (ProtectionState(*Row))
                     {
-                    case 0: return FSlateColor(FLinearColor(.45f, .45f, .45f));
-                    case 1: return FSlateColor(FLinearColor::White);
-                    case 2: return FSlateColor(FLinearColor::Red);
-                    default: return FSlateColor(FLinearColor::Yellow);
+                    case 0: return FSlateColor(GetDefault<UFocusSettings>()->DisabledColor);
+                    case 1: return FSlateColor(GetDefault<UFocusSettings>()->EnabledColor);
+                    case 2: return FSlateColor(GetDefault<UFocusSettings>()->AlertColor);
+                    default: return FSlateColor(GetDefault<UFocusSettings>()->MixedColor);
                     }
                     })]
             + SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Bottom)
@@ -912,13 +1111,14 @@ class FFocusColumn : public ISceneOutlinerColumn
             ];
     }
 public:
+    void Invalidate() { NextRefresh = 0.0; }
     // Stable internal identifier; the displayed column name is "Focus".
     static FName GetID() { return TEXT("Focus.PrototypeControls"); }
     virtual FName GetColumnID() override { return GetID(); }
     virtual void Tick(double InCurrentTime, float) override
     {
         if (InCurrentTime < NextRefresh) return;
-        NextRefresh = InCurrentTime + .25;
+        NextRefresh = InCurrentTime + .5;
         Rows.RemoveAll([](const TWeakPtr<FRowState>& Row) { return !Row.IsValid(); });
         if (Rows.IsEmpty()) return;
         // One world enumeration per refresh; Slate attributes only read aggregate counts.
@@ -927,7 +1127,19 @@ public:
     }
     virtual SHeaderRow::FColumn::FArguments ConstructHeaderRowColumn() override
     {
-        return SHeaderRow::Column(GetID()).DefaultLabel(NSLOCTEXT("Focus", "Header", "Focus")).FixedWidth(78.f);
+        return SHeaderRow::Column(GetID())
+            .ManualWidth(TAttribute<float>::CreateLambda([] { return static_cast<float>(FocusQuick::ColumnWidth()); }))
+            .HeaderContent()
+            [SNew(SHorizontalBox)
+            + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(2.f, 0.f)
+                [SNew(STextBlock).Text(NSLOCTEXT("Focus", "Header", "Focus"))]
+            + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
+                [SNew(SComboButton).ButtonStyle(FAppStyle::Get(), "SimpleButton")
+                 .HasDownArrow(false).ContentPadding(FMargin(2.f, 1.f))
+                 .ToolTipText(NSLOCTEXT("Focus", "SettingsTip", "Show or hide Focus categories"))
+                 .OnGetMenuContent_Lambda([] { return CategoryMenu(); })
+                 .ButtonContent()[SNew(SImage).Image(FAppStyle::GetBrush(TEXT("Icons.Settings")))]]
+            ];
     }
     virtual const TSharedRef<SWidget> ConstructRowWidget(FSceneOutlinerTreeItemRef Item, const STableRow<FSceneOutlinerTreeItemPtr>& TableRow) override
     {
@@ -939,16 +1151,29 @@ public:
         Rows.Add(Row);
         // The next column tick fills counts, avoiding one world scan per generated row.
         NextRefresh = 0.0;
-        // 14px dot column + three 20px buttons + 2px on each outside edge.
-        return SNew(SBox).Padding(FMargin(2.f, 0.f)).VAlign(VAlign_Center)
-            [SNew(SHorizontalBox)
-            + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[SNew(SVerticalBox)
-            + SVerticalBox::Slot().AutoHeight()[Control(Row, EControl::EditorHidden)]
-            + SVerticalBox::Slot().AutoHeight()[Control(Row, EControl::GameHidden)]]
-            + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[Control(Row, EControl::Solo)]
-            + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[Control(Row, EControl::Selection)]
-            + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[ProtectionControl(Row)]
-            ];
+        TSharedRef<SHorizontalBox> Content = SNew(SHorizontalBox);
+        Content->AddSlot().AutoWidth().VAlign(VAlign_Center)
+            [SNew(SBox).Visibility_Lambda([] { return FocusQuick::CategoryVisible(FocusQuick::ECategory::Visual) ? EVisibility::Visible : EVisibility::Collapsed; })
+                [SNew(SHorizontalBox)
+                    + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
+                        [SNew(SVerticalBox)
+                            + SVerticalBox::Slot().AutoHeight()[Control(Row, EControl::EditorHidden)]
+                            + SVerticalBox::Slot().AutoHeight()[Control(Row, EControl::GameHidden)]]
+                    + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[Control(Row, EControl::Solo)]]];
+        Content->AddSlot().AutoWidth().VAlign(VAlign_Center)
+            [SNew(SBox).Visibility_Lambda([] { return FocusQuick::CategoryVisible(FocusQuick::ECategory::Interaction) ? EVisibility::Visible : EVisibility::Collapsed; })
+                [SNew(SHorizontalBox)
+                    + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[Control(Row, EControl::Selection)]
+                    + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[ProtectionControl(Row)]]];
+        const auto& Defs = FocusQuick::Definitions();
+        for (int32 Index = 0; Index < Defs.Num(); ++Index)
+        {
+            const auto Category = Defs[Index].Category;
+            Content->AddSlot().AutoWidth().VAlign(VAlign_Center)
+                [SNew(SBox).Visibility_Lambda([Category] { return FocusQuick::CategoryVisible(Category) ? EVisibility::Visible : EVisibility::Collapsed; })
+                    [QuickControl(Row, Index)]];
+        }
+        return SNew(SBox).Padding(FMargin(2.f, 0.f)).VAlign(VAlign_Center)[Content];
     }
 };
 
@@ -1137,7 +1362,7 @@ class FFocusModule : public IModuleInterface
     FTSTicker::FDelegateHandle Ticker;
     FDelegateHandle Columns;
     FDelegateHandle MapOpened;
-    FDelegateHandle ActorAdded, LevelAdded, ObjectsReplaced;
+    FDelegateHandle ActorAdded, LevelAdded, ObjectsReplaced, NativePropertyChanged;
     TSet<TWeakObjectPtr<AActor>> PendingRestore;
     bool bRestoreWorld = true;
     TSharedPtr<FFocusViewExtension, ESPMode::ThreadSafe> ViewExtension;
@@ -1319,10 +1544,20 @@ public:
     virtual void StartupModule() override {
         Focus::LoadSoloIcons();
         Focus::LoadSelectionIcons();
+        NativePropertyChanged = FCoreUObjectDelegates::OnObjectPropertyChanged.AddLambda([](UObject* Object, FPropertyChangedEvent&) {
+            if (!Cast<AActor>(Object) && !Cast<UActorComponent>(Object)) return;
+            ActiveFocusColumns.RemoveAll([](const TWeakPtr<FFocusColumn>& Column) { return !Column.IsValid(); });
+            for (auto& Weak : ActiveFocusColumns) if (auto Column = Weak.Pin()) Column->Invalidate();
+        });
         auto& Module = FModuleManager::LoadModuleChecked<FSceneOutlinerModule>("SceneOutliner");
         Columns = Module.OnCreateActorBrowserColumns().AddLambda([](FSceneOutlinerInitializationOptions& Options, UWorld*) {
             Options.ColumnMap.Add(FFocusColumn::GetID(), FSceneOutlinerColumnInfo(ESceneOutlinerColumnVisibility::Visible, 9,
-                FCreateSceneOutlinerColumn::CreateLambda([](ISceneOutliner& Outliner) { FocusInteraction::RegisterOutliner(Outliner); return MakeShared<FFocusColumn>(); }),
+                FCreateSceneOutlinerColumn::CreateLambda([](ISceneOutliner& Outliner) {
+                    FocusInteraction::RegisterOutliner(Outliner);
+                    TSharedRef<FFocusColumn> Column = MakeShared<FFocusColumn>();
+                    ActiveFocusColumns.Add(Column);
+                    return Column;
+                }),
                 true, TOptional<float>(), NSLOCTEXT("Focus", "ColumnLabel", "Focus")));
             // Scoped to actor-browser construction. Stock registration remains intact.
             Options.ColumnMap.Remove(FSceneOutlinerBuiltInColumnTypes::Gutter());
@@ -1390,6 +1625,8 @@ public:
         if (GEngine) GEngine->OnLevelActorAdded().Remove(ActorAdded);
         FWorldDelegates::LevelAddedToWorld.Remove(LevelAdded);
         FCoreUObjectDelegates::OnObjectsReplaced.Remove(ObjectsReplaced);
+        FCoreUObjectDelegates::OnObjectPropertyChanged.Remove(NativePropertyChanged);
+        ActiveFocusColumns.Empty();
         PendingRestore.Reset();
         if (auto* Module = FModuleManager::GetModulePtr<FSceneOutlinerModule>("SceneOutliner")) Module->OnCreateActorBrowserColumns().Remove(Columns);
         for (const auto& B : Bindings) if (auto V = B.View.Pin())

@@ -1,15 +1,15 @@
 # Focus
 
-**Visibility, isolation, and editing protection directly in Unreal Engine's World Outliner.**
+**Configurable visibility, isolation, editing protection, and native property controls in Unreal Engine's World Outliner.**
 
-Focus expands the standard World Outliner with tools for hiding, isolating, selecting, and protecting Actors while you work.
+Focus expands the standard World Outliner with customizable controls for hiding, isolating, protecting, and configuring Actor and Component instance properties.
 
 Control individual Actors, entire folders, attached hierarchies, groups, or multi-selections without leaving the Outliner.
 
 ![Unreal Engine](https://img.shields.io/badge/Unreal%20Engine-5.8.x-black?logo=unrealengine)
 ![Platform](https://img.shields.io/badge/Platform-Windows%2064--bit-blue)
 ![Type](https://img.shields.io/badge/Plugin-Editor%20Only-green)
-![Version](https://img.shields.io/badge/Version-1.0.4-blue)
+![Version](https://img.shields.io/badge/Version-1.1.0-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 ![Focus controls in the Unreal Engine World Outliner](Doc/Images/Focus-Hero.png)
@@ -38,6 +38,10 @@ With Focus you can:
     
 - Protect Actors and Components from editing
     
+- Edit supported physics, lighting, navigation, networking, world, mobility, and LOD properties
+
+- Customize which control categories appear in the Outliner
+
 - Apply those controls to entire hierarchies at once
     
 
@@ -46,6 +50,40 @@ Focus is designed to make large scenes easier to work in without changing the wa
 ---
 
 # Features
+
+### Configurable categories
+
+The **Focus** World Outliner column has a gear icon directly beside its name. Click the gear to enable or disable categories for your personal editor layout. Changes apply immediately and persist in your editor-per-project preferences.
+
+The default visible categories are **Visual** and **Interaction**, keeping the compact traditional Focus controls. Optional categories are **Simulation**, **Physics Events**, **Lighting**, **World**, **Network**, **Navigation**, **Mobility**, and **LOD**. Category order is currently fixed in that sequence.
+
+The category controls use compact text/number indicators with per-control tooltips. The provided icon art is a UI baseline and can be refined independently of the underlying property access.
+
+### State colors
+
+Available, enabled controls are white; available, disabled controls are grey; mixed values are yellow; and properties not editable on this Actor instance are dark grey. Focus's original red warning/strong-lock styling is retained. Customize all five colors in **Editor Preferences → Plugins → Focus**. Inapplicable controls stay aligned but cannot be activated.
+
+### Native quick property editing
+
+Optional controls operate on native Actor and Component properties, not a separate Focus property store. When a category is enabled, a control shows the aggregate of eligible loaded Actors and their applicable components. Mixed values are indicated when the eligible targets disagree. An unavailable or non-instance-editable property is shown dark grey.
+
+| Category | Controls |
+|---|---|
+| Visual | Hide in Editor, Hidden in Game, Solo |
+| Interaction | Selection Lock, Unlocked / Transform Locked / Edit Locked |
+| Simulation | Simulate Physics, Enable Gravity, Ignore Radial Impulse, Ignore Radial Force, Apply Impulse on Damage, Async Physics Tick Enabled |
+| Physics Events | Generate Hit Events, Generate Overlap Events, Generate Wake Events |
+| Lighting | Channel 0, Channel 1, Channel 2, Cast Shadows |
+| World | In Main World Only, Is Editor Only Actor, Is Spatially Loaded, Include Actor in HLOD |
+| Network | Net Load on Client, Replicate Physics to Autonomous Proxy, Static Mesh Replicate Movement |
+| Navigation | Can Ever Affect Navigation, Dynamic Obstacle, Fill Collision Underneath for Navmesh, Rasterize as Filled Convex Volume |
+| Mobility | Static, Stationary, Movable (mutually exclusive) |
+| LOD | Forced LOD Model (numeric, 0 = Auto), Never Distance Cull, Allow Cull Distance Volume |
+
+A control is available only if Unreal exposes its backing property for editing on that particular placed Actor/component. Focus applies native property changes with editor transactions and change notifications, using dedicated setters for supported physics, navigation, lighting, mobility, and LOD operations. It does not modify related properties to make an ineligible operation possible.
+
+Only eligible targets participate when applying a property to folders, selected Actors, or attached hierarchies. Actors protected by Focus Edit Lock are skipped. A component-based control can affect more than one eligible component on an Actor, so review the tooltip and component contents before using bulk actions.
+
 
 ### World Outliner Controls
 
@@ -124,7 +162,7 @@ Focus is an editor utility and does not add runtime systems to packaged builds.
 
 Focus controls appear directly inside the World Outliner.
 
-Each Actor or supported hierarchy row can display controls for:
+With the default Visual and Interaction categories enabled, each Actor or supported hierarchy row displays:
 
 |Control|Purpose|
 |---|---|
@@ -659,7 +697,7 @@ Focus supports the following target configuration:
 
 |||
 |---|---|
-|**Focus Version**|1.0.4|
+|**Focus Version**|1.1.0|
 |**Unreal Engine**|5.8.x|
 
 |**Platform**|Windows 64-bit|
@@ -885,7 +923,7 @@ Pull requests are welcome.
 
 If you're considering a significant change, opening an Issue first is recommended so the direction can be discussed before substantial work is done.
 
-Focus is intended to remain a focused World Outliner utility, so additions should support its core purpose without turning it into a general-purpose scene-management suite.
+Focus concentrates frequently used Actor and Component settings into optional Outliner categories, while preserving the compact Visual and Interaction defaults.
 
 ---
 

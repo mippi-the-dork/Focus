@@ -9,7 +9,7 @@ public class Focus : ModuleRules
         PrivateDependencyModuleNames.AddRange(new string[] {
             "Core", "CoreUObject", "Engine", "Slate", "SlateCore", "InputCore",
             "UnrealEd", "EditorFramework", "LevelEditor", "SceneOutliner",
-            "PropertyEditor", "RenderCore", "Projects", "SubobjectEditor", "ActorPickerMode"
+            "PropertyEditor", "RenderCore", "Projects", "SubobjectEditor", "ActorPickerMode", "DeveloperSettings"
         });
     }
 }
