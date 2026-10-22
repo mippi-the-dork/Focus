@@ -1,4 +1,4 @@
-# Focus
+﻿# Focus
 
 **Configurable visibility, isolation, editing protection, and native property controls in Unreal Engine's World Outliner.**
 
@@ -9,7 +9,7 @@ Control individual Actors, entire folders, attached hierarchies, groups, or mult
 ![Unreal Engine](https://img.shields.io/badge/Unreal%20Engine-5.8.x-black?logo=unrealengine)
 ![Platform](https://img.shields.io/badge/Platform-Windows%2064--bit-blue)
 ![Type](https://img.shields.io/badge/Plugin-Editor%20Only-green)
-![Version](https://img.shields.io/badge/Version-1.1.0-blue)
+![Version](https://img.shields.io/badge/Version-1.1.4-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 ![Focus controls in the Unreal Engine World Outliner](Doc/Images/Focus-Hero.png)
@@ -53,19 +53,19 @@ Focus is designed to make large scenes easier to work in without changing the wa
 
 ### Configurable categories
 
-The **Focus** World Outliner column has a gear icon directly beside its name. Click the gear to enable or disable categories for your personal editor layout. Changes apply immediately and persist in your editor-per-project preferences.
+The **Focus** World Outliner column has a horizontal three-dots (`...`) menu at the far right of its header. Click the menu to enable or disable categories for your personal editor layout. Changes apply immediately and persist in your editor-per-project preferences.
 
 The default visible categories are **Visual** and **Interaction**, keeping the compact traditional Focus controls. Optional categories are **Simulation**, **Physics Events**, **Lighting**, **World**, **Network**, **Navigation**, **Mobility**, and **LOD**. Category order is currently fixed in that sequence.
 
-The category controls use compact text/number indicators with per-control tooltips. The provided icon art is a UI baseline and can be refined independently of the underlying property access.
+Optional Focus categories are separated from adjacent groups by a 10-unit gap, except when Lighting immediately follows Interaction, where the gap is a slightly tighter 7 units. The original Visual and Interaction controls remain closer together, with a 3-unit gap between Solo and Selection Lock; hiding a category removes its gap so no empty spaces remain. The Lighting controls use three solid vertical bars (Channels 0, 1, 2) over one solid full-width bar (Cast Shadows), with proportions based on the provided SVG and sized to balance with Focus icons. All Lighting and World segments use fixed-size geometry that does not change with their enabled, disabled, mixed, or unavailable color. World forms a 2 by 2 grid: Main World Only, Editor Only Actor, Spatially Loaded, and HLOD, reading left-to-right and top-to-bottom. LOD displays a complete, centered Forced LOD number that scales to fit the available space above two bars (Never Distance Cull and Allow Cull Distance Volume). Every segment retains its own hit area and tooltip, and inapplicable controls use the configured dark-grey tint at full strength. Other optional controls use compact indicators with per-control tooltips.
 
 ### State colors
 
-Available, enabled controls are white; available, disabled controls are grey; mixed values are yellow; and properties not editable on this Actor instance are dark grey. Focus's original red warning/strong-lock styling is retained. Customize all five colors in **Editor Preferences → Plugins → Focus**. Inapplicable controls stay aligned but cannot be activated.
+Available, enabled controls are white; available, disabled controls default to **#616161 grey**; mixed values are yellow; and properties not editable on this Actor instance are dark grey. Focus's original red warning/strong-lock styling is retained. Customize all five colors in **Editor Preferences → Plugins → Focus**. Inapplicable controls stay aligned but cannot be activated. Existing custom color selections are preserved.
 
 ### Native quick property editing
 
-Optional controls operate on native Actor and Component properties, not a separate Focus property store. When a category is enabled, a control shows the aggregate of eligible loaded Actors and their applicable components. Mixed values are indicated when the eligible targets disagree. An unavailable or non-instance-editable property is shown dark grey.
+Optional controls operate on native Actor and Component properties, not a separate Focus property store. When a category is enabled, a control shows the current aggregate of eligible loaded Actors and their applicable components. Each refresh rebuilds that aggregate from the current values, so properties transitioning from 0 to nonzero, changing between actors, or becoming inapplicable cannot inherit old Mixed or availability states. Mixed values are indicated only when currently eligible targets disagree. An unavailable or non-instance-editable property is shown dark grey.
 
 | Category | Controls |
 |---|---|
@@ -78,7 +78,9 @@ Optional controls operate on native Actor and Component properties, not a separa
 | Network | Net Load on Client, Replicate Physics to Autonomous Proxy, Static Mesh Replicate Movement |
 | Navigation | Can Ever Affect Navigation, Dynamic Obstacle, Fill Collision Underneath for Navmesh, Rasterize as Filled Convex Volume |
 | Mobility | Static, Stationary, Movable (mutually exclusive) |
-| LOD | Forced LOD Model (numeric, 0 = Auto), Never Distance Cull, Allow Cull Distance Volume |
+| LOD | Forced LOD Model (0 = Automatic), Never Distance Cull, Allow Cull Distance Volume |
+
+In LOD, **left-click the number** to increase Forced LOD Model by one (up to 255), **Alt + left-click** to decrease it (down to 0), **scroll** while hovering to adjust up or down, or **double-click** to type a value in a wider, centered numeric editor. The compact LOD number stays centered above the two culling bars. Left-click increments apply after the double-click recognition window so editing does not accidentally increment the value first. `0` means automatic LOD selection, and positive values use Unreal's one-based Forced LOD Model convention: `1` forces mesh LOD 0, `2` forces mesh LOD 1, and so on. Focus compares the requested value against the available LOD counts of the eligible Static Mesh and Skinned Mesh components. An out-of-range value is shown using the customizable Alert color (red by default), and the tooltip reports the supported range. Different forced values across eligible components display a yellow mixed dash; a property without an eligible instance-editable target retains the dark-grey Not Applicable color. The red indicator is a validation warning only and does not silently clamp or alter the native stored value.
 
 A control is available only if Unreal exposes its backing property for editing on that particular placed Actor/component. Focus applies native property changes with editor transactions and change notifications, using dedicated setters for supported physics, navigation, lighting, mobility, and LOD operations. It does not modify related properties to make an ineligible operation possible.
 
@@ -697,7 +699,7 @@ Focus supports the following target configuration:
 
 |||
 |---|---|
-|**Focus Version**|1.1.0|
+|**Focus Version**|1.1.4|
 |**Unreal Engine**|5.8.x|
 
 |**Platform**|Windows 64-bit|

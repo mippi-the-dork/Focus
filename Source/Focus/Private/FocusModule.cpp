@@ -1,4 +1,4 @@
-// Copyright Mippithedork 2026, Inc. All Rights Reserved.
+﻿// Copyright Mippithedork 2026, Inc. All Rights Reserved.
 
 #include "FocusState.h"
 #include "FocusSettings.h"
@@ -6,6 +6,13 @@
 #include "Widgets/Input/SComboButton.h"
 #include "Widgets/Input/SCheckBox.h"
 #include "Widgets/Input/SNumericEntryBox.h"
+#include "Widgets/Input/SEditableTextBox.h"
+#include "Widgets/Input/SMenuAnchor.h"
+#include "Widgets/SCompoundWidget.h"
+#include "Widgets/SLeafWidget.h"
+#include "Rendering/DrawElements.h"
+#include "Framework/Application/SlateApplication.h"
+#include "InputCoreTypes.h"
 #include "Widgets/Layout/SScrollBox.h"
 #include "FocusEditorMode.h"
 #include "Modules/ModuleManager.h"
@@ -56,12 +63,14 @@
 #include "Widgets/Input/SButton.h"
 #include "Widgets/SNullWidget.h"
 #include "Widgets/Layout/SBox.h"
+#include "Widgets/Layout/SScaleBox.h"
 #include "Widgets/SBoxPanel.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Widgets/Images/SImage.h"
 #include "Styling/AppStyle.h"
 #include "Brushes/SlateImageBrush.h"
 #include "Brushes/SlateRoundedBoxBrush.h"
+#include "Brushes/SlateColorBrush.h"
 #include "Interfaces/IPluginManager.h"
 #include "Misc/Paths.h"
 #include "HAL/FileManager.h"
@@ -620,6 +629,285 @@ public:
 #include "FocusInteractionGuard.h"
 
 /** Resolve scope from live actors, never from filtered/materialized Outliner children. */
+// SVG-matched property segment: the solid fill occupies the entire Slate widget.
+// A regular SButton applies its own content and styling geometry, which squeezed
+// 1.1.1's rectangles into thin, visually misleading marks. This lightweight
+// widget owns the pointer interaction without a button's layout insets.
+class SFocusPropertySegment final : public SLeafWidget
+{
+public:
+    SLATE_BEGIN_ARGS(SFocusPropertySegment) {}
+        SLATE_ARGUMENT(TFunction<bool()>, Available)
+        SLATE_ARGUMENT(TFunction<void()>, Toggle)
+        SLATE_ARGUMENT(TFunction<FSlateColor()>, Tint)
+        SLATE_ARGUMENT(TFunction<FText()>, Tooltip)
+    SLATE_END_ARGS()
+
+    void Construct(const FArguments& Args)
+    {
+        Available = Args._Available;
+        Toggle = Args._Toggle;
+        Tint = Args._Tint;
+        Tooltip = Args._Tooltip;
+        SetToolTipText(TAttribute<FText>::CreateLambda([this] { return Tooltip(); }));
+    }
+
+    // The exact allotted rectangle is painted directly. Unlike an SImage,
+    // changes in brush style, hover, enabled tint or state color cannot alter
+    // the visible geometry. This is also independent of native button padding.
+    virtual int32 OnPaint(const FPaintArgs& Args, const FGeometry& AllottedGeometry,
+        const FSlateRect& MyCullingRect, FSlateWindowElementList& OutDrawElements,
+        int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override
+    {
+        static const FSlateColorBrush SolidBrush(FLinearColor::White);
+        FSlateDrawElement::MakeBox(OutDrawElements, LayerId, AllottedGeometry.ToPaintGeometry(),
+            &SolidBrush, ESlateDrawEffect::None, Tint().GetSpecifiedColor());
+        return LayerId;
+    }
+
+    virtual FVector2D ComputeDesiredSize(float) const override
+    {
+        // The enclosing SBox specifies exact per-segment SVG dimensions.
+        return FVector2D(1.0f, 1.0f);
+    }
+
+    virtual FReply OnMouseButtonDown(const FGeometry&, const FPointerEvent& Event) override
+    {
+        if (Event.GetEffectingButton() != EKeys::LeftMouseButton || !Available())
+            return FReply::Unhandled();
+        return FReply::Handled().CaptureMouse(SharedThis(this));
+    }
+
+    virtual FReply OnMouseButtonUp(const FGeometry& Geometry, const FPointerEvent& Event) override
+    {
+        if (Event.GetEffectingButton() != EKeys::LeftMouseButton || !HasMouseCapture())
+            return FReply::Unhandled();
+        if (Available() && Geometry.IsUnderLocation(Event.GetScreenSpacePosition()))
+            Toggle();
+        return FReply::Handled().ReleaseMouseCapture();
+    }
+
+private:
+    TFunction<bool()> Available;
+    TFunction<void()> Toggle;
+    TFunction<FSlateColor()> Tint;
+    TFunction<FText()> Tooltip;
+};
+
+// The supplied 15-17 unit SVG artwork was placed slightly larger than the
+// standard 16-unit Focus icons in the Photoshop reference. Scale geometric
+// blocks to match that optical weight while retaining independent hit regions.
+// The LOD number is intentionally shorter than its width, to fit typical
+// Scene Outliner row heights without clipping.
+static constexpr float FocusLightingScale = 1.10f;
+static constexpr float FocusWorldScale = 1.23f;
+static constexpr float FocusLODWidthScale = 1.23f;
+static constexpr float FocusLODHeightScale = 1.10f;
+
+// Standalone editor for the LOD number. A click commits one increment after
+// the double-click window; a double click cancels that action and opens text
+// editing instead. No package edit or undo transaction is performed for the
+// first click of a double click.
+class SFocusLODNumber : public SCompoundWidget
+{
+public:
+    SLATE_BEGIN_ARGS(SFocusLODNumber) {}
+        SLATE_ARGUMENT(TFunction<TOptional<int32>()>, Read)
+        SLATE_ARGUMENT(TFunction<int32()>, IncrementBase)
+        SLATE_ARGUMENT(TFunction<bool()>, Available)
+        SLATE_ARGUMENT(TFunction<void(int32)>, Apply)
+        SLATE_ARGUMENT(TFunction<FSlateColor()>, Color)
+        SLATE_ARGUMENT(TFunction<FText()>, Tooltip)
+    SLATE_END_ARGS()
+
+    void Construct(const FArguments& Args)
+    {
+        Read = Args._Read;
+        IncrementBase = Args._IncrementBase;
+        Available = Args._Available;
+        Apply = Args._Apply;
+        Color = Args._Color;
+        Tooltip = Args._Tooltip;
+        // The regular number stays centered in the SVG-sized LOD icon. An
+        // SEditableTextBox cannot display even a short number inside this tiny
+        // footprint once Slate reserves its own padding. Use a centered popup
+        // editor instead, without changing the normal Outliner column width.
+        ChildSlot
+        [SAssignNew(EditAnchor, SMenuAnchor)
+            .Placement(MenuPlacement_Center)
+            .UseApplicationMenuStack(true)
+            .MenuContent(
+                SNew(SBox).WidthOverride(64.0f)
+                [SAssignNew(EditBox, SEditableTextBox)
+                    .Font(FAppStyle::GetFontStyle(TEXT("NormalFont")))
+                    .Justification(ETextJustify::Center)
+                    .SelectAllTextWhenFocused(true)
+                    .ClearKeyboardFocusOnCommit(true)
+                    .OnTextCommitted_Lambda([this](const FText& Text, ETextCommit::Type Type)
+                    {
+                        if (!bEditing)
+                            return;
+
+                        bEditing = false;
+                        bSuppressNextUp = false;
+                        if (Type != ETextCommit::OnCleared)
+                        {
+                            const FString Entered = Text.ToString().TrimStartAndEnd();
+                            if (!Entered.IsEmpty() && Entered.IsNumeric())
+                                Apply(FMath::Clamp(FCString::Atoi(*Entered), 0, 255));
+                        }
+                        if (EditAnchor.IsValid() && EditAnchor->IsOpen())
+                            EditAnchor->SetIsOpen(false, false);
+                    })]
+            )
+            .OnMenuOpenChanged_Lambda([this](bool bIsOpen)
+            {
+                if (!bIsOpen)
+                {
+                    bEditing = false;
+                    bSuppressNextUp = false;
+                }
+            })
+            [SNew(SBox).WidthOverride(14.87f * FocusLODWidthScale).HeightOverride(14.47f * FocusLODHeightScale)
+                [SNew(SOverlay)
+                 + SOverlay::Slot().HAlign(HAlign_Fill).VAlign(VAlign_Fill)
+                    .Padding(FMargin(0.6f, 0.0f, 0.6f, 1.3f))
+                    [SNew(SScaleBox)
+                     .Stretch(EStretch::ScaleToFit)
+                     .StretchDirection(EStretchDirection::DownOnly)
+                     .HAlign(HAlign_Center).VAlign(VAlign_Center)
+                     [SNew(STextBlock)
+                      .Text_Lambda([this]
+                      {
+                          const TOptional<int32> Value = Read();
+                          return FText::FromString(Value.IsSet() ? FString::FromInt(Value.GetValue()) : TEXT("-"));
+                      })
+                      .Font_Lambda([]
+                      {
+                          FSlateFontInfo Font = FAppStyle::GetFontStyle(TEXT("NormalFont"));
+                          Font.Size = 18;
+                          return Font;
+                      })
+                      .ColorAndOpacity_Lambda([this] { return Color(); })]]]
+            ]
+        ];
+        SetToolTipText(TAttribute<FText>::CreateLambda([this] {
+            return FText::FromString(Tooltip().ToString() +
+                TEXT("\nLeft-click: +1. Alt + left-click: -1. Mouse wheel: +/-1. Double-click: type a number."));
+        }));
+    }
+
+    virtual FReply OnMouseButtonDown(const FGeometry&, const FPointerEvent& Event) override
+    {
+        // Only capture left-clicks. Right-click belongs to the native Outliner
+        // context menu and must never be consumed by the LOD quick control.
+        if (Event.GetEffectingButton() != EKeys::LeftMouseButton || bEditing || !Available())
+            return FReply::Unhandled();
+        return FReply::Handled().CaptureMouse(SharedThis(this));
+    }
+
+    virtual FReply OnMouseButtonUp(const FGeometry& Geometry, const FPointerEvent& Event) override
+    {
+        if (Event.GetEffectingButton() != EKeys::LeftMouseButton || !HasMouseCapture())
+            return FReply::Unhandled();
+        FReply Reply = FReply::Handled().ReleaseMouseCapture();
+        if (!bEditing && !bSuppressNextUp && Geometry.IsUnderLocation(Event.GetScreenSpacePosition()))
+        {
+            if (Event.IsAltDown())
+            {
+                // Alt + left-click decrements immediately, without scheduling
+                // the ordinary delayed increment. This keeps right-click free
+                // for Unreal's normal Scene Outliner context-menu behavior.
+                CancelPendingIncrement();
+                if (Available())
+                    Apply(FMath::Clamp(IncrementBase() - 1, 0, 255));
+                return Reply;
+            }
+            bPendingIncrement = true;
+            if (PendingTimer.IsValid())
+            {
+                UnRegisterActiveTimer(PendingTimer.ToSharedRef());
+                PendingTimer.Reset();
+            }
+            // Delay is necessary: Slate reports the first click of a double-click
+            // as a normal release. Applying immediately would make a double-click
+            // change the asset before the user can type a replacement value.
+            PendingTimer = RegisterActiveTimer(0.50f,
+                FWidgetActiveTimerDelegate::CreateSP(this, &SFocusLODNumber::CompleteSingleClick));
+        }
+        bSuppressNextUp = false;
+        return Reply;
+    }
+
+    virtual FReply OnMouseButtonDoubleClick(const FGeometry&, const FPointerEvent& Event) override
+    {
+        if (Event.GetEffectingButton() != EKeys::LeftMouseButton || !Available())
+            return FReply::Unhandled();
+        if (Event.IsAltDown())
+        {
+            // Alt is exclusively the decrement modifier. A rapid pair of
+            // Alt-clicks must not inadvertently enter the numeric editor.
+            CancelPendingIncrement();
+            return FReply::Handled().ReleaseMouseCapture();
+        }
+        CancelPendingIncrement();
+        bSuppressNextUp = true;
+        bEditing = true;
+        EditBox->SetText(FText::AsNumber(IncrementBase()));
+        EditAnchor->SetIsOpen(true, true);
+        return FReply::Handled().ReleaseMouseCapture()
+            .SetUserFocus(EditBox.ToSharedRef(), EFocusCause::SetDirectly);
+    }
+
+    virtual FReply OnMouseWheel(const FGeometry&, const FPointerEvent& Event) override
+    {
+        if (bEditing || !Available() || FMath::IsNearlyZero(Event.GetWheelDelta()))
+            return FReply::Unhandled();
+        CancelPendingIncrement();
+        const int32 Step = Event.GetWheelDelta() > 0.0f ? 1 : -1;
+        Apply(FMath::Clamp(IncrementBase() + Step, 0, 255));
+        return FReply::Handled();
+    }
+
+private:
+    void CancelPendingIncrement()
+    {
+        bPendingIncrement = false;
+        if (PendingTimer.IsValid())
+        {
+            UnRegisterActiveTimer(PendingTimer.ToSharedRef());
+            PendingTimer.Reset();
+        }
+    }
+
+    EActiveTimerReturnType CompleteSingleClick(double, float)
+    {
+        PendingTimer.Reset();
+        if (bPendingIncrement && !bEditing)
+        {
+            if (Available())
+            {
+                Apply(FMath::Clamp(IncrementBase() + 1, 0, 255));
+            }
+        }
+        bPendingIncrement = false;
+        return EActiveTimerReturnType::Stop;
+    }
+
+    TFunction<TOptional<int32>()> Read;
+    TFunction<int32()> IncrementBase;
+    TFunction<bool()> Available;
+    TFunction<void(int32)> Apply;
+    TFunction<FSlateColor()> Color;
+    TFunction<FText()> Tooltip;
+    TSharedPtr<SMenuAnchor> EditAnchor;
+    TSharedPtr<SEditableTextBox> EditBox;
+    TSharedPtr<FActiveTimerHandle> PendingTimer;
+    bool bEditing = false;
+    bool bPendingIncrement = false;
+    bool bSuppressNextUp = false;
+};
+
 class FFocusColumn;
 static TArray<TWeakPtr<FFocusColumn>> ActiveFocusColumns;
 class FFocusColumn : public ISceneOutlinerColumn
@@ -632,6 +920,8 @@ class FFocusColumn : public ISceneOutlinerColumn
         TArray<int32> QuickTotal;
         TArray<int32> QuickFirst;
         TArray<bool> QuickMixed;
+        TArray<bool> QuickInvalidLOD;
+        TArray<int32> QuickMinAvailableLOD;
         int32 QuickState(int32 Index) const
         {
             if (!QuickTotal.IsValidIndex(Index) || QuickTotal[Index] == 0) return -1;
@@ -729,9 +1019,17 @@ class FFocusColumn : public ISceneOutlinerColumn
                 if (Focus::Get(Actor.Get(), static_cast<Focus::EControl>(Index))) ++Row.Enabled[Index];
         }
         const auto& Defs = FocusQuick::Definitions();
-        Row.QuickTotal.SetNumZeroed(Defs.Num());
-        Row.QuickFirst.SetNumZeroed(Defs.Num());
+        // This is a full snapshot, not an incremental tally. SetNumZeroed()
+        // only zero-initializes *new* elements: when the arrays already have
+        // Defs.Num() elements, it preserves their previous counts/values.
+        // That made a changed value (e.g. Forced LOD 0 -> 1) report Mixed
+        // forever, and a formerly eligible property appear applicable after
+        // switching to an actor without it. Init() resets every element.
+        Row.QuickTotal.Init(0, Defs.Num());
+        Row.QuickFirst.Init(0, Defs.Num());
         Row.QuickMixed.Init(false, Defs.Num());
+        Row.QuickInvalidLOD.Init(false, Defs.Num());
+        Row.QuickMinAvailableLOD.Init(INDEX_NONE, Defs.Num());
         for (const auto& WeakActor : Actors)
         {
             AActor* Actor = WeakActor.Get();
@@ -752,6 +1050,18 @@ class FFocusColumn : public ISceneOutlinerColumn
                 {
                     int32 Value = 0;
                     if (!FocusQuick::Read(Target, Def, Value)) continue;
+                    if (Def.Kind == FocusQuick::EKind::ForcedLOD)
+                    {
+                        const int32 AvailableLODCount = FocusQuick::GetAvailableLODCount(Target);
+                        if (AvailableLODCount >= 0)
+                        {
+                            if (Row.QuickMinAvailableLOD[Index] == INDEX_NONE)
+                                Row.QuickMinAvailableLOD[Index] = AvailableLODCount;
+                            else
+                                Row.QuickMinAvailableLOD[Index] = FMath::Min(Row.QuickMinAvailableLOD[Index], AvailableLODCount);
+                            Row.QuickInvalidLOD[Index] |= Value > AvailableLODCount;
+                        }
+                    }
                     if (Row.QuickTotal[Index] == 0) Row.QuickFirst[Index] = Value;
                     else if (Row.QuickFirst[Index] != Value) Row.QuickMixed[Index] = true;
                     ++Row.QuickTotal[Index];
@@ -887,6 +1197,9 @@ class FFocusColumn : public ISceneOutlinerColumn
         const int32 State = Row.QuickState(Index);
         if (State < 0) return Settings->NotApplicableColor;
         if (State == 2) return Settings->MixedColor;
+        if (FocusQuick::Definitions()[Index].Kind == FocusQuick::EKind::ForcedLOD
+            && Row.QuickInvalidLOD.IsValidIndex(Index) && Row.QuickInvalidLOD[Index])
+            return Settings->AlertColor;
         if (FocusQuick::Definitions()[Index].Kind == FocusQuick::EKind::Mobility) return Settings->EnabledColor;
         return State == 1 ? Settings->EnabledColor : Settings->DisabledColor;
     }
@@ -914,7 +1227,20 @@ class FFocusColumn : public ISceneOutlinerColumn
             Def.Kind == FocusQuick::EKind::Mobility ? (Row.QuickFirst[Index] == 0 ? TEXT("Static") : Row.QuickFirst[Index] == 1 ? TEXT("Stationary") : TEXT("Movable")) :
             Def.Kind == FocusQuick::EKind::ForcedLOD ? FString::Printf(TEXT("Forced LOD model %d (0 = Automatic)"), Row.QuickFirst[Index]) :
             State == 1 ? TEXT("Enabled") : TEXT("Disabled");
-        return FText::FromString(FString(Def.Label) + TEXT("\n") + Status +
+        FString LODDetails;
+        if (Def.Kind == FocusQuick::EKind::ForcedLOD && State >= 0)
+        {
+            if (Row.QuickMinAvailableLOD.IsValidIndex(Index) && Row.QuickMinAvailableLOD[Index] != INDEX_NONE)
+            {
+                LODDetails = FString::Printf(TEXT("\nAvailable forced values for all eligible meshes: 0..%d (0 = Automatic)."),
+                    Row.QuickMinAvailableLOD[Index]);
+            }
+            if (Row.QuickInvalidLOD.IsValidIndex(Index) && Row.QuickInvalidLOD[Index])
+            {
+                LODDetails += TEXT("\nOUT OF RANGE: at least one mesh does not have the requested LOD. The number is red when a single value is shown.");
+            }
+        }
+        return FText::FromString(FString(Def.Label) + TEXT("\n") + Status + LODDetails +
             TEXT("\n\nFocus edits only properties exposed as instance-editable by Unreal. Applies to eligible components of the scoped Actors. Mixed values can be unified.") +
             TEXT("\nEdit-locked Actors are skipped. All changes support Undo/Redo."));
     }
@@ -999,6 +1325,86 @@ class FFocusColumn : public ISceneOutlinerColumn
               .ColorAndOpacity_Lambda([Row, Index] { return FSlateColor(QuickColor(*Row, Index)); })]
             ];
     }
+    // Individually interactive segments reproduce the SVG rectangles. Width and
+    // height are explicit, and SFocusPropertySegment paints those allocations
+    // directly. Neither per-state tint nor native button padding can resize them.
+    static TSharedRef<SWidget> QuickSegment(const TSharedRef<FRowState>& Row,
+        int32 Index, float Width, float Height)
+    {
+        return SNew(SBox).WidthOverride(Width).HeightOverride(Height)
+            [SNew(SFocusPropertySegment)
+             .Available([Row, Index] { return Row->QuickState(Index) >= 0; })
+             .Toggle([Row, Index] { ApplyQuick(Row, Index, Row->QuickState(Index) == 1 ? 0 : 1); })
+             .Tint([Row, Index] { return FSlateColor(QuickColor(*Row, Index)); })
+             .Tooltip([Row, Index] { return QuickTooltip(*Row, Index); })];
+    }
+
+    static TSharedRef<SWidget> CompactCategory(const TSharedRef<FRowState>& Row,
+        FocusQuick::ECategory Category, int32 First)
+    {
+        using namespace FocusQuick;
+        if (Category == ECategory::Lighting)
+        {
+            // Lighting-Focus.svg geometry, optically scaled to match core Focus icons:
+            // 3 x 4.24 by 8.48 channels, 2.12 gaps, and a 16.95 by 4.24
+            // Cast Shadows bar 2.12 pixels below them.
+            return SNew(SBox).WidthOverride(16.95f * FocusLightingScale).HeightOverride(14.83f * FocusLightingScale)
+                [SNew(SVerticalBox)
+                 + SVerticalBox::Slot().AutoHeight()
+                    [SNew(SHorizontalBox)
+                     + SHorizontalBox::Slot().AutoWidth()[QuickSegment(Row, First + 0, 4.24f * FocusLightingScale, 8.48f * FocusLightingScale)]
+                     + SHorizontalBox::Slot().AutoWidth().Padding(FMargin(2.12f * FocusLightingScale, 0.f, 0.f, 0.f))
+                        [QuickSegment(Row, First + 1, 4.24f * FocusLightingScale, 8.48f * FocusLightingScale)]
+                     + SHorizontalBox::Slot().AutoWidth().Padding(FMargin(2.12f * FocusLightingScale, 0.f, 0.f, 0.f))
+                        [QuickSegment(Row, First + 2, 4.24f * FocusLightingScale, 8.48f * FocusLightingScale)]]
+                 + SVerticalBox::Slot().AutoHeight().Padding(0.f, 2.12f * FocusLightingScale, 0.f, 0.f)
+                    [QuickSegment(Row, First + 3, 16.95f * FocusLightingScale, 4.24f * FocusLightingScale)]];
+        }
+        if (Category == ECategory::World)
+        {
+            // World-Focus.svg: 2 x 2 grid of 6.37-square tiles with 2.13 px
+            // gaps. Retain individual tooltips, toggles, and state tints.
+            return SNew(SBox).WidthOverride(14.87f * FocusWorldScale).HeightOverride(14.87f * FocusWorldScale)
+                [SNew(SVerticalBox)
+                 + SVerticalBox::Slot().AutoHeight()
+                    [SNew(SHorizontalBox)
+                     + SHorizontalBox::Slot().AutoWidth()[QuickSegment(Row, First + 0, 6.37f * FocusWorldScale, 6.37f * FocusWorldScale)]
+                     + SHorizontalBox::Slot().AutoWidth().Padding(FMargin(2.13f * FocusWorldScale, 0.f, 0.f, 0.f))
+                        [QuickSegment(Row, First + 1, 6.37f * FocusWorldScale, 6.37f * FocusWorldScale)]]
+                 + SVerticalBox::Slot().AutoHeight().Padding(0.f, 2.13f * FocusWorldScale, 0.f, 0.f)
+                    [SNew(SHorizontalBox)
+                     + SHorizontalBox::Slot().AutoWidth()[QuickSegment(Row, First + 2, 6.37f * FocusWorldScale, 6.37f * FocusWorldScale)]
+                     + SHorizontalBox::Slot().AutoWidth().Padding(FMargin(2.13f * FocusWorldScale, 0.f, 0.f, 0.f))
+                        [QuickSegment(Row, First + 3, 6.37f * FocusWorldScale, 6.37f * FocusWorldScale)]]];
+        }
+        if (Category == ECategory::LOD)
+        {
+            // LOD-Focus.svg: large centered number, then two 6.37 x 3.18
+            // culling bars. The number keeps single-click increment and
+            // double-click edit behavior; the bars remain separate toggles.
+            return SNew(SBox).WidthOverride(14.87f * FocusLODWidthScale).HeightOverride(17.66f * FocusLODHeightScale)
+                [SNew(SVerticalBox)
+                 + SVerticalBox::Slot().AutoHeight().HAlign(HAlign_Center)
+                    [SNew(SFocusLODNumber)
+                     .Read([Row, First]() -> TOptional<int32> {
+                         if (Row->QuickState(First) < 0 || Row->QuickState(First) == 2)
+                             return TOptional<int32>();
+                         return Row->QuickFirst[First];
+                     })
+                     .IncrementBase([Row, First]() { return Row->QuickFirst.IsValidIndex(First) ? Row->QuickFirst[First] : 0; })
+                     .Available([Row, First]() { return Row->QuickState(First) >= 0; })
+                     .Apply([Row, First](int32 Value) { ApplyQuick(Row, First, Value); })
+                     .Color([Row, First]() { return FSlateColor(QuickColor(*Row, First)); })
+                     .Tooltip([Row, First]() { return QuickTooltip(*Row, First); })]
+                 + SVerticalBox::Slot().AutoHeight()
+                    [SNew(SHorizontalBox)
+                     + SHorizontalBox::Slot().AutoWidth()[QuickSegment(Row, First + 1, 6.37f * FocusLODWidthScale, 3.18f * FocusLODHeightScale)]
+                     + SHorizontalBox::Slot().AutoWidth().Padding(FMargin(2.13f * FocusLODWidthScale, 0.f, 0.f, 0.f))
+                        [QuickSegment(Row, First + 2, 6.37f * FocusLODWidthScale, 3.18f * FocusLODHeightScale)]]];
+        }
+        return SNullWidget::NullWidget;
+    }
+
     static TSharedRef<SWidget> CategoryMenu()
     {
         TSharedRef<SVerticalBox> Items = SNew(SVerticalBox);
@@ -1133,14 +1539,44 @@ public:
             [SNew(SHorizontalBox)
             + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).Padding(2.f, 0.f)
                 [SNew(STextBlock).Text(NSLOCTEXT("Focus", "Header", "Focus"))]
-            + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
+            + SHorizontalBox::Slot().FillWidth(1.f)
+                [SNullWidget::NullWidget]
+            + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).HAlign(HAlign_Right)
                 [SNew(SComboButton).ButtonStyle(FAppStyle::Get(), "SimpleButton")
-                 .HasDownArrow(false).ContentPadding(FMargin(2.f, 1.f))
+                 .HasDownArrow(false).ContentPadding(FMargin(3.f, 0.f))
                  .ToolTipText(NSLOCTEXT("Focus", "SettingsTip", "Show or hide Focus categories"))
                  .OnGetMenuContent_Lambda([] { return CategoryMenu(); })
-                 .ButtonContent()[SNew(SImage).Image(FAppStyle::GetBrush(TEXT("Icons.Settings")))]]
+                 .ButtonContent()[SNew(STextBlock)
+                     .Text(FText::FromString(TEXT("...")))
+                     .Font(FAppStyle::GetFontStyle(TEXT("SmallFont")))]]
             ];
     }
+
+    static void AddCategoryGroup(const TSharedRef<SHorizontalBox>& Content,
+        FocusQuick::ECategory Category, const TSharedRef<SWidget>& Body)
+    {
+        // A spacer belongs to the CATEGORY, not an individual property. Because
+        // both widgets are children of the same collapsed parent, hiding a
+        // category removes its entire width, including its spacer. Checking
+        // earlier visible categories also avoids a leading gap if Visual and
+        // Interaction are disabled in the header menu.
+        Content->AddSlot().AutoWidth().VAlign(VAlign_Center)
+            [SNew(SBox)
+             .Visibility_Lambda([Category] {
+                 return FocusQuick::CategoryVisible(Category) ? EVisibility::Visible : EVisibility::Collapsed;
+             })
+             [SNew(SHorizontalBox)
+              + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
+                  [SNew(SBox)
+                   .WidthOverride_Lambda([Category]() -> FOptionalSize {
+                       return FOptionalSize(FocusQuick::GapBefore(Category));
+                   })
+                   .Visibility_Lambda([Category] {
+                       return FocusQuick::GapBefore(Category) > 0.0f ? EVisibility::Visible : EVisibility::Collapsed;
+                   })]
+              + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[Body]]];
+    }
+
     virtual const TSharedRef<SWidget> ConstructRowWidget(FSceneOutlinerTreeItemRef Item, const STableRow<FSceneOutlinerTreeItemPtr>& TableRow) override
     {
         using namespace Focus;
@@ -1152,26 +1588,45 @@ public:
         // The next column tick fills counts, avoiding one world scan per generated row.
         NextRefresh = 0.0;
         TSharedRef<SHorizontalBox> Content = SNew(SHorizontalBox);
-        Content->AddSlot().AutoWidth().VAlign(VAlign_Center)
-            [SNew(SBox).Visibility_Lambda([] { return FocusQuick::CategoryVisible(FocusQuick::ECategory::Visual) ? EVisibility::Visible : EVisibility::Collapsed; })
-                [SNew(SHorizontalBox)
-                    + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
-                        [SNew(SVerticalBox)
-                            + SVerticalBox::Slot().AutoHeight()[Control(Row, EControl::EditorHidden)]
-                            + SVerticalBox::Slot().AutoHeight()[Control(Row, EControl::GameHidden)]]
-                    + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[Control(Row, EControl::Solo)]]];
-        Content->AddSlot().AutoWidth().VAlign(VAlign_Center)
-            [SNew(SBox).Visibility_Lambda([] { return FocusQuick::CategoryVisible(FocusQuick::ECategory::Interaction) ? EVisibility::Visible : EVisibility::Collapsed; })
-                [SNew(SHorizontalBox)
-                    + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[Control(Row, EControl::Selection)]
-                    + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[ProtectionControl(Row)]]];
+        AddCategoryGroup(Content, FocusQuick::ECategory::Visual,
+            SNew(SHorizontalBox)
+            + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)
+                [SNew(SVerticalBox)
+                 + SVerticalBox::Slot().AutoHeight()[Control(Row, EControl::EditorHidden)]
+                 + SVerticalBox::Slot().AutoHeight()[Control(Row, EControl::GameHidden)]]
+            + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[Control(Row, EControl::Solo)]);
+
+        AddCategoryGroup(Content, FocusQuick::ECategory::Interaction,
+            SNew(SHorizontalBox)
+            + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[Control(Row, EControl::Selection)]
+            + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center)[ProtectionControl(Row)]);
+
         const auto& Defs = FocusQuick::Definitions();
-        for (int32 Index = 0; Index < Defs.Num(); ++Index)
+        for (int32 Index = 0; Index < Defs.Num();)
         {
             const auto Category = Defs[Index].Category;
-            Content->AddSlot().AutoWidth().VAlign(VAlign_Center)
-                [SNew(SBox).Visibility_Lambda([Category] { return FocusQuick::CategoryVisible(Category) ? EVisibility::Visible : EVisibility::Collapsed; })
-                    [QuickControl(Row, Index)]];
+            const int32 First = Index;
+            while (Index < Defs.Num() && Defs[Index].Category == Category)
+            {
+                ++Index;
+            }
+
+            if (Category == FocusQuick::ECategory::Lighting ||
+                Category == FocusQuick::ECategory::World ||
+                Category == FocusQuick::ECategory::LOD)
+            {
+                AddCategoryGroup(Content, Category, CompactCategory(Row, Category, First));
+            }
+            else
+            {
+                TSharedRef<SHorizontalBox> CategoryControls = SNew(SHorizontalBox);
+                for (int32 ControlIndex = First; ControlIndex < Index; ++ControlIndex)
+                {
+                    CategoryControls->AddSlot().AutoWidth().VAlign(VAlign_Center)
+                        [QuickControl(Row, ControlIndex)];
+                }
+                AddCategoryGroup(Content, Category, CategoryControls);
+            }
         }
         return SNew(SBox).Padding(FMargin(2.f, 0.f)).VAlign(VAlign_Center)[Content];
     }
@@ -1542,6 +1997,23 @@ class FFocusModule : public IModuleInterface
 
 public:
     virtual void StartupModule() override {
+        // Earlier Focus releases used #737373 as their disabled color default.
+        // EditorPerProjectUserSettings can contain that serialized value, which
+        // otherwise takes precedence over the new C++ default. Migrate only the
+        // exact former default once; preserve all customized colors.
+        if (UFocusSettings* Settings = GetMutableDefault<UFocusSettings>())
+        {
+            if (!Settings->bMigratedDisabledColorDefaultTo616161)
+            {
+                const FLinearColor PreviousDefault(.45f, .45f, .45f, 1.f);
+                if (Settings->DisabledColor.Equals(PreviousDefault, KINDA_SMALL_NUMBER))
+                {
+                    Settings->DisabledColor = FLinearColor(97.f / 255.f, 97.f / 255.f, 97.f / 255.f, 1.f);
+                }
+                Settings->bMigratedDisabledColorDefaultTo616161 = true;
+                Settings->SaveConfig();
+            }
+        }
         Focus::LoadSoloIcons();
         Focus::LoadSelectionIcons();
         NativePropertyChanged = FCoreUObjectDelegates::OnObjectPropertyChanged.AddLambda([](UObject* Object, FPropertyChangedEvent&) {

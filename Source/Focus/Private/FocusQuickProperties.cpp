@@ -1,4 +1,4 @@
-// Copyright Mippithedork 2026, Inc. All Rights Reserved.
+﻿// Copyright Mippithedork 2026, Inc. All Rights Reserved.
 #include "FocusQuickProperties.h"
 #include "Components/ActorComponent.h"
 #include "Components/SceneComponent.h"
@@ -6,6 +6,7 @@
 #include "Components/ShapeComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/SkinnedMeshComponent.h"
+#include "Engine/StaticMesh.h"
 #include "Components/LightComponent.h"
 #include "Engine/StaticMeshActor.h"
 #include "GameFramework/Actor.h"
@@ -77,13 +78,45 @@ namespace FocusQuick
         // Column width, header menu checks and row visibility depend on this setting.
         if (FSlateApplication::IsInitialized()) FSlateApplication::Get().InvalidateAllWidgets(false);
     }
+    float GapBefore(ECategory Category)
+    {
+        int32 Previous = static_cast<int32>(Category) - 1;
+        while (Previous >= 0 && !CategoryVisible(static_cast<ECategory>(Previous)))
+        {
+            --Previous;
+        }
+        if (Previous < 0) return 0.0f;
+        if (Category == ECategory::Interaction && Previous == static_cast<int32>(ECategory::Visual))
+            return OriginalControlsGap;
+        if (Category == ECategory::Lighting && Previous == static_cast<int32>(ECategory::Interaction))
+            return InteractionToLightingGap;
+        return CategoryGap;
+    }
+
     int32 ColumnWidth()
     {
+        // Match the category-level spacing in FFocusColumn::AddCategoryGroup.
+        // The first visible group has no leading gutter; hidden categories
+        // contribute no width. Keep enough room for native Slate row padding.
         int32 Width = 8;
-        if (CategoryVisible(ECategory::Visual)) Width += 34;
-        if (CategoryVisible(ECategory::Interaction)) Width += 40;
-        for (const FDef& Def : Definitions()) if (CategoryVisible(Def.Category))
-            Width += Def.Kind == EKind::Mobility ? 60 : Def.Kind == EKind::ForcedLOD ? 44 : 20;
+        for (int32 Id = 0; Id < static_cast<int32>(ECategory::Count); ++Id)
+        {
+            const ECategory Category = static_cast<ECategory>(Id);
+            if (!CategoryVisible(Category)) continue;
+            Width += FMath::CeilToInt(GapBefore(Category));
+            if (Category == ECategory::Visual) { Width += 34; continue; }
+            if (Category == ECategory::Interaction) { Width += 40; continue; }
+            if (Category == ECategory::Lighting) { Width += 19; continue; }
+            if (Category == ECategory::World) { Width += 19; continue; }
+            if (Category == ECategory::LOD) { Width += 19; continue; }
+            for (const FDef& Def : Definitions())
+            {
+                if (Def.Category == Category)
+                {
+                    Width += Def.Kind == EKind::Mobility ? 60 : 20;
+                }
+            }
+        }
         return FMath::Max(75, Width);
     }
     static bool CanEdit(UObject* Obj, FProperty* Property)
@@ -150,6 +183,20 @@ namespace FocusQuick
         }
         return false;
     }
+    int32 GetAvailableLODCount(UObject* Target)
+    {
+        if (const UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(Target))
+        {
+            const UStaticMesh* Asset = StaticMeshComponent->GetStaticMesh();
+            return Asset ? Asset->GetNumLODs() : 0;
+        }
+        if (const USkinnedMeshComponent* SkinnedMeshComponent = Cast<USkinnedMeshComponent>(Target))
+        {
+            return SkinnedMeshComponent->GetNumLODs();
+        }
+        return -1;
+    }
+
     bool Write(UObject* Target, const FDef& Def, int32 Value)
     {
         int32 Previous = 0;
