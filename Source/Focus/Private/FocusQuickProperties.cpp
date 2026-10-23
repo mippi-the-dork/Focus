@@ -1,4 +1,4 @@
-﻿// Copyright Mippithedork 2026, Inc. All Rights Reserved.
+// Copyright Mippithedork 2026, Inc. All Rights Reserved.
 #include "FocusQuickProperties.h"
 #include "Components/ActorComponent.h"
 #include "Components/SceneComponent.h"
@@ -90,6 +90,10 @@ namespace FocusQuick
             return OriginalControlsGap;
         if (Category == ECategory::Lighting && Previous == static_cast<int32>(ECategory::Interaction))
             return InteractionToLightingGap;
+        if (Category == ECategory::Navigation && Previous == static_cast<int32>(ECategory::World))
+            return WorldToNavigationGap;
+        if (Category == ECategory::Mobility && Previous == static_cast<int32>(ECategory::Navigation))
+            return NavigationToMobilityGap;
         return CategoryGap;
     }
 
@@ -108,6 +112,8 @@ namespace FocusQuick
             if (Category == ECategory::Interaction) { Width += 40; continue; }
             if (Category == ECategory::Lighting) { Width += 19; continue; }
             if (Category == ECategory::World) { Width += 19; continue; }
+            if (Category == ECategory::Navigation) { Width += 18; continue; }
+            if (Category == ECategory::Mobility) { Width += 14; continue; }
             if (Category == ECategory::LOD) { Width += 19; continue; }
             for (const FDef& Def : Definitions())
             {

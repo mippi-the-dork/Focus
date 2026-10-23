@@ -1,4 +1,4 @@
-﻿// Copyright Mippithedork 2026, Inc. All Rights Reserved.
+// Copyright Mippithedork 2026, Inc. All Rights Reserved.
 
 #include "FocusState.h"
 #include "FocusSettings.h"
@@ -636,11 +636,16 @@ public:
 class SFocusPropertySegment final : public SLeafWidget
 {
 public:
+    // Shape is purely presentational. Every state uses the same fixed geometry
+    // and independent click/tooltip handling, including unavailable controls.
+    enum class EShape : uint8 { Rectangle, Circle, PillLeft, PillMiddle, PillRight };
+
     SLATE_BEGIN_ARGS(SFocusPropertySegment) {}
         SLATE_ARGUMENT(TFunction<bool()>, Available)
         SLATE_ARGUMENT(TFunction<void()>, Toggle)
         SLATE_ARGUMENT(TFunction<FSlateColor()>, Tint)
         SLATE_ARGUMENT(TFunction<FText()>, Tooltip)
+        SLATE_ARGUMENT(EShape, Shape)
     SLATE_END_ARGS()
 
     void Construct(const FArguments& Args)
@@ -649,6 +654,7 @@ public:
         Toggle = Args._Toggle;
         Tint = Args._Tint;
         Tooltip = Args._Tooltip;
+        Shape = Args._Shape;
         SetToolTipText(TAttribute<FText>::CreateLambda([this] { return Tooltip(); }));
     }
 
@@ -660,8 +666,27 @@ public:
         int32 LayerId, const FWidgetStyle& InWidgetStyle, bool bParentEnabled) const override
     {
         static const FSlateColorBrush SolidBrush(FLinearColor::White);
+        // Rounded brushes are created once. Drawing a fixed brush in the allotted
+        // rectangle ensures changes in state tint never alter hitbox or silhouette.
+        // Corner order is Top Left, Top Right, Bottom Right, Bottom Left.
+        static const FSlateRoundedBoxBrush CircleBrush(FLinearColor::White, 3.25f, FVector2D(6.5f, 6.5f));
+        static const FSlateRoundedBoxBrush PillLeftBrush(FLinearColor::White,
+            FVector4(7.5f, 0.f, 0.f, 7.5f), FVector2D(13.f, 15.f));
+        static const FSlateRoundedBoxBrush PillMiddleBrush(FLinearColor::White,
+            FVector4(0.f, 0.f, 0.f, 0.f), FVector2D(12.f, 15.f));
+        static const FSlateRoundedBoxBrush PillRightBrush(FLinearColor::White,
+            FVector4(0.f, 7.5f, 7.5f, 0.f), FVector2D(13.f, 15.f));
+        const FSlateBrush* Brush = &SolidBrush;
+        switch (Shape)
+        {
+        case EShape::Circle:     Brush = &CircleBrush; break;
+        case EShape::PillLeft:   Brush = &PillLeftBrush; break;
+        case EShape::PillMiddle: Brush = &PillMiddleBrush; break;
+        case EShape::PillRight:  Brush = &PillRightBrush; break;
+        default: break;
+        }
         FSlateDrawElement::MakeBox(OutDrawElements, LayerId, AllottedGeometry.ToPaintGeometry(),
-            &SolidBrush, ESlateDrawEffect::None, Tint().GetSpecifiedColor());
+            Brush, ESlateDrawEffect::None, Tint().GetSpecifiedColor());
         return LayerId;
     }
 
@@ -692,6 +717,228 @@ private:
     TFunction<void()> Toggle;
     TFunction<FSlateColor()> Tint;
     TFunction<FText()> Tooltip;
+    EShape Shape = EShape::Rectangle;
+};
+
+// Navigation's four visible circles are intentionally small. Hit-testing the
+// whole diamond by cardinal direction gives every circle a usable region even
+// in Unreal's stock 20-unit Outliner rows, with no invisible overlap into
+// neighboring Focus categories or adjacent rows.
+class SFocusNavigationDiamond final : public SLeafWidget
+{
+public:
+    SLATE_BEGIN_ARGS(SFocusNavigationDiamond) {}
+        SLATE_ARGUMENT(TFunction<bool(int32)>, Available)
+        SLATE_ARGUMENT(TFunction<void(int32)>, Toggle)
+        SLATE_ARGUMENT(TFunction<FLinearColor(int32)>, Tint)
+        SLATE_ARGUMENT(TFunction<FText(int32)>, Tooltip)
+    SLATE_END_ARGS()
+
+    void Construct(const FArguments& Args)
+    {
+        Available = Args._Available;
+        Toggle = Args._Toggle;
+        Tint = Args._Tint;
+        Tooltip = Args._Tooltip;
+        SetToolTipText(TAttribute<FText>::CreateLambda([this] { return Tooltip(HoveredChoice); }));
+    }
+
+    virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(18.f, 18.f); }
+
+    virtual int32 OnPaint(const FPaintArgs&, const FGeometry& Geometry,
+        const FSlateRect&, FSlateWindowElementList& Elements, int32 Layer,
+        const FWidgetStyle&, bool) const override
+    {
+        static const FSlateRoundedBoxBrush Dot(FLinearColor::White, 3.f, FVector2D(6.f, 6.f));
+        // N, E, S, W in the exact same property order as FocusQuick::Definitions().
+        static const FVector2D Positions[4] = {
+            FVector2D(6.f, 0.f), FVector2D(12.f, 6.f),
+            FVector2D(6.f, 12.f), FVector2D(0.f, 6.f)
+        };
+        for (int32 Choice = 0; Choice < 4; ++Choice)
+        {
+            FSlateDrawElement::MakeBox(Elements, Layer,
+                Geometry.ToPaintGeometry(FVector2D(6.f, 6.f), FSlateLayoutTransform(Positions[Choice])),
+                &Dot, ESlateDrawEffect::None, Tint(Choice));
+        }
+        return Layer;
+    }
+
+    virtual void OnMouseEnter(const FGeometry& Geometry, const FPointerEvent& Event) override
+    {
+        SLeafWidget::OnMouseEnter(Geometry, Event);
+        HoveredChoice = ChoiceAt(Geometry, Event);
+    }
+
+    virtual FReply OnMouseMove(const FGeometry& Geometry, const FPointerEvent& Event) override
+    {
+        HoveredChoice = ChoiceAt(Geometry, Event);
+        return HasMouseCapture() ? FReply::Handled() : FReply::Unhandled();
+    }
+
+    virtual FReply OnMouseButtonDown(const FGeometry& Geometry, const FPointerEvent& Event) override
+    {
+        if (Event.GetEffectingButton() != EKeys::LeftMouseButton) return FReply::Unhandled();
+        PressedChoice = ChoiceAt(Geometry, Event);
+        if (!Available(PressedChoice)) return FReply::Unhandled();
+        return FReply::Handled().CaptureMouse(SharedThis(this));
+    }
+
+    virtual FReply OnMouseButtonUp(const FGeometry& Geometry, const FPointerEvent& Event) override
+    {
+        if (Event.GetEffectingButton() != EKeys::LeftMouseButton || !HasMouseCapture())
+            return FReply::Unhandled();
+        const int32 Choice = ChoiceAt(Geometry, Event);
+        if (Geometry.IsUnderLocation(Event.GetScreenSpacePosition()) && Choice == PressedChoice && Available(Choice))
+            Toggle(Choice);
+        return FReply::Handled().ReleaseMouseCapture();
+    }
+
+private:
+    static int32 ChoiceAt(const FGeometry& Geometry, const FPointerEvent& Event)
+    {
+        const FVector2D Position = Geometry.AbsoluteToLocal(Event.GetScreenSpacePosition());
+        const FVector2D Offset = Position - FVector2D(9.f, 9.f);
+        if (FMath::Abs(Offset.X) > FMath::Abs(Offset.Y)) return Offset.X >= 0.f ? 1 : 3;
+        return Offset.Y >= 0.f ? 2 : 0;
+    }
+    TFunction<bool(int32)> Available;
+    TFunction<void(int32)> Toggle;
+    TFunction<FLinearColor(int32)> Tint;
+    TFunction<FText(int32)> Tooltip;
+    int32 HoveredChoice = 0;
+    int32 PressedChoice = INDEX_NONE;
+};
+
+// A vertical three-way selector uses the same visual footprint as other Focus
+// category icons. It always fits in a 20-unit Outliner row, and is centered by
+// the existing category-level VAlign when Stem increases the row height.
+class SFocusMobilityColumn final : public SLeafWidget
+{
+public:
+    // Match the paint geometry and hit-testing to the same three 6-unit bands.
+    // The entire 14-unit width is interactive, including the visible gutters.
+    static constexpr float Width = 14.f;
+    static constexpr float Height = 18.f;
+    static constexpr float BandHeight = Height / 3.f;
+
+    SLATE_BEGIN_ARGS(SFocusMobilityColumn) {}
+        SLATE_ARGUMENT(TFunction<int32()>, State)
+        SLATE_ARGUMENT(TFunction<int32()>, Value)
+        SLATE_ARGUMENT(TFunction<void(int32)>, Apply)
+        SLATE_ARGUMENT(TFunction<FText(int32)>, Tooltip)
+    SLATE_END_ARGS()
+
+    void Construct(const FArguments& Args)
+    {
+        State = Args._State;
+        Value = Args._Value;
+        Apply = Args._Apply;
+        Tooltip = Args._Tooltip;
+        SetToolTipText(TAttribute<FText>::CreateLambda([this] { return Tooltip(HoveredChoice); }));
+    }
+
+    virtual FVector2D ComputeDesiredSize(float) const override { return FVector2D(Width, Height); }
+
+    virtual int32 OnPaint(const FPaintArgs&, const FGeometry& Geometry,
+        const FSlateRect&, FSlateWindowElementList& Elements, int32 Layer,
+        const FWidgetStyle&, bool) const override
+    {
+        static const FSlateRoundedBoxBrush Outline(FLinearColor::White, 5.5f, FVector2D(14.f, 18.f));
+        static const FSlateRoundedBoxBrush Top(FLinearColor::White,
+            FVector4(5.5f, 5.5f, 0.f, 0.f), FVector2D(14.f, 5.5f));
+        static const FSlateColorBrush Middle(FLinearColor::White);
+        static const FSlateRoundedBoxBrush Bottom(FLinearColor::White,
+            FVector4(0.f, 0.f, 5.5f, 5.5f), FVector2D(14.f, 5.5f));
+        static const FSlateRoundedBoxBrush Inner(FLinearColor::White, 4.5f, FVector2D(12.f, 16.f));
+        static const FSlateColorBrush DividerBrush(FLinearColor::White);
+        const UFocusSettings* Colors = GetDefault<UFocusSettings>();
+        const int32 CurrentState = State();
+        const int32 CurrentValue = Value();
+        auto PaintPart = [&](const FSlateBrush* Brush, float X, float Y, float W, float H,
+                             const FLinearColor& Color, int32 LayerOffset = 0)
+        {
+            FSlateDrawElement::MakeBox(Elements, Layer + LayerOffset,
+                Geometry.ToPaintGeometry(FVector2D(W, H), FSlateLayoutTransform(FVector2D(X, Y))),
+                Brush, ESlateDrawEffect::None, Color);
+        };
+        if (CurrentState == 2)
+        {
+            // Yellow is reserved for the outer outline. None of the three
+            // exclusive mobility choices appears selected in a mixed hierarchy.
+            PaintPart(&Outline, 0.f, 0.f, Width, Height, Colors->MixedColor);
+            PaintPart(&Inner, 1.f, 1.f, Width - 2.f, Height - 2.f, Colors->DisabledColor, 1);
+            // The yellow outline already communicates a mixed value. Keep the
+            // internal dividers very dark so the widget preserves its 3-part
+            // structure without adding visual noise at normal Outliner scale.
+            // Inset the dividers by two units so they cannot cover the outline.
+            static const FLinearColor MixedDividerColor =
+                FLinearColor::FromSRGBColor(FColor(0x24, 0x24, 0x24));
+            constexpr float DividerThickness = 2.f;
+            constexpr float DividerInset = 2.f;
+            PaintPart(&DividerBrush, DividerInset, BandHeight - DividerThickness * .5f,
+                Width - DividerInset * 2.f, DividerThickness, MixedDividerColor, 2);
+            PaintPart(&DividerBrush, DividerInset, BandHeight * 2.f - DividerThickness * .5f,
+                Width - DividerInset * 2.f, DividerThickness, MixedDividerColor, 2);
+            return Layer + 2;
+        }
+        const auto ChoiceColor = [&](int32 Choice) -> FLinearColor
+        {
+            if (CurrentState < 0) return Colors->NotApplicableColor;
+            return Choice == CurrentValue ? Colors->EnabledColor : Colors->DisabledColor;
+        };
+        PaintPart(&Top, 0.f, 0.f, 14.f, 5.5f, ChoiceColor(0));
+        PaintPart(&Middle, 0.f, 6.5f, 14.f, 5.f, ChoiceColor(1));
+        PaintPart(&Bottom, 0.f, 12.5f, 14.f, 5.5f, ChoiceColor(2));
+        return Layer;
+    }
+
+    virtual void OnMouseEnter(const FGeometry& Geometry, const FPointerEvent& Event) override
+    {
+        SLeafWidget::OnMouseEnter(Geometry, Event);
+        HoveredChoice = ChoiceAt(Geometry, Event);
+    }
+
+    virtual FReply OnMouseMove(const FGeometry& Geometry, const FPointerEvent& Event) override
+    {
+        HoveredChoice = ChoiceAt(Geometry, Event);
+        return HasMouseCapture() ? FReply::Handled() : FReply::Unhandled();
+    }
+
+    virtual FReply OnMouseButtonDown(const FGeometry& Geometry, const FPointerEvent& Event) override
+    {
+        if (Event.GetEffectingButton() != EKeys::LeftMouseButton || State() < 0) return FReply::Unhandled();
+        PressedChoice = ChoiceAt(Geometry, Event);
+        return FReply::Handled().CaptureMouse(SharedThis(this));
+    }
+
+    virtual FReply OnMouseButtonUp(const FGeometry& Geometry, const FPointerEvent& Event) override
+    {
+        if (Event.GetEffectingButton() != EKeys::LeftMouseButton || !HasMouseCapture())
+            return FReply::Unhandled();
+        const int32 Choice = ChoiceAt(Geometry, Event);
+        // Only a press/release in the same six-unit band applies a change.
+        // Dragging to another band or out of the widget never changes Mobility.
+        if (Geometry.IsUnderLocation(Event.GetScreenSpacePosition()) && Choice == PressedChoice && State() >= 0)
+            Apply(Choice);
+        PressedChoice = INDEX_NONE;
+        return FReply::Handled().ReleaseMouseCapture();
+    }
+
+private:
+    static int32 ChoiceAt(const FGeometry& Geometry, const FPointerEvent& Event)
+    {
+        const float Y = Geometry.AbsoluteToLocal(Event.GetScreenSpacePosition()).Y;
+        // 0..6 = Static, 6..12 = Stationary, 12..18 = Movable.
+        // The gaps are deliberately included in the nearest band's hit area.
+        return Y < BandHeight ? 0 : Y < BandHeight * 2.f ? 1 : 2;
+    }
+    TFunction<int32()> State;
+    TFunction<int32()> Value;
+    TFunction<void(int32)> Apply;
+    TFunction<FText(int32)> Tooltip;
+    int32 HoveredChoice = 0;
+    int32 PressedChoice = INDEX_NONE;
 };
 
 // The supplied 15-17 unit SVG artwork was placed slightly larger than the
@@ -702,7 +949,7 @@ private:
 static constexpr float FocusLightingScale = 1.10f;
 static constexpr float FocusWorldScale = 1.23f;
 static constexpr float FocusLODWidthScale = 1.23f;
-static constexpr float FocusLODHeightScale = 1.10f;
+static constexpr float FocusLODHeightScale = 1.00f; // Keep LOD under 18 units for native Outliner rows.
 
 // Standalone editor for the LOD number. A click commits one increment after
 // the double-click window; a double click cancels that action and opens text
@@ -1329,10 +1576,12 @@ class FFocusColumn : public ISceneOutlinerColumn
     // height are explicit, and SFocusPropertySegment paints those allocations
     // directly. Neither per-state tint nor native button padding can resize them.
     static TSharedRef<SWidget> QuickSegment(const TSharedRef<FRowState>& Row,
-        int32 Index, float Width, float Height)
+        int32 Index, float Width, float Height,
+        SFocusPropertySegment::EShape Shape = SFocusPropertySegment::EShape::Rectangle)
     {
         return SNew(SBox).WidthOverride(Width).HeightOverride(Height)
             [SNew(SFocusPropertySegment)
+             .Shape(Shape)
              .Available([Row, Index] { return Row->QuickState(Index) >= 0; })
              .Toggle([Row, Index] { ApplyQuick(Row, Index, Row->QuickState(Index) == 1 ? 0 : 1); })
              .Tint([Row, Index] { return FSlateColor(QuickColor(*Row, Index)); })
@@ -1376,6 +1625,35 @@ class FFocusColumn : public ISceneOutlinerColumn
                      + SHorizontalBox::Slot().AutoWidth()[QuickSegment(Row, First + 2, 6.37f * FocusWorldScale, 6.37f * FocusWorldScale)]
                      + SHorizontalBox::Slot().AutoWidth().Padding(FMargin(2.13f * FocusWorldScale, 0.f, 0.f, 0.f))
                         [QuickSegment(Row, First + 3, 6.37f * FocusWorldScale, 6.37f * FocusWorldScale)]]];
+        }
+        if (Category == ECategory::Navigation)
+        {
+            // The original four-circle diamond, now 18 x 18 so it fits a 20-unit
+            // stock Outliner row. Each quadrant is clickable, not just the dots.
+            return SNew(SBox).WidthOverride(18.f).HeightOverride(18.f)
+                [SNew(SFocusNavigationDiamond)
+                 .Available([Row, First](int32 Choice) { return Row->QuickState(First + Choice) >= 0; })
+                 .Toggle([Row, First](int32 Choice) {
+                     const int32 Index = First + Choice;
+                     ApplyQuick(Row, Index, Row->QuickState(Index) == 1 ? 0 : 1);
+                 })
+                 .Tint([Row, First](int32 Choice) { return QuickColor(*Row, First + Choice); })
+                 .Tooltip([Row, First](int32 Choice) { return QuickTooltip(*Row, First + Choice); })];
+        }
+        if (Category == ECategory::Mobility)
+        {
+            // Top to bottom: Static, Stationary, Movable. The entire column is
+            // one 14 x 18 segment selector, comparable to neighboring icons.
+            return SNew(SBox).WidthOverride(SFocusMobilityColumn::Width).HeightOverride(SFocusMobilityColumn::Height)
+                [SNew(SFocusMobilityColumn)
+                 .State([Row, First] { return Row->QuickState(First); })
+                 .Value([Row, First] { return Row->QuickFirst.IsValidIndex(First) ? Row->QuickFirst[First] : 0; })
+                 .Apply([Row, First](int32 Choice) { ApplyQuick(Row, First, Choice); })
+                 .Tooltip([Row, First](int32 Choice) {
+                     const TCHAR* Name = Choice == 0 ? TEXT("Static") : Choice == 1 ? TEXT("Stationary") : TEXT("Movable");
+                     return FText::Format(NSLOCTEXT("Focus", "MobilityOptionTooltip", "Mobility: {0}\n{1}"),
+                         FText::FromString(Name), QuickTooltip(*Row, First));
+                 })];
         }
         if (Category == ECategory::LOD)
         {
@@ -1613,6 +1891,8 @@ public:
 
             if (Category == FocusQuick::ECategory::Lighting ||
                 Category == FocusQuick::ECategory::World ||
+                Category == FocusQuick::ECategory::Navigation ||
+                Category == FocusQuick::ECategory::Mobility ||
                 Category == FocusQuick::ECategory::LOD)
             {
                 AddCategoryGroup(Content, Category, CompactCategory(Row, Category, First));
@@ -2008,9 +2288,29 @@ public:
                 const FLinearColor PreviousDefault(.45f, .45f, .45f, 1.f);
                 if (Settings->DisabledColor.Equals(PreviousDefault, KINDA_SMALL_NUMBER))
                 {
-                    Settings->DisabledColor = FLinearColor(97.f / 255.f, 97.f / 255.f, 97.f / 255.f, 1.f);
+                    Settings->DisabledColor = FLinearColor::FromSRGBColor(FColor(97, 97, 97, 255));
                 }
                 Settings->bMigratedDisabledColorDefaultTo616161 = true;
+                Settings->SaveConfig();
+            }
+            // Former defaults used linear values as if they were sRGB, causing
+            // Slate to display greys much brighter than their documented hex.
+            // Migrate only those exact shipped defaults, leaving custom colors.
+            if (!Settings->bMigratedSlateStateColorDefaults)
+            {
+                const FLinearColor PreviousDisabled(97.f / 255.f, 97.f / 255.f, 97.f / 255.f, 1.f);
+                const FLinearColor OlderDisabled(.45f, .45f, .45f, 1.f);
+                const FLinearColor PreviousUnavailable(.17f, .17f, .17f, 1.f);
+                if (Settings->DisabledColor.Equals(PreviousDisabled, KINDA_SMALL_NUMBER) ||
+                    Settings->DisabledColor.Equals(OlderDisabled, KINDA_SMALL_NUMBER))
+                {
+                    Settings->DisabledColor = FLinearColor::FromSRGBColor(FColor(97, 97, 97, 255));
+                }
+                if (Settings->NotApplicableColor.Equals(PreviousUnavailable, KINDA_SMALL_NUMBER))
+                {
+                    Settings->NotApplicableColor = FLinearColor::FromSRGBColor(FColor(36, 36, 36, 255));
+                }
+                Settings->bMigratedSlateStateColorDefaults = true;
                 Settings->SaveConfig();
             }
         }

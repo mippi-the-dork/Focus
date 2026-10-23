@@ -13,6 +13,8 @@ namespace FocusQuick
     inline constexpr float CategoryGap = 10.0f;
     inline constexpr float OriginalControlsGap = 3.0f;
     inline constexpr float InteractionToLightingGap = 7.0f;
+    inline constexpr float WorldToNavigationGap = 8.0f;
+    inline constexpr float NavigationToMobilityGap = 8.0f;
     enum class ECategory : uint8 { Visual, Interaction, Simulation, PhysicsEvents, Lighting, World, Network, Navigation, Mobility, LOD, Count };
     enum class EKind : uint8 { Bool, Mobility, ForcedLOD };
     enum class EScope : uint8 { Actor, Primitive, Scene, Shape, ActorComponent, Mesh, Lighting };

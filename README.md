@@ -1,4 +1,4 @@
-﻿# Focus
+# Focus
 
 **Configurable visibility, isolation, editing protection, and native property controls in Unreal Engine's World Outliner.**
 
@@ -9,7 +9,7 @@ Control individual Actors, entire folders, attached hierarchies, groups, or mult
 ![Unreal Engine](https://img.shields.io/badge/Unreal%20Engine-5.8.x-black?logo=unrealengine)
 ![Platform](https://img.shields.io/badge/Platform-Windows%2064--bit-blue)
 ![Type](https://img.shields.io/badge/Plugin-Editor%20Only-green)
-![Version](https://img.shields.io/badge/Version-1.1.4-blue)
+![Version](https://img.shields.io/badge/Version-1.1.14-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 ![Focus controls in the Unreal Engine World Outliner](Doc/Images/Focus-Hero.png)
@@ -57,11 +57,11 @@ The **Focus** World Outliner column has a horizontal three-dots (`...`) menu at 
 
 The default visible categories are **Visual** and **Interaction**, keeping the compact traditional Focus controls. Optional categories are **Simulation**, **Physics Events**, **Lighting**, **World**, **Network**, **Navigation**, **Mobility**, and **LOD**. Category order is currently fixed in that sequence.
 
-Optional Focus categories are separated from adjacent groups by a 10-unit gap, except when Lighting immediately follows Interaction, where the gap is a slightly tighter 7 units. The original Visual and Interaction controls remain closer together, with a 3-unit gap between Solo and Selection Lock; hiding a category removes its gap so no empty spaces remain. The Lighting controls use three solid vertical bars (Channels 0, 1, 2) over one solid full-width bar (Cast Shadows), with proportions based on the provided SVG and sized to balance with Focus icons. All Lighting and World segments use fixed-size geometry that does not change with their enabled, disabled, mixed, or unavailable color. World forms a 2 by 2 grid: Main World Only, Editor Only Actor, Spatially Loaded, and HLOD, reading left-to-right and top-to-bottom. LOD displays a complete, centered Forced LOD number that scales to fit the available space above two bars (Never Distance Cull and Allow Cull Distance Volume). Every segment retains its own hit area and tooltip, and inapplicable controls use the configured dark-grey tint at full strength. Other optional controls use compact indicators with per-control tooltips.
+Optional Focus categories are separated from adjacent groups by a 10-unit gap, except when Lighting immediately follows Interaction, where the gap is a slightly tighter 7 units. The original Visual and Interaction controls remain closer together, with a 3-unit gap between Solo and Selection Lock; hiding a category removes its gap so no empty spaces remain. The Lighting controls use three solid vertical bars (Channels 0, 1, 2) over one solid full-width bar (Cast Shadows), with proportions based on the provided SVG and sized to balance with Focus icons. Lighting, World, Navigation and Mobility segments use fixed-size geometry that does not change with their enabled, disabled, mixed, or unavailable color. World forms a 2 by 2 grid: Main World Only, Editor Only Actor, Spatially Loaded, and HLOD, reading left-to-right and top-to-bottom. Navigation uses four filled circles arranged as a diamond: North is Can Ever Affect Navigation, East is Dynamic Obstacle, South is Fill Collision Underneath for Navmesh, and West is Rasterize as Filled Convex Volume. Each direction has a larger invisible click region without enlarging the circle. Mobility is a compact **vertical** three-part pill, ordered **Static (top), Stationary (middle), Movable (bottom)**. Its selected section is white; other available sections are grey. When scoped components disagree, the whole pill gets a yellow outline around three neutral grey sections, separated by two high-contrast light-grey dividers. When no component is eligible, the whole pill is dark grey. The 14 by 18-unit selector has three equal 6-unit-high clickable bands covering its full width, including the separator gutters. A setting changes only when the pointer is pressed and released in the same band. The divisions, click areas and dimensions stay fixed across state changes. Both widgets fit the native 20-unit Outliner row height and remain vertically centered when other plugins increase row height. LOD displays a complete, centered Forced LOD number that scales to fit the available space above two bars (Never Distance Cull and Allow Cull Distance Volume). Every segment retains its own hit area and tooltip, and inapplicable controls use the configured dark-grey tint at full strength. Simulation, Physics Events and Network currently use compact labelled indicators with per-control tooltips.
 
 ### State colors
 
-Available, enabled controls are white; available, disabled controls default to **#616161 grey**; mixed values are yellow; and properties not editable on this Actor instance are dark grey. Focus's original red warning/strong-lock styling is retained. Customize all five colors in **Editor Preferences → Plugins → Focus**. Inapplicable controls stay aligned but cannot be activated. Existing custom color selections are preserved.
+Available, enabled controls are white; available, disabled controls default to **#616161 grey**; mixed values are yellow; and properties not editable on this Actor instance use a distinctly darker **#242424** by default. Both hexadecimal grey colors are converted from sRGB to Slate's linear paint space so their displayed colors match the specified hex values. Focus's original red warning/strong-lock styling is retained. Customize all five colors in **Editor Preferences → Plugins → Focus**. Inapplicable controls stay aligned but cannot be activated. Existing custom color selections are preserved.
 
 ### Native quick property editing
 
@@ -699,7 +699,7 @@ Focus supports the following target configuration:
 
 |||
 |---|---|
-|**Focus Version**|1.1.4|
+|**Focus Version**|1.1.12|
 |**Unreal Engine**|5.8.x|
 
 |**Platform**|Windows 64-bit|
