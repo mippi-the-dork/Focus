@@ -90,6 +90,17 @@ namespace FocusQuick
             return OriginalControlsGap;
         if (Category == ECategory::Lighting && Previous == static_cast<int32>(ECategory::Interaction))
             return InteractionToLightingGap;
+        // Keep the art itself untouched. These narrower gutters balance the
+        // six-piece Simulation icon and the three-piece Network icon with
+        // surrounding category silhouettes.
+        if (Category == ECategory::Simulation)
+            return BeforeSimulationGap;
+        if (Category == ECategory::Network)
+            return BeforeNetworkGap;
+        if (Previous == static_cast<int32>(ECategory::Network))
+            return AfterNetworkGap;
+        if (Previous == static_cast<int32>(ECategory::Simulation))
+            return AfterSimulationGap;
         if (Category == ECategory::Navigation && Previous == static_cast<int32>(ECategory::World))
             return WorldToNavigationGap;
         if (Category == ECategory::Mobility && Previous == static_cast<int32>(ECategory::Navigation))
@@ -110,6 +121,9 @@ namespace FocusQuick
             Width += FMath::CeilToInt(GapBefore(Category));
             if (Category == ECategory::Visual) { Width += 34; continue; }
             if (Category == ECategory::Interaction) { Width += 40; continue; }
+            if (Category == ECategory::Simulation) { Width += 18; continue; }
+            if (Category == ECategory::PhysicsEvents) { Width += 16; continue; }
+            if (Category == ECategory::Network) { Width += 18; continue; }
             if (Category == ECategory::Lighting) { Width += 19; continue; }
             if (Category == ECategory::World) { Width += 19; continue; }
             if (Category == ECategory::Navigation) { Width += 18; continue; }

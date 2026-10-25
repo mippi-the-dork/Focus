@@ -17,17 +17,17 @@ public:
     virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif
 
-    UPROPERTY(EditAnywhere, Config, Category="Control State Colors")
+    UPROPERTY(EditAnywhere, Config, Category="Control State Colors", meta=(ToolTip="Color for available, enabled controls. Default: white. Changes affect all Focus categories."))
     FLinearColor EnabledColor = FLinearColor::White;
 
     // Slate paint colors are LINEAR. Convert sRGB #616161 for an exact displayed grey.
-    UPROPERTY(EditAnywhere, Config, Category="Control State Colors")
+    UPROPERTY(EditAnywhere, Config, Category="Control State Colors", meta=(ToolTip="Color for available, disabled controls. Default displayed sRGB: #616161. Different from Not Applicable."))
     FLinearColor DisabledColor = FLinearColor::FromSRGBColor(FColor(97, 97, 97, 255));
 
-    UPROPERTY(EditAnywhere, Config, Category="Control State Colors")
+    UPROPERTY(EditAnywhere, Config, Category="Control State Colors", meta=(ToolTip="Color for Mixed values across selected or grouped eligible targets. Default: yellow."))
     FLinearColor MixedColor = FLinearColor::Yellow;
 
-    UPROPERTY(EditAnywhere, Config, Category="Control State Colors", meta=(ToolTip="Color for properties unavailable on this actor/component. Default displayed sRGB: #242424"))
+    UPROPERTY(EditAnywhere, Config, Category="Control State Colors", meta=(ToolTip="Color for unavailable or non-instance-editable properties. Default displayed sRGB: #242424. These controls cannot be changed from Focus."))
     FLinearColor NotApplicableColor = FLinearColor::FromSRGBColor(FColor(36, 36, 36, 255));
 
     // Update only previous shipped defaults; user-adjusted colors are preserved.
@@ -39,6 +39,6 @@ public:
     bool bMigratedDisabledColorDefaultTo616161 = false;
 
     // Used by existing Focus-specific warning states; preserving the prior red.
-    UPROPERTY(EditAnywhere, Config, Category="Control State Colors")
+    UPROPERTY(EditAnywhere, Config, Category="Control State Colors", meta=(ToolTip="Color for Focus warnings, including out-of-range forced LOD values, and strong protection indicators. Default: red."))
     FLinearColor AlertColor = FLinearColor::Red;
 };

@@ -1,28 +1,28 @@
 {
-    "FileVersion": 3,
-    "Version": 17,
-    "VersionName": "1.1.15",
-    "FriendlyName": "Focus",
-    "Description": "Configurable World Outliner controls for visibility, isolation, selection, edit protection, and instance-editable Actor and Component properties.",
-    "Category": "Editor",
-    "CanContainContent": false,
-    "IsExperimentalVersion": false,
-    "Modules": [
-        {
-            "Name": "Focus",
-            "Type": "Editor",
-            "LoadingPhase": "PostEngineInit",
-            "PlatformAllowList": [
-                "Win64"
-            ]
-        }
-    ],
-    "CreatedBy": "Mippithedork",
-    "CreatedByURL": "",
-    "EngineVersion": "5.8.0",
-    "DocsURL": "",
-    "MarketplaceURL": "",
-    "SupportURL": "",
-    "IsBetaVersion": true,
-    "Installed": false
+	"FileVersion": 3,
+	"Version": 200,
+	"VersionName": "2.0.2",
+	"FriendlyName": "Focus",
+	"Description": "Add configurable visibility, protection, physics, lighting, world, networking, navigation, mobility, and LOD controls directly to Unreal Engine's World Outliner.",
+	"Category": "World Outliner",
+	"CanContainContent": false,
+	"IsExperimentalVersion": false,
+	"Modules": [
+		{
+			"Name": "Focus",
+			"Type": "Editor",
+			"LoadingPhase": "PostEngineInit",
+			"PlatformAllowList": [
+				"Win64"
+			]
+		}
+	],
+	"CreatedBy": "Mippithedork",
+	"CreatedByURL": "https://github.com/mippi-the-dork",
+	"EngineVersion": "5.8.0",
+	"DocsURL": "https://github.com/mippi-the-dork/Focus",
+	"MarketplaceURL": "https://www.fab.com/listings/d60d5b75-0adc-41fb-b177-dc90dcd5948d",
+	"SupportURL": "https://github.com/mippi-the-dork/Focus/issues",
+	"IsBetaVersion": false,
+	"Installed": false
 }

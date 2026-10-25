@@ -1,4 +1,4 @@
-﻿// Copyright Mippithedork 2026, Inc. All Rights Reserved.
+// Copyright Mippithedork 2026, Inc. All Rights Reserved.
 #pragma once
 #include "CoreMinimal.h"
 
@@ -13,6 +13,10 @@ namespace FocusQuick
     inline constexpr float CategoryGap = 10.0f;
     inline constexpr float OriginalControlsGap = 3.0f;
     inline constexpr float InteractionToLightingGap = 7.0f;
+    inline constexpr float BeforeSimulationGap = 4.0f;
+    inline constexpr float AfterSimulationGap = 7.0f;
+    inline constexpr float BeforeNetworkGap = 6.0f;
+    inline constexpr float AfterNetworkGap = 4.0f;
     inline constexpr float WorldToNavigationGap = 8.0f;
     inline constexpr float NavigationToMobilityGap = 8.0f;
     enum class ECategory : uint8 { Visual, Interaction, Simulation, PhysicsEvents, Lighting, World, Network, Navigation, Mobility, LOD, Count };

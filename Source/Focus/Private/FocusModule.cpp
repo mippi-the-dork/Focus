@@ -79,6 +79,7 @@
 #include "Misc/Change.h"
 #include "Misc/ITransaction.h"
 #include "Engine/Level.h"
+#include "Math/NumericLimits.h"
 
 namespace Focus
 {
@@ -107,6 +108,39 @@ namespace Focus
 
     static TSharedPtr<FSlateVectorImageBrush> SelectionUnlocked;
     static TSharedPtr<FSlateVectorImageBrush> SelectionLocked;
+
+    // Individually tinted, full-canvas vector silhouettes traced from the
+    // three supplied miniwidget illustrations. Shared ownership keeps the
+    // SVG brushes alive for the lifetime of every Outliner row that uses them.
+    static TSharedPtr<FSlateVectorImageBrush> SimulationPieces[6];
+    static TSharedPtr<FSlateVectorImageBrush> PhysicsEventPieces[3];
+    static TSharedPtr<FSlateVectorImageBrush> NetworkPieces[3];
+
+    static void LoadGeometricCategoryIcons()
+    {
+        const TSharedPtr<IPlugin> Plugin = IPluginManager::Get().FindPlugin(TEXT("Focus"));
+        if (!Plugin) return;
+        const FString Resources = FPaths::Combine(Plugin->GetBaseDir(), TEXT("Resources"));
+        auto Load = [&Resources](const TCHAR* Prefix, TSharedPtr<FSlateVectorImageBrush>* Pieces,
+            int32 Count, const FVector2D& Size)
+        {
+            for (int32 Index = 0; Index < Count; ++Index)
+            {
+                const FString Filename = FPaths::Combine(Resources,
+                    FString::Printf(TEXT("focus-%s-%d.svg"), Prefix, Index));
+                if (!IFileManager::Get().FileExists(*Filename))
+                {
+                    UE_LOG(LogTemp, Warning, TEXT("Focus: miniwidget SVG missing: %s"), *Filename);
+                    continue;
+                }
+                Pieces[Index] = MakeShared<FSlateVectorImageBrush>(Filename, Size,
+                    FLinearColor::White, ESlateBrushTileType::NoTile);
+            }
+        };
+        Load(TEXT("simulation"), SimulationPieces, 6, FVector2D(18.f, 16.3f));
+        Load(TEXT("physics"), PhysicsEventPieces, 3, FVector2D(16.f, 16.f));
+        Load(TEXT("network"), NetworkPieces, 3, FVector2D(18.f, 15.6f));
+    }
     static void LoadSelectionIcons()
     {
         const TSharedPtr<IPlugin> Plugin = IPluginManager::Get().FindPlugin(TEXT("Focus"));
@@ -810,6 +844,154 @@ private:
     int32 PressedChoice = INDEX_NONE;
 };
 
+// Six-triangle Simulation, three-pill Physics Events, and the three-piece
+// Network emblem use one light Slate widget per category, not one SButton per
+// property. Each vector silhouette covers the whole, fixed canvas but only
+// contains its own opaque shape. Native per-property state determines tint;
+// geometry and hit regions do not change when a property becomes unavailable.
+class SFocusRadialCategory final : public SLeafWidget
+{
+public:
+    enum class EDesign : uint8 { Simulation, PhysicsEvents, Network };
+    SLATE_BEGIN_ARGS(SFocusRadialCategory) {}
+        SLATE_ARGUMENT(EDesign, Design)
+        SLATE_ARGUMENT(TFunction<bool(int32)>, Available)
+        SLATE_ARGUMENT(TFunction<void(int32)>, Toggle)
+        SLATE_ARGUMENT(TFunction<FLinearColor(int32)>, Tint)
+        SLATE_ARGUMENT(TFunction<FText(int32)>, Tooltip)
+    SLATE_END_ARGS()
+
+    void Construct(const FArguments& Args)
+    {
+        Design = Args._Design;
+        Available = Args._Available;
+        Toggle = Args._Toggle;
+        Tint = Args._Tint;
+        Tooltip = Args._Tooltip;
+        SetToolTipText(TAttribute<FText>::CreateLambda([this]
+        {
+            return Tooltip(HoveredChoice);
+        }));
+    }
+
+    static FVector2D SizeFor(EDesign InDesign)
+    {
+        switch (InDesign)
+        {
+        case EDesign::Simulation: return FVector2D(18.f, 16.3f);
+        case EDesign::PhysicsEvents: return FVector2D(16.f, 16.f);
+        case EDesign::Network: return FVector2D(18.f, 15.6f);
+        }
+        return FVector2D(18.f, 18.f);
+    }
+
+    virtual FVector2D ComputeDesiredSize(float) const override { return SizeFor(Design); }
+
+    virtual int32 OnPaint(const FPaintArgs&, const FGeometry& Geometry,
+        const FSlateRect&, FSlateWindowElementList& Elements, int32 Layer,
+        const FWidgetStyle&, bool) const override
+    {
+        const TSharedPtr<FSlateVectorImageBrush>* Pieces = nullptr;
+        int32 Count = 0;
+        switch (Design)
+        {
+        case EDesign::Simulation: Pieces = Focus::SimulationPieces; Count = 6; break;
+        case EDesign::PhysicsEvents: Pieces = Focus::PhysicsEventPieces; Count = 3; break;
+        case EDesign::Network: Pieces = Focus::NetworkPieces; Count = 3; break;
+        }
+        if (!Pieces) return Layer;
+        for (int32 Index = 0; Index < Count; ++Index)
+        {
+            if (!Pieces[Index].IsValid()) continue;
+            FSlateDrawElement::MakeBox(Elements, Layer, Geometry.ToPaintGeometry(),
+                Pieces[Index].Get(), ESlateDrawEffect::None, Tint(Index));
+        }
+        return Layer;
+    }
+
+    virtual void OnMouseEnter(const FGeometry& Geometry, const FPointerEvent& Event) override
+    {
+        SLeafWidget::OnMouseEnter(Geometry, Event);
+        HoveredChoice = ChoiceAt(Geometry, Event);
+    }
+
+    virtual FReply OnMouseMove(const FGeometry& Geometry, const FPointerEvent& Event) override
+    {
+        HoveredChoice = ChoiceAt(Geometry, Event);
+        return HasMouseCapture() ? FReply::Handled() : FReply::Unhandled();
+    }
+
+    virtual FReply OnMouseButtonDown(const FGeometry& Geometry, const FPointerEvent& Event) override
+    {
+        if (Event.GetEffectingButton() != EKeys::LeftMouseButton) return FReply::Unhandled();
+        PressedChoice = ChoiceAt(Geometry, Event);
+        if (!Available(PressedChoice)) return FReply::Unhandled();
+        return FReply::Handled().CaptureMouse(SharedThis(this));
+    }
+
+    virtual FReply OnMouseButtonUp(const FGeometry& Geometry, const FPointerEvent& Event) override
+    {
+        if (Event.GetEffectingButton() != EKeys::LeftMouseButton || !HasMouseCapture())
+            return FReply::Unhandled();
+        const int32 ReleasedChoice = ChoiceAt(Geometry, Event);
+        if (Geometry.IsUnderLocation(Event.GetScreenSpacePosition()) &&
+            ReleasedChoice == PressedChoice && Available(ReleasedChoice))
+        {
+            Toggle(ReleasedChoice);
+        }
+        PressedChoice = INDEX_NONE;
+        return FReply::Handled().ReleaseMouseCapture();
+    }
+
+private:
+    int32 ChoiceAt(const FGeometry& Geometry, const FPointerEvent& Event) const
+    {
+        // Choose the nearest segment center, so invisible hit regions fill the
+        // tiny spaces between shapes. No hit target extends beyond the widget.
+        // The reference coordinates match the exact source artwork (3x PNG).
+        const FVector2D Size = Geometry.GetLocalSize();
+        const FVector2D Local = Geometry.AbsoluteToLocal(Event.GetScreenSpacePosition());
+        const float X = Size.X > 0.f ? Local.X / Size.X : 0.f;
+        const float Y = Size.Y > 0.f ? Local.Y / Size.Y : 0.f;
+        if (Design == EDesign::PhysicsEvents)
+            return FMath::Clamp(FMath::FloorToInt(Y * 3.f), 0, 2);
+
+        static const FVector2D SimulationCenters[6] = {
+            FVector2D(26.f, 7.f), FVector2D(42.f, 15.f),
+            FVector2D(42.f, 32.f), FVector2D(26.f, 41.f),
+            FVector2D(11.f, 32.f), FVector2D(11.f, 15.f)
+        };
+        static const FVector2D NetworkCenters[3] = {
+            FVector2D(26.f, 15.f), FVector2D(12.f, 36.f),
+            FVector2D(40.f, 36.f)
+        };
+        const FVector2D* Centers = Design == EDesign::Simulation ? SimulationCenters : NetworkCenters;
+        const int32 Count = Design == EDesign::Simulation ? 6 : 3;
+        const FVector2D Canvas = Design == EDesign::Simulation ? FVector2D(53.f, 48.f) : FVector2D(52.f, 45.f);
+        const FVector2D Point(X * Canvas.X, Y * Canvas.Y);
+        float SmallestDistance = TNumericLimits<float>::Max();
+        int32 Closest = 0;
+        for (int32 Index = 0; Index < Count; ++Index)
+        {
+            const float Distance = (Point - Centers[Index]).SizeSquared();
+            if (Distance < SmallestDistance)
+            {
+                SmallestDistance = Distance;
+                Closest = Index;
+            }
+        }
+        return Closest;
+    }
+
+    EDesign Design = EDesign::Simulation;
+    TFunction<bool(int32)> Available;
+    TFunction<void(int32)> Toggle;
+    TFunction<FLinearColor(int32)> Tint;
+    TFunction<FText(int32)> Tooltip;
+    int32 HoveredChoice = 0;
+    int32 PressedChoice = INDEX_NONE;
+};
+
 // A vertical three-way selector uses the same visual footprint as other Focus
 // category icons. It always fits in a 20-unit Outliner row, and is centered by
 // the existing category-level VAlign when Stem increases the row height.
@@ -1465,31 +1647,100 @@ class FFocusColumn : public ISceneOutlinerColumn
         }
         return FText::FromString(Def.Symbol);
     }
-    static FText QuickTooltip(const FRowState& Row, int32 Index)
+    static const TCHAR* QuickDescription(int32 Index)
+    {
+        // Match FocusQuick::Definitions() order. Keep explanations about the
+        // native property separate from per-row state and click instructions.
+        switch (Index)
+        {
+        case 0: return TEXT("Simulates rigid-body physics on eligible primitive components. Dynamic physics can move the component under forces and collisions. Collision and a compatible mobility setting may be required.");
+        case 1: return TEXT("Allows world gravity to affect a physics-simulated primitive component. This does not start physics simulation by itself.");
+        case 2: return TEXT("Prevents radial impulse events from applying an instantaneous velocity change to this primitive component.");
+        case 3: return TEXT("Prevents continuous radial force effects from acting on this primitive component. Separate from radial impulses.");
+        case 4: return TEXT("Allows damage events to impart an impulse to a primitive component when supported by its physics setup. This does not enable damage or physics simulation by itself.");
+        case 5: return TEXT("Enables the Actor async physics tick where supported. Physics-tick scheduling is distinct from the regular game-thread tick.");
+        case 6: return TEXT("Enables rigid-body collision hit notifications on eligible primitive components. Collision settings must also allow the relevant contacts.");
+        case 7: return TEXT("Enables overlap event generation for a primitive component. Both objects and their collision responses must allow overlap events.");
+        case 8: return TEXT("Enables physics wake/sleep notifications for supported primitive components. These events depend on the component participating in physics simulation.");
+        case 9: return TEXT("Controls whether this primitive or light component uses Lighting Channel 0. Lighting channels filter interactions with lights set to the same channel.");
+        case 10: return TEXT("Controls whether this primitive or light component uses Lighting Channel 1. A light and the receiving primitive must share a channel to interact.");
+        case 11: return TEXT("Controls whether this primitive or light component uses Lighting Channel 2. Lighting channels do not replace the normal light visibility and mobility rules.");
+        case 12: return TEXT("Controls whether the eligible primitive or light component casts shadows. The final result also depends on the light, material, and rendering settings.");
+        case 13: return TEXT("Limits supported Actors to the main world instead of other world contexts where this property is respected.");
+        case 14: return TEXT("Marks the Actor as editor-only, excluding it from cooked gameplay content where supported. Use with care for gameplay references.");
+        case 15: return TEXT("Controls whether the Actor is eligible for World Partition spatial loading. Relevant only where World Partition applies.");
+        case 16: return TEXT("Controls whether the Actor participates in automatic Hierarchical Level of Detail (HLOD) generation where the world supports HLOD.");
+        case 17: return TEXT("Controls whether a placed Actor is loaded on clients as part of networked level loading. It does not enable Actor replication.");
+        case 18: return TEXT("Controls whether eligible primitive components replicate their physics state to autonomous proxies. Requires a suitable replicated physics/network setup.");
+        case 19: return TEXT("Controls the Static Mesh Actor movement-replication setting. This does not make unrelated Actor or component types replicate automatically.");
+        case 20: return TEXT("Allows an Actor component to contribute to navigation data. Navigation rebuild and supported collision geometry determine the final result.");
+        case 21: return TEXT("Marks an eligible shape component as a dynamic obstacle for navigation generation where supported.");
+        case 22: return TEXT("Fills navigable space beneath eligible primitive collision for navigation generation, as supported by the navmesh configuration.");
+        case 23: return TEXT("Uses filled convex-volume rasterization for eligible primitive collision when generating navigation data.");
+        case 24: return TEXT("Sets how scene components may move: Static (not movable), Stationary (limited movement), or Movable. Other components and lighting features may restrict choices.");
+        case 25: return TEXT("Overrides the mesh LOD selection. 0 uses automatic LOD; 1 forces mesh LOD 0; 2 forces mesh LOD 1, and so on. Available LODs depend on each mesh asset.");
+        case 26: return TEXT("Prevents supported primitives from being removed by distance-culling systems that honor this setting. It does not disable every visibility or streaming mechanism.");
+        case 27: return TEXT("Allows Cull Distance Volumes to influence culling for eligible primitive components. The level must contain a suitable Cull Distance Volume.");
+        default: return TEXT("Changes a supported instance-editable Unreal Engine property.");
+        }
+    }
+
+    static FText QuickTooltip(const FRowState& Row, int32 Index, int32 MobilityChoice = INDEX_NONE)
     {
         const auto& Def = FocusQuick::Definitions()[Index];
         const int32 State = Row.QuickState(Index);
-        const FString Status = State == -1 ? TEXT("Not applicable to this Actor's instance-editable properties") :
-            State == 2 ? TEXT("Mixed across eligible Actors or Components") :
-            Def.Kind == FocusQuick::EKind::Mobility ? (Row.QuickFirst[Index] == 0 ? TEXT("Static") : Row.QuickFirst[Index] == 1 ? TEXT("Stationary") : TEXT("Movable")) :
-            Def.Kind == FocusQuick::EKind::ForcedLOD ? FString::Printf(TEXT("Forced LOD model %d (0 = Automatic)"), Row.QuickFirst[Index]) :
-            State == 1 ? TEXT("Enabled") : TEXT("Disabled");
-        FString LODDetails;
-        if (Def.Kind == FocusQuick::EKind::ForcedLOD && State >= 0)
+        const int32 EligibleCount = Row.QuickTotal.IsValidIndex(Index) ? Row.QuickTotal[Index] : 0;
+
+        FString Current;
+        if (State < 0)
+            Current = TEXT("Not Applicable (no eligible instance-editable target in this row)");
+        else if (State == 2)
+            Current = TEXT("Mixed (eligible targets have different values)");
+        else if (Def.Kind == FocusQuick::EKind::Mobility)
+            Current = Row.QuickFirst[Index] == 0 ? TEXT("Static") :
+                Row.QuickFirst[Index] == 1 ? TEXT("Stationary") : TEXT("Movable");
+        else if (Def.Kind == FocusQuick::EKind::ForcedLOD)
+            Current = FString::Printf(TEXT("%d (%s)"), Row.QuickFirst[Index],
+                Row.QuickFirst[Index] == 0 ? TEXT("Automatic") : TEXT("forced"));
+        else
+            Current = State == 1 ? TEXT("Enabled") : TEXT("Disabled");
+
+        FString Tip = FString(Def.Label) + TEXT("\n") + QuickDescription(Index) +
+            TEXT("\n\nCurrent: ") + Current +
+            FString::Printf(TEXT("\nEligible targets in this row: %d"), EligibleCount);
+
+        if (Def.Kind == FocusQuick::EKind::ForcedLOD)
         {
-            if (Row.QuickMinAvailableLOD.IsValidIndex(Index) && Row.QuickMinAvailableLOD[Index] != INDEX_NONE)
+            if (State >= 0 && Row.QuickMinAvailableLOD.IsValidIndex(Index) &&
+                Row.QuickMinAvailableLOD[Index] != INDEX_NONE)
             {
-                LODDetails = FString::Printf(TEXT("\nAvailable forced values for all eligible meshes: 0..%d (0 = Automatic)."),
+                Tip += FString::Printf(TEXT("\nCommon valid range: 0 to %d (0 = Automatic)."),
                     Row.QuickMinAvailableLOD[Index]);
             }
-            if (Row.QuickInvalidLOD.IsValidIndex(Index) && Row.QuickInvalidLOD[Index])
+            if (State >= 0 && Row.QuickInvalidLOD.IsValidIndex(Index) && Row.QuickInvalidLOD[Index])
             {
-                LODDetails += TEXT("\nOUT OF RANGE: at least one mesh does not have the requested LOD. The number is red when a single value is shown.");
+                Tip += TEXT("\nOUT OF RANGE: at least one eligible mesh lacks the requested LOD. The value uses the Alert color.");
             }
+            // SFocusLODNumber appends its own mouse/keyboard instructions.
         }
-        return FText::FromString(FString(Def.Label) + TEXT("\n") + Status + LODDetails +
-            TEXT("\n\nFocus edits only properties exposed as instance-editable by Unreal. Applies to eligible components of the scoped Actors. Mixed values can be unified.") +
-            TEXT("\nEdit-locked Actors are skipped. All changes support Undo/Redo."));
+        else if (Def.Kind == FocusQuick::EKind::Mobility)
+        {
+            const TCHAR* Option = MobilityChoice == 0 ? TEXT("Static") :
+                MobilityChoice == 1 ? TEXT("Stationary") : TEXT("Movable");
+            Tip += FString(TEXT("\n\nHovered option: ")) + Option + TEXT(" (top / middle / bottom).");
+            Tip += State < 0 ?
+                TEXT("\nNo applicable component can be edited here.") :
+                FString(TEXT("\nClick to set ")) + Option + TEXT(" on eligible scene components.");
+        }
+        else
+        {
+            Tip += State < 0 ? TEXT("\n\nUnavailable: this row has no matching editable Actor or Component property.") :
+                State == 1 ? TEXT("\n\nClick to disable on eligible targets.") :
+                TEXT("\n\nClick to enable on eligible targets, including any Mixed values.");
+        }
+        Tip += TEXT("\n\nAffects currently loaded Actors in this row, including its descendants and groups. If this row is selected, the action also covers the other selected rows. Component properties affect each eligible component.");
+        Tip += TEXT("\nEdit-locked Actors are skipped. Changes support Undo/Redo. Unreal may impose additional property or collision requirements.");
+        return FText::FromString(Tip);
     }
     static void ApplyQuick(const TSharedRef<FRowState>& Row, int32 Index, int32 NewValue)
     {
@@ -1537,8 +1788,7 @@ class FFocusColumn : public ISceneOutlinerColumn
                      [SNew(SButton).ButtonStyle(FAppStyle::Get(), "SimpleButton")
                       .ContentPadding(0).HAlign(HAlign_Center).VAlign(VAlign_Center)
                       .ToolTipText_Lambda([Row, Index, Choice] {
-                          return FText::FromString(FString(FocusQuick::Definitions()[Index].Label) +
-                              (Choice == 0 ? TEXT(": Static") : Choice == 1 ? TEXT(": Stationary") : TEXT(": Movable")));
+                          return QuickTooltip(*Row, Index, Choice);
                       })
                       .IsEnabled_Lambda([Row, Index] { return Row->QuickState(Index) >= 0; })
                       .OnClicked_Lambda([Row, Index, Choice] { ApplyQuick(Row, Index, Choice); return FReply::Handled(); })
@@ -1592,6 +1842,23 @@ class FFocusColumn : public ISceneOutlinerColumn
         FocusQuick::ECategory Category, int32 First)
     {
         using namespace FocusQuick;
+        if (Category == ECategory::Simulation || Category == ECategory::PhysicsEvents || Category == ECategory::Network)
+        {
+            const auto Design = Category == ECategory::Simulation ? SFocusRadialCategory::EDesign::Simulation :
+                Category == ECategory::PhysicsEvents ? SFocusRadialCategory::EDesign::PhysicsEvents :
+                SFocusRadialCategory::EDesign::Network;
+            const FVector2D Size = SFocusRadialCategory::SizeFor(Design);
+            return SNew(SBox).WidthOverride(Size.X).HeightOverride(Size.Y)
+                [SNew(SFocusRadialCategory)
+                 .Design(Design)
+                 .Available([Row, First](int32 Choice) { return Row->QuickState(First + Choice) >= 0; })
+                 .Toggle([Row, First](int32 Choice) {
+                     const int32 Index = First + Choice;
+                     ApplyQuick(Row, Index, Row->QuickState(Index) == 1 ? 0 : 1);
+                 })
+                 .Tint([Row, First](int32 Choice) { return QuickColor(*Row, First + Choice); })
+                 .Tooltip([Row, First](int32 Choice) { return QuickTooltip(*Row, First + Choice); })];
+        }
         if (Category == ECategory::Lighting)
         {
             // Lighting-Focus.svg geometry, optically scaled to match core Focus icons:
@@ -1649,11 +1916,7 @@ class FFocusColumn : public ISceneOutlinerColumn
                  .State([Row, First] { return Row->QuickState(First); })
                  .Value([Row, First] { return Row->QuickFirst.IsValidIndex(First) ? Row->QuickFirst[First] : 0; })
                  .Apply([Row, First](int32 Choice) { ApplyQuick(Row, First, Choice); })
-                 .Tooltip([Row, First](int32 Choice) {
-                     const TCHAR* Name = Choice == 0 ? TEXT("Static") : Choice == 1 ? TEXT("Stationary") : TEXT("Movable");
-                     return FText::Format(NSLOCTEXT("Focus", "MobilityOptionTooltip", "Mobility: {0}\n{1}"),
-                         FText::FromString(Name), QuickTooltip(*Row, First));
-                 })];
+                 .Tooltip([Row, First](int32 Choice) { return QuickTooltip(*Row, First, Choice); })];
         }
         if (Category == ECategory::LOD)
         {
@@ -1683,6 +1946,93 @@ class FFocusColumn : public ISceneOutlinerColumn
         return SNullWidget::NullWidget;
     }
 
+    // Every checkbox in the Focus header menu explains its purpose and shows
+    // the exact controls that enabling that category exposes. Property names
+    // for native quick options come directly from Definitions() so the menu
+    // cannot silently drift out of sync with the miniwidgets.
+    static FText CategoryMenuTooltip(FocusQuick::ECategory Category)
+    {
+        using FocusQuick::ECategory;
+        const TCHAR* Purpose = TEXT("");
+        switch (Category)
+        {
+        case ECategory::Visual:
+            Purpose = TEXT("Manage Actor visibility and temporarily isolate parts of the scene.");
+            break;
+        case ECategory::Interaction:
+            Purpose = TEXT("Protect Actors from viewport selection, transform changes, or other supported edits.");
+            break;
+        case ECategory::Simulation:
+            Purpose = TEXT("Adjust physics simulation, gravity, force responses, and physics ticking.");
+            break;
+        case ECategory::PhysicsEvents:
+            Purpose = TEXT("Control collision hit, overlap, and physics wake-event generation.");
+            break;
+        case ECategory::Lighting:
+            Purpose = TEXT("Choose lighting channels and whether eligible components cast shadows.");
+            break;
+        case ECategory::World:
+            Purpose = TEXT("Adjust Actor world restrictions, editor-only status, loading, and HLOD participation.");
+            break;
+        case ECategory::Network:
+            Purpose = TEXT("Adjust client loading and supported replicated physics or movement options.");
+            break;
+        case ECategory::Navigation:
+            Purpose = TEXT("Control how eligible components contribute to navigation generation.");
+            break;
+        case ECategory::Mobility:
+            Purpose = TEXT("Choose the mobility setting for eligible Scene Components.");
+            break;
+        case ECategory::LOD:
+            Purpose = TEXT("Override mesh LOD selection and control distance-culling behavior.");
+            break;
+        default:
+            break;
+        }
+
+        FString Options;
+        auto AppendOption = [&Options](const TCHAR* Label)
+        {
+            Options += FString::Printf(TEXT("\n  - %s"), Label);
+        };
+        if (Category == ECategory::Visual)
+        {
+            AppendOption(TEXT("Hide in Editor"));
+            AppendOption(TEXT("Hidden in Game"));
+            AppendOption(TEXT("Solo"));
+        }
+        else if (Category == ECategory::Interaction)
+        {
+            AppendOption(TEXT("Selection Lock"));
+            AppendOption(TEXT("Unlocked (protection level)"));
+            AppendOption(TEXT("Transform Lock"));
+            AppendOption(TEXT("Edit Lock"));
+        }
+        else if (Category == ECategory::Mobility)
+        {
+            AppendOption(TEXT("Static"));
+            AppendOption(TEXT("Stationary"));
+            AppendOption(TEXT("Movable"));
+        }
+        else
+        {
+            for (const FocusQuick::FDef& Def : FocusQuick::Definitions())
+            {
+                if (Def.Category == Category)
+                {
+                    AppendOption(Def.Label);
+                }
+            }
+        }
+
+        const bool bVisibleByDefault = Category == ECategory::Visual || Category == ECategory::Interaction;
+        return FText::FromString(FString::Printf(
+            TEXT("%s\n\n%s\n\nControls:%s\n\nCheck to show this category in the World Outliner. "
+                 "Changes take effect immediately and persist for this project.\nDefault: %s."),
+            FocusQuick::CategoryName(Category), Purpose, *Options,
+            bVisibleByDefault ? TEXT("Visible") : TEXT("Hidden")));
+    }
+
     static TSharedRef<SWidget> CategoryMenu()
     {
         TSharedRef<SVerticalBox> Items = SNew(SVerticalBox);
@@ -1690,7 +2040,9 @@ class FFocusColumn : public ISceneOutlinerColumn
         {
             const auto Category = static_cast<FocusQuick::ECategory>(Index);
             Items->AddSlot().AutoHeight().Padding(3.f, 1.f)
-                [SNew(SCheckBox).IsChecked_Lambda([Category] {
+                [SNew(SCheckBox)
+                 .ToolTipText_Lambda([Category] { return CategoryMenuTooltip(Category); })
+                 .IsChecked_Lambda([Category] {
                     return FocusQuick::CategoryVisible(Category) ? ECheckBoxState::Checked : ECheckBoxState::Unchecked;
                 }).OnCheckStateChanged_Lambda([Category](ECheckBoxState NewState) {
                     FocusQuick::SetCategoryVisible(Category, NewState == ECheckBoxState::Checked);
@@ -1705,6 +2057,8 @@ class FFocusColumn : public ISceneOutlinerColumn
             + SVerticalBox::Slot().AutoHeight()[Items]
             + SVerticalBox::Slot().AutoHeight().Padding(3.f, 5.f, 3.f, 2.f)
             [SNew(SButton).ButtonStyle(FAppStyle::Get(), "SimpleButton")
+             .ToolTipText(NSLOCTEXT("Focus", "ResetCategoriesTip",
+                 "Restore the default category layout: show Visual and Interaction, and hide the other eight categories.\nChanges are saved for this project and do not change Actor or Component properties."))
              .OnClicked_Lambda([] {
                  for (int32 Index = 0; Index < static_cast<int32>(FocusQuick::ECategory::Count); ++Index)
                  {
@@ -1822,7 +2176,7 @@ public:
             + SHorizontalBox::Slot().AutoWidth().VAlign(VAlign_Center).HAlign(HAlign_Right)
                 [SNew(SComboButton).ButtonStyle(FAppStyle::Get(), "SimpleButton")
                  .HasDownArrow(false).ContentPadding(FMargin(3.f, 0.f))
-                 .ToolTipText(NSLOCTEXT("Focus", "SettingsTip", "Show or hide Focus categories"))
+                 .ToolTipText(NSLOCTEXT("Focus", "SettingsTip", "Show or hide Focus control categories in this World Outliner.\nVisual and Interaction are shown by default; eight optional groups start hidden.\nYour choices are saved for this project.\nChange state colors in Editor Preferences > Plugins > Focus."))
                  .OnGetMenuContent_Lambda([] { return CategoryMenu(); })
                  .ButtonContent()[SNew(STextBlock)
                      .Text(FText::FromString(TEXT("...")))
@@ -1889,7 +2243,10 @@ public:
                 ++Index;
             }
 
-            if (Category == FocusQuick::ECategory::Lighting ||
+            if (Category == FocusQuick::ECategory::Simulation ||
+                Category == FocusQuick::ECategory::PhysicsEvents ||
+                Category == FocusQuick::ECategory::Network ||
+                Category == FocusQuick::ECategory::Lighting ||
                 Category == FocusQuick::ECategory::World ||
                 Category == FocusQuick::ECategory::Navigation ||
                 Category == FocusQuick::ECategory::Mobility ||
@@ -2316,6 +2673,7 @@ public:
         }
         Focus::LoadSoloIcons();
         Focus::LoadSelectionIcons();
+        Focus::LoadGeometricCategoryIcons();
         NativePropertyChanged = FCoreUObjectDelegates::OnObjectPropertyChanged.AddLambda([](UObject* Object, FPropertyChangedEvent&) {
             if (!Cast<AActor>(Object) && !Cast<UActorComponent>(Object)) return;
             ActiveFocusColumns.RemoveAll([](const TWeakPtr<FFocusColumn>& Column) { return !Column.IsValid(); });
