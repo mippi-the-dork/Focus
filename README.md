@@ -9,7 +9,7 @@ Control individual Actors or operate on supported folders, groups, attached hier
 ![Unreal Engine](https://img.shields.io/badge/Unreal%20Engine-5.8.x-black?logo=unrealengine)
 ![Platform](https://img.shields.io/badge/Platform-Windows%2064--bit-blue)
 ![Type](https://img.shields.io/badge/Plugin-Editor%20Only-green)
-![Version](https://img.shields.io/badge/Version-2.0.2-blue)
+![Version](https://img.shields.io/badge/Version-2.1.0-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 ![Focus controls in the Unreal Engine World Outliner](Doc/Images/Focus-Hero.png)
@@ -24,7 +24,7 @@ Focus is a compact set of **Outliner Quick Controls** for scene visibility, sele
 - Prevent accidental viewport selection, Actor movement, and supported Details editing with **Selection Lock**, **Transform Lock**, and **Edit Lock**.
 - Optionally expose **28 quick-property controls** across eight additional categories.
 - Apply eligible operations across loaded Actors, folders, attachments, groups, and multi-selections, with Undo/Redo.
-- Show only the categories you need. Customize the control colors to suit your editor layout.
+- Show only the categories you need, customize persistent and session-only colors, and decide which Visual and Interaction changes should be saved.
 
 ---
 
@@ -34,7 +34,7 @@ Focus is a compact set of **Outliner Quick Controls** for scene visibility, sele
 
 Focus adds a column to Unreal Engine's World Outliner. Open the **three-dots (`...`) menu at the far right of the Focus column header** to choose which categories appear. Each category has a checkbox, and hovering it shows the category's purpose and a complete list of controls it contains. Changes take effect immediately and persist in your editor-per-project preferences without altering the level.
 
-**Visual and Interaction are visible by default.** The other eight categories, **Simulation, Physics Events, Lighting, World, Network, Navigation, Mobility, and LOD**, are hidden by default. Existing visibility preferences remain intact when updating. The menu's **Reset to Visual + Interaction** button restores the default set. The category order is fixed.
+**Visual and Interaction are visible by default.** The other eight categories, **Simulation, Physics Events, Lighting, World, Network, Navigation, Mobility, and LOD**, are hidden by default. The menu's **Reset to Visual + Interaction** button restores the default set. **Restore Temporary Changes** separately discards outstanding session-only Visual and Interaction edits without changing category visibility or persistence preferences. The category order is fixed.
 
 Each category uses a distinct miniwidget:
 
@@ -57,17 +57,39 @@ Category spacing is intentionally compact around Simulation and Network: 4 units
 
 ### State colors
 
-Customize the Focus control colors in **Edit > Editor Preferences > Plugins > Focus**, under **Control State Colors**. This is separate from the Focus header menu: Editor Preferences changes how states *look*, while the header menu changes which *categories appear*.
+Focus uses two independently configurable color palettes in **Edit > Editor Preferences > Plugins > Focus**. **Control State Colors** apply to persistent controls and to the eight native quick-property categories. **Session-Only State Colors** apply to Visual and Interaction controls when their individual persistence options are turned off.
 
-| Setting | Default | Meaning |
-|---|---|---|
-| Enabled Color | White | A supported property is enabled or the mobility choice is selected |
-| Disabled Color | `#616161` | A supported property is disabled or the mobility choice is not selected |
-| Mixed Color | Yellow | Eligible values disagree within the current Actor, hierarchy, or selection |
-| Not Applicable Color | `#242424` | No eligible, instance-editable property is available for this control |
-| Alert Color | Red | Warnings such as out-of-range forced LOD values and supported strong-lock indicators |
+| State | Persistent default | Session-only default | Meaning |
+|---|---|---|---|
+| Enabled | White | Blue (`#2196F3`) | A control is active or a supported option is selected |
+| Disabled | `#616161` | `#616161` | A control is inactive or an option is not selected |
+| Mixed | Yellow | Orange (`#FF9800`) | Eligible targets have different values |
+| Not Applicable | `#242424` | `#242424` | The control cannot be edited for the current target |
+| Alert | Red | Pink (`#FF4DA6`) | A warning or strong protection state |
 
-All five colors are configurable and saved to editor user settings. The gray defaults are treated as sRGB when converted for Slate, so their appearance matches the specified values. Changing these colors never changes the underlying Actor or Component properties.
+Each of the ten colors is independently customizable in Editor Preferences. The default grays match between palettes, but they can be changed separately. The color settings affect presentation only, not Actor or Component property values.
+
+For **Hide in Editor**, an active hidden dot uses the **Enabled** color (white or blue), not the Mixed color. A genuinely Mixed selection uses yellow or orange. **Hidden in Game** uses the **Alert** color (red or pink) when active; this is distinct from the Mixed color. Tooltips identify the current persistence mode even where the two palettes share the same gray.
+
+### Visual and Interaction persistence
+
+Open **Edit > Editor Preferences > Plugins > Focus** and expand **Visual & Interaction Persistence** to choose whether changes made through Focus's Visual and Interaction micro-widgets are saved with the affected Actor or level. **All five persistence options are enabled by default.** The Visual and Interaction parent checkboxes switch all child options in their group; each child can also be configured independently.
+
+| Category | Independently configurable controls |
+|---|---|
+| Visual | Hide in Editor, Hidden in Game, Solo |
+| Interaction | Selection Lock, Protection Lock (Transform Lock and Edit Lock share one setting) |
+
+- **Persistence On:** Focus changes use their normal saved behavior. Save the affected Actor or level package to keep those changes across reloads and editor sessions.
+- **Persistence Off:** Changes made through the corresponding **Focus micro-widget** are session-only. The live editor value changes, but Focus retains the previous persistent value for later saves and reloads. Session-only Hidden in Game clicks are designed not to dirty an otherwise clean Actor package or request checkout on their own.
+- **Off to On:** The current value stays as it is. Any outstanding temporary change becomes eligible for the next ordinary save. Switching persistence on does not automatically save the Actor or level.
+- **Native editing:** Changes made through Unreal Engine's own Details panel, native Outliner commands, or other native editing paths retain Unreal's normal save and checkout behavior. Focus's persistence setting does not make those tools session-only. A later native edit to the same property supersedes that property's temporary Focus change.
+
+The other eight categories, **Simulation, Physics Events, Lighting, World, Network, Navigation, Mobility, and LOD**, continue to edit native properties persistently. Their behavior and colors are not governed by Visual and Interaction persistence settings.
+
+Use **Restore Temporary Changes** in the Focus header menu to discard outstanding session-only Focus edits across currently loaded Actors and return those controls to their pre-temporary values. This operation does not change persistence preferences, commit changes, or undo unrelated native edits. It applies to tracked temporary changes, not just the currently selected Outliner row.
+
+Session-only editing of native properties such as Hidden in Game and movement locking requires additional save-workflow testing. See **Limitations** before relying on this behavior for production levels.
 
 ### Native quick property editing
 
@@ -89,27 +111,27 @@ No additional editor window is required.
 
 ### Hide in Editor
 
-Temporarily hide Actors from editor viewports without affecting their Hidden in Game state.
+Hide Actors from editor viewports without affecting their Hidden in Game state. Focus can save this visibility choice or keep Focus-initiated changes session-only, according to the Hide in Editor persistence setting.
 
 ### Hidden in Game
 
-Control Unreal's existing Hidden in Game property directly from the World Outliner.
+Control Unreal's existing Hidden in Game property directly from the World Outliner. Session-only Focus edits can be enabled without changing the persistence of native Details or Outliner actions.
 
 ### Solo
 
-Temporarily isolate Actors, folders, or hierarchies while working in the editor.
+Isolate Actors, folders, or hierarchies while working in the editor, with optional session-only Solo changes.
 
 ### Selection Lock
 
-Prevent Actors from being selected accidentally through the viewport while keeping them selectable through the World Outliner.
+Prevent accidental viewport selection while keeping Actors selectable in the World Outliner. Focus-initiated Selection Lock changes can be saved or session-only.
 
 ### Transform Lock
 
-Protect Actor location, rotation, and scale while leaving other properties editable.
+Protect Actor location, rotation, and scale while leaving other properties editable. Transform Lock and Edit Lock share the Protection Lock persistence setting.
 
 ### Edit Lock
 
-Protect supported Actor and Component editing while keeping their properties available for inspection.
+Protect supported Actor and Component editing while keeping their properties available for inspection. Edit Lock shares the Protection Lock persistence setting with Transform Lock.
 
 ### Simulation
 
@@ -220,7 +242,7 @@ Focus control changes participate in Unreal Engine's normal Undo and Redo workfl
 
 ### Persistent Settings
 
-Focus states can be saved with the affected Actor or level packages and restored later.
+Visual and Interaction states can be saved with the affected Actor or level packages, or kept session-only when the corresponding Focus persistence option is disabled.
 
 ### Editor Only
 
@@ -247,7 +269,7 @@ Focus works directly in the **World Outliner**. The standard layout keeps **Visu
 
 1. Locate an Actor, folder, group, or supported hierarchy in the Outliner. You can also select multiple rows before using a Focus control.
 2. Hover over the **individual miniwidget segment** you want to change. Its tooltip explains the native property, current value, eligible target count, and any known restrictions.
-3. Check the segment's state: **white** means enabled, **gray** means disabled, **yellow** indicates Mixed values, and **dark gray** means Not Applicable. The actual colors are configurable.
+3. Check the segment's state. Persistent controls use white for Enabled, yellow for Mixed, red for Alert, gray for Disabled, and dark gray for Not Applicable by default. Visual and Interaction controls configured as session-only instead use blue, orange, and pink for Enabled, Mixed, and Alert. All colors can be customized; Hidden in Game uses Alert red or pink when active.
 4. Click an applicable segment to toggle that property on eligible loaded targets. A Mixed toggle is enabled across eligible targets when clicked. Edit-locked Actors are skipped. Changes participate in Unreal's normal Undo/Redo workflow where supported.
 5. For **Mobility**, click the Static, Stationary, or Movable part of the vertical pill to choose that value. For **LOD**, click or scroll the upper number to adjust Forced LOD Model, use Alt + click to decrement, or double-click to type a value. Use the two lower bars to toggle culling properties separately.
 
@@ -255,7 +277,17 @@ Not every Actor has every property. For example, a physics setting may apply to 
 
 ### Customize appearance
 
-Open **Edit > Editor Preferences > Plugins > Focus** and expand **Control State Colors** to change the **Enabled**, **Disabled**, **Mixed**, **Not Applicable**, and **Alert** colors. These preferences affect the appearance of the widgets, not the native property values or the categories shown in the header menu.
+Open **Edit > Editor Preferences > Plugins > Focus** and expand **Control State Colors** to customize the persistent palette, or **Session-Only State Colors** to customize the alternate blue, orange, pink, and gray palette. The two palettes are independent. Color changes affect the appearance of the controls, not their underlying values.
+
+### Choose persistent or session-only controls
+
+1. In **Edit > Editor Preferences > Plugins > Focus**, open **Visual & Interaction Persistence**.
+2. Keep a checkbox enabled to save changes made through its Focus control normally, or disable it for session-only editing. The **Visual (all)** and **Interaction (all)** parent checkboxes change their respective child options together.
+3. Use the Visual and Interaction controls as usual. Active session-only states use blue instead of white, Mixed uses orange instead of yellow, and Alert uses pink instead of red. The disabled and unavailable defaults remain gray and dark gray.
+4. To **keep a temporary configuration**, turn persistence back on. The current state remains active and becomes eligible for your next ordinary save.
+5. To **discard outstanding temporary edits**, open the Focus header **`...` menu** and select **Restore Temporary Changes**. This restores tracked changes on currently loaded Actors without changing your persistence settings.
+
+These preferences apply only to edits initiated by Focus's Visual and Interaction controls. Editing a native property through Unreal's Details panel or a native Outliner action still follows Unreal's normal saving and checkout behavior. A session-only Hidden in Game click should not independently mark a clean Actor for saving; saving an Actor for another reason must not silently commit the temporary Focus value.
 
 ### Example workflows
 
@@ -263,8 +295,10 @@ Open **Edit > Editor Preferences > Plugins > Focus** and expand **Control State 
 - **Preparing scene lighting:** Show Lighting to inspect channel assignments and shadow casting across selected lights or primitives.
 - **Reviewing streaming and replication:** Show World and Network to inspect supported Actor loading, HLOD, client loading, and replication properties.
 - **Tuning traversal and visibility:** Show Navigation to inspect navmesh-affecting settings, or LOD to adjust the forced LOD and distance-culling properties on eligible meshes and components.
+- **Temporary level inspection:** Turn off persistence for Solo or Hide in Editor, isolate or hide Actors with Focus while investigating a scene, and then use **Restore Temporary Changes** to return to the previous saved arrangement.
+- **Keeping a temporary setup:** Temporarily adjust Visual or Interaction states through Focus, then turn their persistence options back on when you decide to keep the current configuration. Save the affected packages normally.
 
-Save Actor or level packages normally when you want changes to persistent Actor properties or Focus states to be retained. Interface category visibility and appearance preferences are saved separately as editor user settings.
+Save Actor or level packages normally when you want **persistent** Actor properties or Focus states to be retained. **Session-only** Focus changes are excluded from that saved configuration unless you re-enable persistence and save. Header category visibility, persistence preferences, and both color palettes are saved separately as editor user settings.
 
 The detailed guides that follow cover the original Visual and Interaction controls first, then all eight optional property categories in the order they appear in the Focus header menu.
 
@@ -285,6 +319,8 @@ When enabled:
 
 Use this when something needs to be temporarily removed from view while working.
 
+When **Hide in Editor persistence is on**, the hidden state can be saved with the Actor. When it is **off**, changes made by the Focus dot remain session-only. A fully hidden state uses **white** or **blue** depending on persistence; a Mixed row uses **yellow** or **orange**. Gray means visible. Hidden in Game is unaffected.
+
 ---
 
 ## Hidden in Game
@@ -294,6 +330,10 @@ The lower visibility control modifies Unreal's existing **Hidden in Game** prope
 When enabled, the Actor is hidden during gameplay according to Unreal's normal runtime behavior.
 
 This is separate from Hide in Editor.
+
+With **Hidden in Game persistence off**, clicking Focus's dot changes the property for the current session without intentionally marking an otherwise clean Actor package dirty or prompting checkout. The active dot is **red** when persistent or **pink** when session-only. Mixed uses **yellow** or **orange**; gray means off.
+
+If you change Hidden in Game through the **Details panel** or a native Outliner command instead, Unreal's ordinary edit and save behavior still applies. Focus's persistence preference does not override native editing.
 
 That separation allows an Actor to be:
 
@@ -333,6 +373,8 @@ When Solo is cleared, normal editor visibility returns.
 
 Solo does not change Hidden in Game.
 
+Use the **Solo persistence** checkbox to choose between saving Focus's Solo choices and keeping them temporary for the editor session. A session-only active Solo icon uses **blue** rather than white; Mixed uses **orange** rather than yellow. **Restore Temporary Changes** discards tracked temporary Solo changes along with other temporary Focus edits.
+
 ![Using Solo with Focus](Doc/Images/Focus-Solo.gif)
 
 ### Solo and Existing Visibility
@@ -359,6 +401,8 @@ When enabled:
     
 - Selection Lock does not prevent editing by itself.
     
+
+The **Selection Lock persistence** setting determines whether changes made through Focus are saved or session-only. With persistence off, active locks use the session-only blue palette; a Mixed state uses orange. Selection Lock does not prevent native property editing by itself.
 
 This is useful for Actors such as:
 
@@ -393,6 +437,8 @@ Other properties remain editable.
 Focus uses native Actor movement locking and a movement/transaction guard rather than replacing Unreal's viewport transform gizmo. The same Focus controls are available while using Unreal Engine's legacy or Interactive Tools Framework (ITF) gizmo system.
 
 This is useful when an Actor is in the correct place but still needs to remain otherwise editable.
+
+**Transform Lock and Edit Lock share one Protection Lock persistence option.** When it is off, changing the protection level through Focus remains session-only. Using Unreal's native Actor movement-lock command directly follows Unreal's normal saved behavior.
 
 ---
 
@@ -442,6 +488,8 @@ You can continue to:
 
 The purpose is to prevent accidental editing while still allowing developers to understand the Actor.
 
+The **Protection Lock** persistence setting applies to both Transform Lock and Edit Lock. An active Edit Lock uses the **Alert** color: red when persistent or pink when session-only. Turning persistence back on keeps the current protection level, which can then be saved normally.
+
 ---
 
 ## Protection Lock States
@@ -452,7 +500,7 @@ The protection control cycles through:
 Unlocked → Transform Lock → Edit Lock → Unlocked
 ```
 
-The visual state of the padlock indicates the current protection level.
+The visual state of the padlock indicates the current protection level. Both locked levels use the same **Protection Lock (Transform / Edit)** persistence checkbox, and the tooltip reports whether Focus changes are persistent or session-only.
 
 ![Transform Lock and Edit Lock in Focus](Doc/Images/Focus-Locking.gif)
 
@@ -722,45 +770,23 @@ The level structure remains unchanged while the editor becomes much easier to na
 
 # Saving Focus Settings
 
-There are two different kinds of persistence:
+Focus separates **editor interface preferences**, **persistent Actor settings**, and **session-only Visual and Interaction edits**:
 
-- **Header visibility and Editor Preferences colors:** saved as editor-per-project user preferences. They customize your own Focus interface, not the Actors or levels shared with teammates.
-- **Actor settings:** Focus Visual and Interaction states can be stored with Actor or level packages as described below; native quick properties persist through Unreal's normal Actor and Component property serialization.
+- **Interface preferences:** Category visibility, Visual and Interaction persistence checkboxes, and both state-color palettes are saved as editor-per-project user preferences. They do not modify Actors or levels.
+- **Persistent Focus edits:** With a Visual or Interaction persistence checkbox enabled, changes made through its Focus control can be stored with the affected Actor or level package when you save.
+- **Session-only Focus edits:** With that checkbox disabled, changes made through the corresponding Focus control remain active in the editor but are not intended to replace the last persistent value on disk. This affects only Focus-initiated Visual and Interaction edits; native Details and Outliner edits retain normal Unreal saving behavior.
+- **Other quick-property categories:** Simulation, Physics Events, Lighting, World, Network, Navigation, Mobility, and LOD change native properties with Unreal's regular persistent behavior.
 
-Focus states can persist between:
+The persistent Visual and Interaction states include **Hide in Editor, Hidden in Game, Solo, Selection Lock, Transform Lock, and Edit Lock**. Hidden in Game and native movement locking use Actor properties; Focus's other Visual and Interaction states use saved Actor-package metadata.
 
-- Level reloads
-    
-- Unreal Editor sessions
-    
-- Source-control syncs
-    
+For projects using External Actors / One File Per Actor, that metadata is stored in the corresponding Actor package. Otherwise, it is typically stored with the level package. To keep persistent changes across level reloads, editor sessions, or source-control syncs, save the affected packages using Unreal's normal workflow.
 
-After changing persistent Focus settings, save the affected Actor or level packages using your normal Unreal workflow.
-
-The following Focus states can be stored:
-
-- Selection Lock
-    
-- Transform Lock
-    
-- Edit Lock
-    
-- Solo
-    
-- Hide in Editor
-    
-
-Hidden in Game uses Unreal Engine's existing Actor property.
-
-For projects using External Actors / One File Per Actor, Focus metadata is stored with the relevant Actor package.
-
-Otherwise, it is typically stored with the level package.
+**Switching persistence off does not immediately reset a property.** Switching it back on does not restore an older value either. The current value is kept and becomes eligible for the next normal save. To discard outstanding session-only changes instead, use **Restore Temporary Changes** from the Focus header menu.
 
 > [!WARNING]  
-> **Solo and Hide in Editor can also be saved.**
-> 
-> If you only intended to use them temporarily, clear those states before saving.
+> **Session-only native property editing requires save-workflow validation.**
+>
+> Hidden in Game and movement locking are native Unreal properties. Focus isolates temporary values during package saves, but Save All, autosaves, World Partition / External Actors, Undo/Redo, and interrupted saves should be tested in your project before relying on the behavior for production levels. A previously dirty Actor may still appear in the save list due to unrelated changes.
 
 ---
 
@@ -967,7 +993,7 @@ Focus supports the following target configuration:
 
 |||
 |---|---|
-|**Focus Version**|2.0.2|
+|**Focus Version**|2.1.0|
 |**Unreal Engine**|5.8.x|
 
 |**Platform**|Windows 64-bit|
@@ -991,11 +1017,11 @@ When a Focus control is used:
     
 2. The relevant Actor scope is resolved.
     
-3. The selected Focus state is applied to the affected Actors.
+3. Focus applies the chosen control to the affected eligible Actors or Components.
     
-4. Unreal's normal transaction system records supported changes for Undo and Redo.
+4. For Visual and Interaction, Focus checks that control's persistence preference. Persistent edits follow the normal save workflow; session-only edits retain the prior saved value while changing the live editor state.
     
-5. Persistent Focus states can be stored with the affected Actor or level packages.
+5. Unreal's transaction system records supported changes for Undo and Redo. Persistent Actor and Component values can be stored with the affected Actor or level packages.
     
 
 Focus protection operates entirely inside the editor.
@@ -1004,7 +1030,7 @@ Selection Lock and Delete/Cut protection are handled by the Focus editor mode. T
 
 Focus does not replace or configure Unreal's transform gizmo, and its editor protections depend on the editing operation using supported engine notifications. Specialized tools can operate outside those paths, as described in **Limitations**.
 
-Focus does not add gameplay components or runtime systems to the packaged game.
+Focus does not add gameplay components or runtime systems to the packaged game. Its session-only controls do not change the persistence of edits made directly through Unreal's Details panel or native Outliner commands.
 
 ---
 
@@ -1071,6 +1097,12 @@ Solo primarily isolates rendered primitive components.
 
 Some scene contributions, such as lighting or volumes, may continue affecting the viewport even when their Actor is outside the Solo set.
 
+### Session-Only Native Properties
+
+Session-only **Hidden in Game** and native movement locking use package pre-save and post-save handling to avoid writing temporary values as persistent property changes. This needs in-editor validation across Save All, autosaves, External Actors / World Partition, Undo/Redo, and interrupted or failed saves. On a disposable level, confirm that Focus-only temporary edits do not request checkout on an otherwise clean Actor, that unrelated native edits save correctly, and that reloading restores the last persistent values.
+
+An Actor already marked dirty for unrelated reasons can still appear in Unreal's save or checkout workflows. Focus's persistence options do not suppress native Details panel or Outliner edits, and they do not prevent other plugins or tools from dirtying a package.
+
 ---
 
 # Troubleshooting
@@ -1095,13 +1127,11 @@ Restart Unreal Editor if the plugin was just enabled.
 
 ## A Focus Setting Did Not Persist
 
-Make sure the affected Actor or level package was saved after changing the Focus state.
+First check **Edit > Editor Preferences > Plugins > Focus > Visual & Interaction Persistence**. A disabled checkbox makes changes initiated through that Focus micro-widget session-only. To keep the current value, turn its persistence checkbox back on, then save the affected Actor or level package using **File > Save All** or your normal save workflow.
 
-Use:
+If the setting was already persistent, check that the relevant Actor or level package was saved, including External Actor packages where applicable. The eight native quick-property categories always use Unreal's normal saved-property behavior.
 
-**File > Save All**
-
-or your normal project save workflow.
+If you used **Restore Temporary Changes**, the outstanding session-only changes were discarded intentionally. Changes made through Unreal's native Details panel or native Outliner controls are not governed by Focus's session-only preferences.
 
 ---
 
@@ -1122,9 +1152,11 @@ Folder operations are bulk actions rather than persistent inheritance rules.
 
 ## Hidden in Game Cannot Be Changed
 
-Check whether the Actor currently has **Edit Lock** enabled.
+Check whether the Actor currently has **Edit Lock** enabled. Hidden in Game modifies an Actor property, so Edit Lock protects it from being changed through Focus.
 
-Hidden in Game modifies an Actor property, so Edit Lock protects it from being changed.
+If Hidden in Game changes in the current editor session but resets after reopening the level, check its **Visual & Interaction Persistence** checkbox. Session-only Focus edits are deliberately not saved. Edits made through the native Details panel retain Unreal's ordinary behavior.
+
+If a session-only Focus click appears to request checkout, first check whether the Actor package was already dirty from a different edit. Test on a freshly saved Actor and verify that the change came from the Focus micro-widget rather than a native editor action. See **Session-Only Native Properties** under Limitations.
 
 ---
 
@@ -1209,13 +1241,11 @@ See the [repository license](https://github.com/mippi-the-dork/Focus/blob/main/L
 
 Focus is an Unreal Engine editor utility created by **Mippi the Dork**.
 
-The plugin was built around a simple workflow problem:
+The plugin was built around a simple idea:
 
 > As levels grow in complexity, the tools used to manage them should become faster, more accessible, and more intuitive.
 
-Focus brings frequently used Actor and Component properties directly into the **World Outliner**, turning it into a more powerful workspace for managing visibility, interaction, physics, lighting, networking, navigation, mobility, LOD, and other essential editor operations.
+Focus brings frequently used Actor and Component properties directly into the **World Outliner**, creating a more efficient workspace for visibility, interaction, physics, lighting, networking, navigation, mobility, and LOD adjustments. Its compact, configurable miniwidgets reduce the need to navigate through the Details panel, while supporting appropriate operations on individual Actors, folders, hierarchies, and multi-selections. Optional session-only Visual and Interaction controls let developers work temporarily without intending to commit those adjustments to saved level content.
 
-Through compact, configurable miniwidgets, Focus makes these controls immediately accessible without constantly navigating the Details panel. Users can customize which categories appear, adjust their visual appearance, and apply supported operations across individual Actors, folders, hierarchies, and multi-selections.
-
-**Focus is designed to make complex scenes easier to manage, repetitive adjustments faster to perform, and everyday Unreal Engine workflows more efficient, all without leaving the World Outliner.**
+**Focus makes complex scenes easier to manage, everyday adjustments faster, and common Unreal Engine workflows more efficient without leaving the World Outliner.**
 

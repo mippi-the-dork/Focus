@@ -1,28 +1,28 @@
 {
-	"FileVersion": 3,
-	"Version": 200,
-	"VersionName": "2.0.2",
-	"FriendlyName": "Focus",
-	"Description": "Add configurable visibility, protection, physics, lighting, world, networking, navigation, mobility, and LOD controls directly to Unreal Engine's World Outliner.",
-	"Category": "World Outliner",
-	"CanContainContent": false,
-	"IsExperimentalVersion": false,
-	"Modules": [
-		{
-			"Name": "Focus",
-			"Type": "Editor",
-			"LoadingPhase": "PostEngineInit",
-			"PlatformAllowList": [
-				"Win64"
-			]
-		}
-	],
-	"CreatedBy": "Mippithedork",
-	"CreatedByURL": "https://github.com/mippi-the-dork",
-	"EngineVersion": "5.8.0",
-	"DocsURL": "https://github.com/mippi-the-dork/Focus",
-	"MarketplaceURL": "https://www.fab.com/listings/d60d5b75-0adc-41fb-b177-dc90dcd5948d",
-	"SupportURL": "https://github.com/mippi-the-dork/Focus/issues",
-	"IsBetaVersion": false,
-	"Installed": false
+    "FileVersion": 3,
+    "Version": 210,
+    "VersionName": "2.1.0",
+    "FriendlyName": "Focus",
+    "Description": "Outliner Quick Controls: configurable visual, interaction, physics, lighting, world, network, navigation, mobility, and LOD editing for Unreal Engine.",
+    "Category": "Editor",
+    "CanContainContent": false,
+    "IsExperimentalVersion": false,
+    "Modules": [
+        {
+            "Name": "Focus",
+            "Type": "Editor",
+            "LoadingPhase": "PostEngineInit",
+            "PlatformAllowList": [
+                "Win64"
+            ]
+        }
+    ],
+    "CreatedBy": "Mippithedork",
+    "CreatedByURL": "",
+    "EngineVersion": "5.8.0",
+    "DocsURL": "",
+    "MarketplaceURL": "",
+    "SupportURL": "",
+    "IsBetaVersion": false,
+    "Installed": false
 }

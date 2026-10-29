@@ -19,4 +19,8 @@ namespace Focus
     void Set(AActor* Actor, EControl Control, bool Value);
     void ClearSession();
     bool HasSolo(UWorld* World);
+    bool IsPersistent(EControl Control);
+    void OnPersistenceSettingsChanged();
+    void OnPackagePreSave(UPackage* Package);
+    void OnPackagePostSave(UPackage* Package);
 }

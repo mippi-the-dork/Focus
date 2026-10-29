@@ -76,6 +76,7 @@
 #include "HAL/FileManager.h"
 #include "UObject/MetaData.h"
 #include "UObject/Package.h"
+#include "UObject/ObjectSaveContext.h"
 #include "Misc/Change.h"
 #include "Misc/ITransaction.h"
 #include "Engine/Level.h"
@@ -161,6 +162,175 @@ namespace Focus
     // actor packages. No user config, actor tags or serialized plugin objects.
     static TMap<TWeakObjectPtr<AActor>, FFlags> States;
     static const FName SharedStateKey(TEXT("Focus.SharedState.V1"));
+
+    // Last known configuration, used to detect OFF->ON without affecting the
+    // current actor values. A category is a bulk settings operation, not state.
+    static bool Persistence[5] = { true, true, true, true, true };
+    static constexpr int32 SessionEditorHidden = 0;
+    static constexpr int32 SessionGameHidden = 1;
+    static constexpr int32 SessionSolo = 2;
+    static constexpr int32 SessionSelection = 3;
+    static constexpr int32 SessionProtection = 4;
+    static int32 PersistenceIndex(EControl C)
+    {
+        switch (C)
+        {
+        case EControl::EditorHidden: return SessionEditorHidden;
+        case EControl::GameHidden: return SessionGameHidden;
+        case EControl::Solo: return SessionSolo;
+        case EControl::Selection: return SessionSelection;
+        case EControl::Transform:
+        case EControl::Edit: return SessionProtection;
+        default: return -1;
+        }
+    }
+    static void ReadPersistence(bool (&Out)[5])
+    {
+        const UFocusSettings* S = GetDefault<UFocusSettings>();
+        Out[0] = S->bPersistEditorHidden;
+        Out[1] = S->bPersistGameHidden;
+        Out[2] = S->bPersistSolo;
+        Out[3] = S->bPersistSelection;
+        Out[4] = S->bPersistProtection;
+    }
+    bool IsPersistent(EControl C)
+    {
+        const int32 I = PersistenceIndex(C);
+        return I < 0 || Persistence[I];
+    }
+    static FLinearColor EnabledTint(EControl C)
+    {
+        const UFocusSettings* S = GetDefault<UFocusSettings>();
+        return IsPersistent(C) ? S->EnabledColor : S->SessionEnabledColor;
+    }
+    static FLinearColor DisabledTint(EControl C)
+    {
+        const UFocusSettings* S = GetDefault<UFocusSettings>();
+        return IsPersistent(C) ? S->DisabledColor : S->SessionDisabledColor;
+    }
+    static FLinearColor MixedTint(EControl C)
+    {
+        const UFocusSettings* S = GetDefault<UFocusSettings>();
+        return IsPersistent(C) ? S->MixedColor : S->SessionMixedColor;
+    }
+    static FLinearColor AlertTint(EControl C)
+    {
+        const UFocusSettings* S = GetDefault<UFocusSettings>();
+        return IsPersistent(C) ? S->AlertColor : S->SessionAlertColor;
+    }
+    static FString PersistenceTooltip(EControl C)
+    {
+        return IsPersistent(C) ?
+            TEXT("\nPersistence: On. Changes are saved with the Actor or level when you save.") :
+            TEXT("\nPersistence: Session Only. Only edits made through Focus are temporary; native Details and Outliner edits save normally.\nSwitching persistence back on keeps the current value and makes it eligible for the next Save All.");
+    }
+    struct FTemporaryBaseline
+    {
+        uint8 Mask = 0;
+        bool Values[5] = {};
+        // This native Actor property can serialize even when metadata does not.
+        bool NativeMovementLock = false;
+    };
+    static TMap<TWeakObjectPtr<AActor>, FTemporaryBaseline> Temporary;
+
+    // Session-only native edits made through Focus must not participate in
+    // native Actor Modify() / package dirtying. This guard also distinguishes
+    // our setters from genuine edits through the Details panel or other tools.
+    static bool bApplyingFocusNativeValue = false;
+    // Some native Outliner commands call Modify() and a native setter without
+    // broadcasting PostEditChangeProperty. Remember the old game-visibility
+    // value and reconcile after the action (or just before a save).
+    static TMap<TWeakObjectPtr<AActor>, bool> PendingNativeHiddenEdits;
+
+    static void OnNativeActorModified(UObject* Object)
+    {
+        if (bApplyingFocusNativeValue) return;
+        AActor* Actor = Cast<AActor>(Object);
+        if (!IsValid(Actor)) return;
+        const FTemporaryBaseline* B = Temporary.Find(Actor);
+        if (B && (B->Mask & (1u << SessionGameHidden)))
+        {
+            if (!PendingNativeHiddenEdits.Contains(Actor))
+                PendingNativeHiddenEdits.Add(Actor, Actor->IsHidden());
+        }
+    }
+    static void ReconcileNativeActorModifications()
+    {
+        for (const auto& Entry : PendingNativeHiddenEdits)
+        {
+            AActor* Actor = Entry.Key.Get();
+            if (!IsValid(Actor) || Actor->IsHidden() == Entry.Value) continue;
+            FTemporaryBaseline* B = Temporary.Find(Actor);
+            if (!B) continue;
+            // A real native edit replaces Focus's temporary save exclusion.
+            B->Mask &= ~(1u << SessionGameHidden);
+            if (!B->Mask) Temporary.Remove(Actor);
+        }
+        PendingNativeHiddenEdits.Empty();
+    }
+
+    // A native Details edit takes precedence over any older temporary Focus
+    // value for that same property. Editing some OTHER property must not clear
+    // the temporary baseline, because it still needs to be excluded on save.
+    static void OnNativePropertyEdited(UObject* Object, const FPropertyChangedEvent& Event)
+    {
+        if (bApplyingFocusNativeValue) return;
+        AActor* Actor = Cast<AActor>(Object);
+        if (!IsValid(Actor) || !Temporary.Contains(Actor)) return;
+        const FName Changed = Event.GetPropertyName();
+        if (Changed != TEXT("bHidden") && Changed != TEXT("bLockLocation") &&
+            Changed != TEXT("bHiddenEdTemporary")) return;
+
+        FTemporaryBaseline* B = Temporary.Find(Actor);
+        if (!B) return;
+        if (Changed == TEXT("bHidden"))
+        {
+            B->Mask &= ~(1u << SessionGameHidden);
+            PendingNativeHiddenEdits.Remove(Actor);
+        }
+        if (Changed == TEXT("bLockLocation")) B->Mask &= ~(1u << SessionProtection);
+        if (Changed == TEXT("bHiddenEdTemporary")) B->Mask &= ~(1u << SessionEditorHidden);
+        if (!B->Mask) Temporary.Remove(Actor);
+    }
+    struct FSaveOverlay
+    {
+        TWeakObjectPtr<AActor> Actor;
+        bool HiddenInGame = false;
+        bool HiddenInEditor = false;
+        bool MovementLock = false;
+        bool bGame = false;
+        bool bEditor = false;
+        bool bMovement = false;
+    };
+    static TMap<TWeakObjectPtr<UPackage>, TArray<FSaveOverlay>> SavingPackages;
+
+    static bool CurrentControl(AActor* A, int32 I)
+    {
+        switch (I)
+        {
+        case 0: return A->IsTemporarilyHiddenInEditor(false);
+        case 1: return A->IsHidden();
+        case 2: return States.FindChecked(A).Solo;
+        case 3: return States.FindChecked(A).Selection;
+        default: return States.FindChecked(A).Transform || States.FindChecked(A).Edit;
+        }
+    }
+    static void RememberTemporary(AActor* A, int32 I)
+    {
+        FTemporaryBaseline& B = Temporary.FindOrAdd(A);
+        if (!(B.Mask & (1u << I)))
+        {
+            B.Values[I] = CurrentControl(A, I);
+            if (I == SessionProtection) B.NativeMovementLock = A->IsLockLocation();
+            B.Mask |= (1u << I);
+        }
+    }
+    static void ClearExpiredTemporary()
+    {
+        for (auto It = Temporary.CreateIterator(); It; ++It)
+            if (!It.Key().IsValid()) It.RemoveCurrent();
+    }
+
 
     bool IsEditorActor(const AActor* A)
     {
@@ -251,14 +421,21 @@ namespace Focus
         if (!IsEditorActor(Actor)) return;
         UPackage* Package = Actor->GetPackage();
         FMetaData& Meta = Package->GetMetaData();
-        if (Snapshot.HadMetadata) Meta.SetValue(Actor, SharedStateKey, *Snapshot.Metadata);
-        else Meta.RemoveValue(Actor, SharedStateKey);
+        const bool bHad = Meta.HasValue(Actor, SharedStateKey);
+        const FString Previous = Meta.GetValue(Actor, SharedStateKey);
+        const bool bMetadataChanged = bHad != Snapshot.HadMetadata ||
+            (Snapshot.HadMetadata && Previous != Snapshot.Metadata);
+        if (bMetadataChanged)
+        {
+            if (Snapshot.HadMetadata) Meta.SetValue(Actor, SharedStateKey, *Snapshot.Metadata);
+            else Meta.RemoveValue(Actor, SharedStateKey);
+        }
         States.Add(Actor, Snapshot.Flags);
         Actor->SetLockLocation(Snapshot.Flags.Transform || Snapshot.Flags.Edit);
         Actor->AActor::SetIsTemporarilyHiddenInEditor(Snapshot.Hidden);
         // Metadata has no automatic dirty tracking. Saving this package is what
         // makes the settings available after restart and to source control.
-        Package->MarkPackageDirty();
+        if (bMetadataChanged) Package->MarkPackageDirty();
     }
     class FSharedStateChange final : public FCommandChange
     {
@@ -275,6 +452,194 @@ namespace Focus
         virtual void Revert(UObject* Object) override { Restore(Object, Before); }
         virtual FString ToString() const override { return TEXT("Focus shared actor settings"); }
     };
+    // Undo/Redo of a Focus session-only Hidden in Game change should not call
+    // Modify() either. The ordinary persistent path remains fully native.
+    class FTemporaryGameHiddenChange final : public FCommandChange
+    {
+        bool Before = false;
+        bool After = false;
+        static void Restore(UObject* Object, bool Value)
+        {
+            AActor* Actor = Cast<AActor>(Object);
+            if (!IsValid(Actor)) return;
+            TGuardValue<bool> Guard(bApplyingFocusNativeValue, true);
+            Actor->SetActorHiddenInGame(Value);
+            if (IsPersistent(EControl::GameHidden)) Actor->GetPackage()->MarkPackageDirty();
+            if (GEditor) GEditor->RedrawLevelEditingViewports();
+        }
+    public:
+        FTemporaryGameHiddenChange(bool InBefore, bool InAfter) : Before(InBefore), After(InAfter) {}
+        virtual void Apply(UObject* Object) override { Restore(Object, After); }
+        virtual void Revert(UObject* Object) override { Restore(Object, Before); }
+        virtual FString ToString() const override { return TEXT("Focus session-only Hidden in Game"); }
+    };
+
+    // Construct saved metadata from the live state but replace every temporary
+    // control with its last persistent value. This prevents permanent edits to
+    // other controls from accidentally committing a session-only change.
+    static FString PersistentMetadata(AActor* A, const FSharedSnapshot& Live)
+    {
+        FFlags Saved = Live.Flags;
+        bool Hidden = Live.Hidden;
+        if (const FTemporaryBaseline* B = Temporary.Find(A))
+        {
+            if (B->Mask & (1u << SessionEditorHidden)) Hidden = B->Values[SessionEditorHidden];
+            if (B->Mask & (1u << SessionSolo)) Saved.Solo = B->Values[SessionSolo];
+            if (B->Mask & (1u << SessionSelection)) Saved.Selection = B->Values[SessionSelection];
+            if (B->Mask & (1u << SessionProtection))
+            {
+                // Recover both distinct protection flags from the last encoded
+                // persistent metadata when possible; one bool is insufficient.
+                FFlags Previous;
+                bool PreviousHidden = false;
+                if (DecodeSharedState(A->GetPackage()->GetMetaData().GetValue(A, SharedStateKey), Previous, PreviousHidden))
+                {
+                    Saved.Transform = Previous.Transform;
+                    Saved.Edit = Previous.Edit;
+                }
+                else
+                {
+                    Saved.Transform = B->Values[SessionProtection];
+                    Saved.Edit = false;
+                }
+            }
+        }
+        return EncodeSharedState(Saved, Hidden);
+    }
+
+    // Settings changes are not level changes. Promoting a temporary value
+    // simply makes the current value eligible for the next ordinary Save All.
+    void OnPersistenceSettingsChanged()
+    {
+        bool Next[5];
+        ReadPersistence(Next);
+        for (int32 I = 0; I < 5; ++I)
+        {
+            if (Persistence[I] || !Next[I]) continue;
+            for (auto It = Temporary.CreateIterator(); It; ++It)
+            {
+                AActor* A = It.Key().Get();
+                if (!IsEditorActor(A)) { It.RemoveCurrent(); continue; }
+                FTemporaryBaseline& B = It.Value();
+                if (!(B.Mask & (1u << I))) continue;
+                B.Mask &= ~(1u << I);
+                if (I == SessionGameHidden || I == SessionProtection)
+                    A->GetPackage()->MarkPackageDirty();
+                if (I != SessionGameHidden)
+                {
+                    const FSharedSnapshot Live = CaptureSharedState(A);
+                    FSharedSnapshot Saved = Live;
+                    Saved.HadMetadata = true;
+                    Saved.Metadata = PersistentMetadata(A, Live);
+                    ApplySharedState(A, Saved);
+                }
+                if (!B.Mask) It.RemoveCurrent();
+            }
+        }
+        for (int32 I = 0; I < 5; ++I) Persistence[I] = Next[I];
+        if (GEditor) GEditor->RedrawLevelEditingViewports();
+    }
+
+    int32 RestoreTemporaryChanges()
+    {
+        int32 Restored = 0;
+        const FScopedTransaction Transaction(NSLOCTEXT("Focus", "DiscardSessionOnly", "Focus: Restore temporary changes"));
+        for (auto& Entry : Temporary)
+        {
+            AActor* A = Entry.Key.Get();
+            if (!IsEditorActor(A)) continue;
+            const FTemporaryBaseline& B = Entry.Value;
+            if (B.Mask == 0) continue;
+            EnsureState(A);
+            const FSharedSnapshot Before = CaptureSharedState(A);
+            FSharedSnapshot After = Before;
+            if (B.Mask & (1u << SessionEditorHidden)) After.Hidden = B.Values[SessionEditorHidden];
+            if (B.Mask & (1u << SessionSolo)) After.Flags.Solo = B.Values[SessionSolo];
+            if (B.Mask & (1u << SessionSelection)) After.Flags.Selection = B.Values[SessionSelection];
+            if (B.Mask & (1u << SessionProtection))
+            {
+                FFlags Persisted;
+                bool PersistedHidden = false;
+                if (DecodeSharedState(Before.Metadata, Persisted, PersistedHidden))
+                {
+                    After.Flags.Transform = Persisted.Transform;
+                    After.Flags.Edit = Persisted.Edit;
+                }
+                else
+                {
+                    After.Flags.Transform = B.Values[SessionProtection];
+                    After.Flags.Edit = false;
+                }
+            }
+            if (B.Mask & (1u << SessionGameHidden))
+            {
+                // Discarding a temporary Focus change must not dirty its Actor.
+                if (GUndo && !GIsTransacting)
+                    GUndo->StoreUndo(A, MakeUnique<FTemporaryGameHiddenChange>(A->IsHidden(), B.Values[SessionGameHidden]));
+                TGuardValue<bool> Guard(bApplyingFocusNativeValue, true);
+                A->SetActorHiddenInGame(B.Values[SessionGameHidden]);
+            }
+            ApplySharedState(A, After);
+            if (B.Mask & (1u << SessionProtection)) A->SetLockLocation(B.NativeMovementLock);
+            ++Restored;
+        }
+        Temporary.Empty();
+        if (GEditor) GEditor->RedrawLevelEditingViewports();
+        return Restored;
+    }
+
+    void OnPackagePreSave(UPackage* Package)
+    {
+        // Native context-menu modifications may not emit a property-change
+        // event. Resolve them before deciding which values to serialize.
+        ReconcileNativeActorModifications();
+        if (!IsValid(Package) || SavingPackages.Contains(TWeakObjectPtr<UPackage>(Package))) return;
+        TArray<FSaveOverlay> Overlays;
+        for (const auto& Entry : Temporary)
+        {
+            AActor* A = Entry.Key.Get();
+            if (!IsEditorActor(A) || A->GetPackage() != Package) continue;
+            const FTemporaryBaseline& B = Entry.Value;
+            FSaveOverlay Overlay;
+            Overlay.Actor = A;
+            Overlay.bGame = (B.Mask & (1u << SessionGameHidden)) != 0;
+            Overlay.bEditor = (B.Mask & (1u << SessionEditorHidden)) != 0;
+            Overlay.bMovement = (B.Mask & (1u << SessionProtection)) != 0;
+            if (!Overlay.bGame && !Overlay.bEditor && !Overlay.bMovement) continue;
+            Overlay.HiddenInGame = A->IsHidden();
+            Overlay.HiddenInEditor = A->IsTemporarilyHiddenInEditor(false);
+            Overlay.MovementLock = A->IsLockLocation();
+            // Swap native values only while serializing. Never record these as
+            // user edits or let property notifications abandon the baseline.
+            {
+                TGuardValue<bool> Guard(bApplyingFocusNativeValue, true);
+                if (Overlay.bGame && Overlay.HiddenInGame != B.Values[SessionGameHidden])
+                    A->SetActorHiddenInGame(B.Values[SessionGameHidden]);
+                if (Overlay.bEditor && Overlay.HiddenInEditor != B.Values[SessionEditorHidden])
+                    A->AActor::SetIsTemporarilyHiddenInEditor(B.Values[SessionEditorHidden]);
+                if (Overlay.bMovement && Overlay.MovementLock != B.NativeMovementLock)
+                    A->SetLockLocation(B.NativeMovementLock);
+            }
+            Overlays.Add(Overlay);
+        }
+        if (!Overlays.IsEmpty()) SavingPackages.Add(TWeakObjectPtr<UPackage>(Package), MoveTemp(Overlays));
+    }
+    void OnPackagePostSave(UPackage* Package)
+    {
+        TArray<FSaveOverlay> Overlays;
+        if (!SavingPackages.RemoveAndCopyValue(TWeakObjectPtr<UPackage>(Package), Overlays)) return;
+        for (const FSaveOverlay& Overlay : Overlays)
+        {
+            AActor* A = Overlay.Actor.Get();
+            if (!IsEditorActor(A)) continue;
+            TGuardValue<bool> Guard(bApplyingFocusNativeValue, true);
+            if (Overlay.bGame) A->SetActorHiddenInGame(Overlay.HiddenInGame);
+            if (Overlay.bEditor) A->AActor::SetIsTemporarilyHiddenInEditor(Overlay.HiddenInEditor);
+            if (Overlay.bMovement) A->SetLockLocation(Overlay.MovementLock);
+        }
+        if (GEditor) GEditor->RedrawLevelEditingViewports();
+    }
+
     void Set(AActor* A, EControl C, bool Value)
     {
         if (!IsEditorActor(A)) return;
@@ -283,13 +648,32 @@ namespace Focus
         {
             if (!Get(A, EControl::Edit) && A->IsHidden() != Value)
             {
-                A->Modify();
-                A->SetActorHiddenInGame(Value);
+                if (IsPersistent(C))
+                {
+                    // Ordinary Focus behavior: native transaction and package save.
+                    A->Modify();
+                    TGuardValue<bool> Guard(bApplyingFocusNativeValue, true);
+                    A->SetActorHiddenInGame(Value);
+                }
+                else
+                {
+                    // Unlike native Details edits, this Focus-only session
+                    // change must not mark the Actor package dirty or checkout.
+                    RememberTemporary(A, SessionGameHidden);
+                    // Do not mistake this Focus-owned edit for a native action
+                    // that previously called Modify() in the same editor frame.
+                    PendingNativeHiddenEdits.Remove(A);
+                    if (GUndo && !GIsTransacting)
+                        GUndo->StoreUndo(A, MakeUnique<FTemporaryGameHiddenChange>(A->IsHidden(), Value));
+                    TGuardValue<bool> Guard(bApplyingFocusNativeValue, true);
+                    A->SetActorHiddenInGame(Value);
+                }
             }
             return;
         }
         if (C == EControl::Transform && Get(A, EControl::Edit)) return;
         const FSharedSnapshot Before = CaptureSharedState(A);
+        if (!IsPersistent(C)) RememberTemporary(A, PersistenceIndex(C));
         FSharedSnapshot After = Before;
         switch (C) {
         case EControl::EditorHidden: After.Hidden = Value; break;
@@ -300,8 +684,15 @@ namespace Focus
         default: return;
         }
         if (EncodeSharedState(Before.Flags, Before.Hidden) == EncodeSharedState(After.Flags, After.Hidden)) return;
-        After.HadMetadata = true;
-        After.Metadata = EncodeSharedState(After.Flags, After.Hidden);
+        After.HadMetadata = Before.HadMetadata;
+        After.Metadata = Before.Metadata;
+        // Keep the saved snapshot independent of session-only actor values.
+        // Persist edits to one control without persisting temporary neighbors.
+        if (IsPersistent(C))
+        {
+            After.HadMetadata = true;
+            After.Metadata = PersistentMetadata(A, After);
+        }
         // FMetaData is not a UObject in UE 5.8. Actor->Modify() alone cannot
         // capture it. Record explicit before/after metadata and live state.
         if (GUndo && !GIsTransacting)
@@ -316,10 +707,13 @@ namespace Focus
         // Shared locks are intentional saved actor state. Clearing the cache
         // must not silently unlock actors or overwrite saved package data.
         States.Empty();
+        Temporary.Empty();
+        SavingPackages.Empty();
+        PendingNativeHiddenEdits.Empty();
     }
     static const TCHAR* Tip(EControl C) {
         switch (C) {
-        case EControl::EditorHidden: return TEXT("Hide in Editor\nToggle editor viewport visibility. Grey means visible; yellow means hidden. Does not change Hidden in Game.");
+        case EControl::EditorHidden: return TEXT("Hide in Editor\nToggle editor viewport visibility. Grey means visible. White (persistent) or blue (session-only) means hidden. Yellow (persistent) or orange (session-only) means Mixed. Does not change Hidden in Game.");
         case EControl::GameHidden: return TEXT("Hidden in Game\nToggle the actor's Hidden in Game property. Grey means off; red means on. Actors with Edit Lock are skipped.");
         case EControl::Solo: return TEXT("Solo\nIsolate soloed actors in editor viewports. Grey outline means off; white solid means on; the mixed icon means some actors are soloed. Clear all Solo states to restore the normal view. Editor-hidden actors remain hidden. Does not change Hidden in Game.");
         case EControl::Selection: return TEXT("Selection Lock\nPrevent viewport selection. Click the actor in the Outliner to select it. Grey means unlocked; white means locked; a dash means mixed. Does not prevent editing or change the padlock setting.");
@@ -1504,7 +1898,8 @@ class FFocusColumn : public ISceneOutlinerColumn
         return FText::FromString(FString(Focus::Tip(C)) +
             TEXT("\n\nIncludes attached descendants, nested folders and native group members. If this row is selected, applies to all selected rows and their descendants.") +
             TEXT("\nClick a mixed or off state to enable it for the affected actors; click a fully on state to disable it.") +
-            TEXT("\nLoaded actors only. Actors added later do not inherit these settings. Save All to retain changes.") +
+            TEXT("\nLoaded actors only. Actors added later do not inherit these settings.") +
+            Focus::PersistenceTooltip(C) +
             FString::Printf(TEXT("\nThis row: %s (%d of %d loaded actors on)."), *StateText,
                 Row.Enabled[static_cast<int32>(C)], Row.Total));
     }
@@ -1516,9 +1911,10 @@ class FFocusColumn : public ISceneOutlinerColumn
             const int32 S = Row->State(C);
             return FText::FromString(S == 2 ? TEXT("-") : C == EControl::Solo ? (S == 1 ? TEXT("[S]") : TEXT("(S)")) : TEXT("●"));
             }).ColorAndOpacity_Lambda([Row, C] {
-                if (Row->State(C) == 0) return FSlateColor(GetDefault<UFocusSettings>()->DisabledColor);
-                if (Row->State(C) == 2 || C == EControl::Solo) return FSlateColor(GetDefault<UFocusSettings>()->EnabledColor);
-                return FSlateColor(C == EControl::GameHidden ? GetDefault<UFocusSettings>()->AlertColor : GetDefault<UFocusSettings>()->MixedColor);
+                if (Row->State(C) == 0) return FSlateColor(Focus::DisabledTint(C));
+                if (Row->State(C) == 2) return FSlateColor(Focus::MixedTint(C));
+                if (C == EControl::Solo) return FSlateColor(Focus::EnabledTint(C));
+                return FSlateColor(C == EControl::GameHidden ? Focus::AlertTint(C) : Focus::EnabledTint(C));
                 });
             if (C == EControl::EditorHidden || C == EControl::GameHidden)
             {
@@ -1528,9 +1924,9 @@ class FFocusColumn : public ISceneOutlinerColumn
                     .HeightOverride_Lambda([Row, C] { return FOptionalSize(Row->State(C) == 2 ? 2.f : 6.f); })
                     [SNew(SImage).Image(&DotBrush).ColorAndOpacity_Lambda([Row, C] {
                     const int32 State = Row->State(C);
-                    if (State == 0) return FSlateColor(GetDefault<UFocusSettings>()->DisabledColor);
-                    if (State == 2) return FSlateColor(GetDefault<UFocusSettings>()->EnabledColor);
-                    return FSlateColor(C == EControl::GameHidden ? GetDefault<UFocusSettings>()->AlertColor : GetDefault<UFocusSettings>()->MixedColor);
+                    if (State == 0) return FSlateColor(Focus::DisabledTint(C));
+                    if (State == 2) return FSlateColor(Focus::MixedTint(C));
+                    return FSlateColor(C == EControl::GameHidden ? Focus::AlertTint(C) : Focus::EnabledTint(C));
                         })];
             }
             if (C == EControl::Solo && SoloOutline.IsValid() && SoloSolid.IsValid() && SoloMixed.IsValid())
@@ -1545,7 +1941,9 @@ class FFocusColumn : public ISceneOutlinerColumn
                     return State == 2 ? Mixed.Get() : State == 1 ? Solid.Get() : Outline.Get();
                         }).ColorAndOpacity_Lambda([Row] {
                             return FSlateColor(Row->State(EControl::Solo) == 0 ?
-                                GetDefault<UFocusSettings>()->DisabledColor : GetDefault<UFocusSettings>()->EnabledColor);
+                                Focus::DisabledTint(EControl::Solo) :
+                                Row->State(EControl::Solo) == 2 ?
+                                Focus::MixedTint(EControl::Solo) : Focus::EnabledTint(EControl::Solo));
                             })]
                     ];
             }
@@ -1553,9 +1951,9 @@ class FFocusColumn : public ISceneOutlinerColumn
                 + SOverlay::Slot()[SNew(SImage).Image_Lambda([Row, C] {
                 return FAppStyle::GetBrush(Row->State(C) == 0 ? TEXT("Icons.Unlock") : TEXT("Icons.Lock"));
                     }).ColorAndOpacity_Lambda([Row, C] {
-                        if (Row->State(C) == 0) return FSlateColor(GetDefault<UFocusSettings>()->DisabledColor);
-                        if (Row->State(C) == 2) return FSlateColor(GetDefault<UFocusSettings>()->EnabledColor);
-                        return FSlateColor(C == EControl::Selection ? GetDefault<UFocusSettings>()->EnabledColor : C == EControl::Edit ? GetDefault<UFocusSettings>()->AlertColor : GetDefault<UFocusSettings>()->MixedColor);
+                        if (Row->State(C) == 0) return FSlateColor(Focus::DisabledTint(C));
+                        if (Row->State(C) == 2) return FSlateColor(Focus::MixedTint(C));
+                        return FSlateColor(C == EControl::Selection ? Focus::EnabledTint(C) : C == EControl::Edit ? Focus::AlertTint(C) : Focus::MixedTint(C));
                         })]
                 + SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Bottom)
                     [SNew(STextBlock).Text(FText::FromString(TEXT("-")))
@@ -1570,7 +1968,7 @@ class FFocusColumn : public ISceneOutlinerColumn
                         + SOverlay::Slot()[SNew(SImage).Image_Lambda([Row, Unlocked, Locked]() -> const FSlateBrush* {
                         return Row->State(EControl::Selection) == 0 ? Unlocked.Get() : Locked.Get();
                             }).ColorAndOpacity_Lambda([Row] {
-                                return FSlateColor(Row->State(EControl::Selection) == 0 ? GetDefault<UFocusSettings>()->DisabledColor : Row->State(EControl::Selection) == 2 ? GetDefault<UFocusSettings>()->MixedColor : GetDefault<UFocusSettings>()->EnabledColor);
+                                return FSlateColor(Row->State(EControl::Selection) == 0 ? Focus::DisabledTint(EControl::Selection) : Row->State(EControl::Selection) == 2 ? Focus::MixedTint(EControl::Selection) : Focus::EnabledTint(EControl::Selection));
                                 })]
                         + SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Bottom)
                         [SNew(STextBlock).Text(FText::FromString(TEXT("-")))
@@ -2068,6 +2466,17 @@ class FFocusColumn : public ISceneOutlinerColumn
                  for (auto& Weak : ActiveFocusColumns) if (auto Column = Weak.Pin()) Column->Invalidate();
                  return FReply::Handled();
              })[SNew(STextBlock).Text(NSLOCTEXT("Focus", "ResetCategories", "Reset to Visual + Interaction"))]]
+            + SVerticalBox::Slot().AutoHeight().Padding(3.f, 2.f)
+            [SNew(SButton).ButtonStyle(FAppStyle::Get(), "SimpleButton")
+             .ToolTipText(NSLOCTEXT("Focus", "RestoreTemporaryTip", "Discard this session's temporary Focus Visual and Interaction changes. Restores the values that were present when session-only editing began. Does not change persistence preferences."))
+             .OnClicked_Lambda([] {
+                 const int32 Count = Focus::RestoreTemporaryChanges();
+                 for (auto& Weak : ActiveFocusColumns) if (auto Column = Weak.Pin()) Column->Invalidate();
+                 FNotificationInfo Info(FText::Format(NSLOCTEXT("Focus", "RestoredTemporaryCount", "Focus restored temporary changes for {0} actor(s)."), FText::AsNumber(Count)));
+                 Info.ExpireDuration = 3.f;
+                 FSlateNotificationManager::Get().AddNotification(Info);
+                 return FReply::Handled();
+             })[SNew(STextBlock).Text(NSLOCTEXT("Focus", "RestoreTemporary", "Restore Temporary Changes"))]]
             ];
     }
 
@@ -2101,7 +2510,7 @@ class FFocusColumn : public ISceneOutlinerColumn
                 TEXT("\nBlueprint-driven transform changes are allowed.") +
                 TEXT("\nLoaded actors only; actors added later do not inherit these settings.") +
                 TEXT("\nEdit Lock protects Details values, standard transforms and supported actor/component editing commands. Custom tools and scripts can bypass it.") +
-                TEXT("\nSave All to retain changes with the level and actor files."));
+                Focus::PersistenceTooltip(Focus::EControl::Edit));
                 })
             .OnClicked_Lambda([Row] {
             using namespace Focus;
@@ -2136,10 +2545,10 @@ class FFocusColumn : public ISceneOutlinerColumn
                 }).ColorAndOpacity_Lambda([Row] {
                     switch (ProtectionState(*Row))
                     {
-                    case 0: return FSlateColor(GetDefault<UFocusSettings>()->DisabledColor);
-                    case 1: return FSlateColor(GetDefault<UFocusSettings>()->EnabledColor);
-                    case 2: return FSlateColor(GetDefault<UFocusSettings>()->AlertColor);
-                    default: return FSlateColor(GetDefault<UFocusSettings>()->MixedColor);
+                    case 0: return FSlateColor(Focus::DisabledTint(Focus::EControl::Edit));
+                    case 1: return FSlateColor(Focus::EnabledTint(Focus::EControl::Edit));
+                    case 2: return FSlateColor(Focus::AlertTint(Focus::EControl::Edit));
+                    default: return FSlateColor(Focus::MixedTint(Focus::EControl::Edit));
                     }
                     })]
             + SOverlay::Slot().HAlign(HAlign_Right).VAlign(VAlign_Bottom)
@@ -2454,13 +2863,14 @@ class FFocusModule : public IModuleInterface
     FTSTicker::FDelegateHandle Ticker;
     FDelegateHandle Columns;
     FDelegateHandle MapOpened;
-    FDelegateHandle ActorAdded, LevelAdded, ObjectsReplaced, NativePropertyChanged;
+    FDelegateHandle ActorAdded, LevelAdded, ObjectsReplaced, NativePropertyChanged, NativeObjectModified;
     TSet<TWeakObjectPtr<AActor>> PendingRestore;
     bool bRestoreWorld = true;
     TSharedPtr<FFocusViewExtension, ESPMode::ThreadSafe> ViewExtension;
     bool bModeActivated = false;
     bool bStopping = false;
     FDelegateHandle PreExit;
+    FDelegateHandle PreSavePackageHandle, SavedPackageHandle;
     FDelegateHandle RowExtensions;
     TArray<TWeakPtr<IDetailsView>> DiscoveredViews;
 
@@ -2520,6 +2930,13 @@ class FFocusModule : public IModuleInterface
     void StopMode()
     {
         bStopping = true;
+        UPackage::PreSavePackageWithContextEvent.Remove(PreSavePackageHandle);
+        UPackage::PackageSavedWithContextEvent.Remove(SavedPackageHandle);
+        // If a package save was interrupted, never leave its saved-state
+        // overlay as the working editor value on plugin shutdown.
+        TArray<TWeakObjectPtr<UPackage>> SavingKeys;
+        Focus::SavingPackages.GetKeys(SavingKeys);
+        for (const auto& Key : SavingKeys) if (UPackage* Package = Key.Get()) Focus::OnPackagePostSave(Package);
         StopInteractionGuard();
         CommandGuard.Reset();
         TransformGuard.Reset();
@@ -2599,6 +3016,7 @@ class FFocusModule : public IModuleInterface
     {
         if (bStopping) return false;
         TryActivate();
+        Focus::ReconcileNativeActorModifications();
         if (GEditor && bRestoreWorld)
         {
             UWorld* World = GEditor->GetEditorWorldContext().World();
@@ -2671,10 +3089,22 @@ public:
                 Settings->SaveConfig();
             }
         }
+        Focus::ReadPersistence(Focus::Persistence);
+        // Package-level hooks also cover External Actors and direct SavePackage
+        // invocations, not just Level Editor Save All.
+        PreSavePackageHandle = UPackage::PreSavePackageWithContextEvent.AddLambda(
+            [](UPackage* Package, FObjectPreSaveContext) { Focus::OnPackagePreSave(Package); });
+        SavedPackageHandle = UPackage::PackageSavedWithContextEvent.AddLambda(
+            [](const FString&, UPackage* Package, FObjectPostSaveContext) { Focus::OnPackagePostSave(Package); });
         Focus::LoadSoloIcons();
         Focus::LoadSelectionIcons();
         Focus::LoadGeometricCategoryIcons();
-        NativePropertyChanged = FCoreUObjectDelegates::OnObjectPropertyChanged.AddLambda([](UObject* Object, FPropertyChangedEvent&) {
+        NativeObjectModified = FCoreUObjectDelegates::OnObjectModified.AddLambda([](UObject* Object) {
+            Focus::OnNativeActorModified(Object);
+        });
+        NativePropertyChanged = FCoreUObjectDelegates::OnObjectPropertyChanged.AddLambda([](UObject* Object, FPropertyChangedEvent& Event) {
+            // A direct native property edit is not governed by Focus persistence.
+            Focus::OnNativePropertyEdited(Object, Event);
             if (!Cast<AActor>(Object) && !Cast<UActorComponent>(Object)) return;
             ActiveFocusColumns.RemoveAll([](const TWeakPtr<FFocusColumn>& Column) { return !Column.IsValid(); });
             for (auto& Weak : ActiveFocusColumns) if (auto Column = Weak.Pin()) Column->Invalidate();
@@ -2744,6 +3174,13 @@ public:
     }
     virtual void ShutdownModule() override {
         bStopping = true;
+        UPackage::PreSavePackageWithContextEvent.Remove(PreSavePackageHandle);
+        UPackage::PackageSavedWithContextEvent.Remove(SavedPackageHandle);
+        // If a package save was interrupted, never leave its saved-state
+        // overlay as the working editor value on plugin shutdown.
+        TArray<TWeakObjectPtr<UPackage>> SavingKeys;
+        Focus::SavingPackages.GetKeys(SavingKeys);
+        for (const auto& Key : SavingKeys) if (UPackage* Package = Key.Get()) Focus::OnPackagePostSave(Package);
         StopInteractionGuard();
         CommandGuard.Reset();
         TransformGuard.Reset();
@@ -2756,6 +3193,7 @@ public:
         FWorldDelegates::LevelAddedToWorld.Remove(LevelAdded);
         FCoreUObjectDelegates::OnObjectsReplaced.Remove(ObjectsReplaced);
         FCoreUObjectDelegates::OnObjectPropertyChanged.Remove(NativePropertyChanged);
+        FCoreUObjectDelegates::OnObjectModified.Remove(NativeObjectModified);
         ActiveFocusColumns.Empty();
         PendingRestore.Reset();
         if (auto* Module = FModuleManager::GetModulePtr<FSceneOutlinerModule>("SceneOutliner")) Module->OnCreateActorBrowserColumns().Remove(Columns);
