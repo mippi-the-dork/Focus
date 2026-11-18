@@ -40,7 +40,7 @@ Solo does not change Hidden in Game.
 
 Use the **Solo persistence** checkbox to choose between saving Focus's Solo choices and keeping them temporary for the editor session. A session-only active Solo icon uses **blue** rather than white; Mixed uses **orange** rather than yellow. **Restore Temporary Changes** discards tracked temporary Solo changes along with other temporary Focus edits.
 
-![Using Solo with Focus](Doc/Images/Focus-Solo.gif)
+![Using Solo with Focus](https://raw.githubusercontent.com/mippi-the-dork/Focus/main/Doc/Images/Focus-Solo.gif)
 
 ### Solo and Existing Visibility
 
