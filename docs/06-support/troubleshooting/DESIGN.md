@@ -1,129 +1,48 @@
-# Troubleshooting — Design
+# Troubleshooting Focus — Design
 
-**Focus v2.1.0 | Unreal Engine 5.8.x | Windows 64-bit | Editor only**
+**Focus v2.1.0 · User guide and workflow reference**
 
-When controls, saves or protections do not behave as expected.
+## Focus is missing from the World Outliner
 
-## Verified behavior
+Open **Edit → Plugins**, search for Focus, enable it if necessary and restart Unreal Editor. Verify UE 5.8.x on Win64 and that you are using the ordinary World Outliner Actor Browser. If the column itself is hidden, turn it back on through the Outliner column controls.
 
-Check column/category visibility, supported registered components, Edit Lock, loaded World Partition Actors, and which system performed the edit.
+## A control is missing or unavailable
 
-## Usage and workflows
+First open the Focus header menu and check whether the relevant category is visible. If the group exists but a segment is dark, inspect the hovered tooltip. Some controls require an eligible registered Primitive, Shape, Mesh or Scene Component, and Unreal may prevent editing an instance property.
 
-# Troubleshooting
+A disabled control can be enabled; an unavailable control has no suitable editable target. Those are different conditions.
 
-## Focus Does Not Appear in the World Outliner
+## A folder change did not reach an Actor
 
-Check:
+Verify the Actor is **currently loaded**, belongs to the intended folder/group/attachment hierarchy, and existed when the operation was applied. Search filters and collapsed rows do not normally narrow the scope, but unloaded World Partition Actors and newly added members are not inherited targets.
 
-**Edit > Plugins**
+## A lock did not behave as expected
 
-Search for:
+- **Selection Lock:** select through the Outliner, not viewport, to confirm the intended exception.
+- **Transform Lock:** try a normal transform edit and an unrelated Details property to compare.
+- **Edit Lock:** check the protected Actor and whether the attempted change was made through a native supported path or a custom editor/tool/script.
+- **Hidden in Game:** Focus skips its quick toggle when the Actor is Edit Locked.
 
-```text
-Focus
-```
+A script changing an Edit-Locked Actor does not necessarily mean the Focus native guard failed.
 
-Confirm that the plugin is enabled.
+## A Focus setting did not survive reload
 
-Restart Unreal Editor if the plugin was just enabled.
+Check **Editor Preferences → Plugins → Focus → Visual & Interaction Persistence**. Session-only changes are deliberately temporary. When persistence is enabled, save the appropriate Actor/level package (including External Actor packages under OFPA) and reload.
 
----
+Don't confuse a temporary Focus value with an ordinary native Details edit, which follows normal Unreal saving. Restore Temporary Changes also intentionally discards pending temporary values.
 
-## A Focus Setting Did Not Persist
+## Save or source-control checkout seems unexpected
 
-First check **Edit > Editor Preferences > Plugins > Focus > Visual & Interaction Persistence**. A disabled checkbox makes changes initiated through that Focus micro-widget session-only. To keep the current value, turn its persistence checkbox back on, then save the affected Actor or level package using **File > Save All** or your normal save workflow.
+Test in a disposable level with an otherwise clean package. Edit just one Focus control with persistence off, and observe whether the Actor was already dirty. Repeat through Save All and reload. Check other plugins, native property edits, and the source-control state. Focus's session-only system is designed to avoid saving temporary values, but it cannot prevent unrelated edits from requesting checkout.
 
-If the setting was already persistent, check that the relevant Actor or level package was saved, including External Actor packages where applicable. The eight native quick-property categories always use Unreal's normal saved-property behavior.
+## A quick property's effect is invisible
 
-If you used **Restore Temporary Changes**, the outstanding session-only changes were discarded intentionally. Changes made through Unreal's native Details panel or native Outliner controls are not governed by Focus's session-only preferences.
+The toggle controls a native property, but the result may need additional Unreal settings: physics simulation and collision for gravity/hits, compatible light channels, World Partition or HLOD configuration, replication setup, a NavMesh rebuild, a Cull Distance Volume, or a mesh with sufficient LODs.
 
----
+## Reporting an issue
 
-## A Folder Did Not Affect an Actor
-
-Check whether:
-
-- The Actor is currently loaded.
-    
-- The Actor was added after the Focus state was applied.
-    
-- World Partition currently has the Actor unloaded.
-    
-
-Folder operations are bulk actions rather than persistent inheritance rules.
+Include Focus and Unreal versions, Actor/Component class, control, category visibility, hierarchy type, World Partition loaded state, persistence setting, reproduction steps and Output Log excerpts. Add screenshots or short video when relevant.
 
 ---
 
-## Hidden in Game Cannot Be Changed
-
-Check whether the Actor currently has **Edit Lock** enabled. Hidden in Game modifies an Actor property, so Edit Lock protects it from being changed through Focus.
-
-If Hidden in Game changes in the current editor session but resets after reopening the level, check its **Visual & Interaction Persistence** checkbox. Session-only Focus edits are deliberately not saved. Edits made through the native Details panel retain Unreal's ordinary behavior.
-
-If a session-only Focus click appears to request checkout, first check whether the Actor package was already dirty from a different edit. Test on a freshly saved Actor and verify that the change came from the Focus micro-widget rather than a native editor action. See **Session-Only Native Properties** under Limitations.
-
----
-
-## A Selection-Locked Actor Can Still Be Selected
-
-Selection Lock prevents **viewport selection**.
-
-The Actor is intentionally still selectable from the World Outliner.
-
----
-
-## A Script Changed a Locked Actor
-
-Focus protects against supported manual editor interactions.
-
-Scripts, custom tools, and direct engine operations can still modify Actors.
-
----
-
-# Reporting Bugs
-
-If you encounter a problem, please open an issue:
-
-[https://github.com/mippi-the-dork/Focus/issues](https://github.com/mippi-the-dork/Focus/issues)
-
-When reporting a bug, include:
-
-- Focus version
-    
-- Unreal Engine version
-    
-- Windows version
-    
-- Whether Focus was installed from Fab, a GitHub Release, or source
-    
-- The Focus control involved
-    
-- Whether the target was an Actor, Folder, Group, or multi-selection
-    
-- Whether World Partition was involved
-    
-- Steps to reproduce the problem
-    
-- Screenshots or video when relevant
-    
-- Any relevant Unreal Editor log output
-    
-
-Clear reproduction steps make issues much easier to diagnose.
-
----
-
-# Feature Requests
-
-## Expected limits
-
-Focus is an Editor-only workflow tool. Folder and selected-row changes affect eligible loaded Actors and are not automatically inherited by Actors added later. Supported native protections do not prevent arbitrary external tools or scripts.
-
-## Related source
-
-- [Main editor module](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
-- [Native quick properties](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp)
-- [Editor preferences](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusSettings.h)
-- [Interaction guards](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusInteractionGuard.h)
-- [Full README](https://github.com/mippi-the-dork/Focus/blob/main/README.md)
+For diagnostics, native editor paths and compatibility, [see Technical](TECHNICAL.md).
