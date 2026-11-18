@@ -1,10 +1,14 @@
-# What Focus Does — Design
+# What Is Focus? — Design
 
-> **Focus v2.1.0** · Unreal Engine 5.8.x · Win64 · Editor Only
+**Focus v2.1.0 | Unreal Engine 5.8.x | Windows 64-bit | Editor only**
 
-Understand the World Outliner workflow and capabilities.
+Purpose, capabilities and scope.
 
-This page describes how to use the controls in the World Outliner, with the original feature description and workflow guidance retained.
+## Verified behavior
+
+Editor-only; no packaged game impact.
+
+## Usage and workflows
 
 # Focus
 
@@ -35,6 +39,8 @@ Focus is a compact set of **Outliner Quick Controls** for scene visibility, sele
 - Show only the categories you need, customize persistent and session-only colors, and decide which Visual and Interaction changes should be saved.
 
 ---
+
+# Features
 
 ---
 
@@ -92,12 +98,16 @@ Focus is intended to prevent accidental editor interactions and make complex sce
 
 ---
 
----
+# Limitations
 
-## Related information
+## Expected limits
 
-- [Focus source and complete README](https://github.com/mippi-the-dork/Focus#readme)
-- [Focus issue tracker](https://github.com/mippi-the-dork/Focus/issues)
-- [Installation](../01/installation/DESIGN.md)
+Focus is an Editor-only workflow tool. Folder and selected-row changes affect eligible loaded Actors and are not automatically inherited by Actors added later. Supported native protections do not prevent arbitrary external tools or scripts.
 
+## Related source
 
+- [Main editor module](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
+- [Native quick properties](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp)
+- [Editor preferences](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusSettings.h)
+- [Interaction guards](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusInteractionGuard.h)
+- [Full README](https://github.com/mippi-the-dork/Focus/blob/main/README.md)
