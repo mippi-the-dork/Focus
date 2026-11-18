@@ -10,6 +10,13 @@ Only Visual and Interaction are enabled by default. The other eight are optional
 
 ## Customize your Outliner
 
+<!-- Media target: IMAGE | settings-category-visibility | docs/assets/media/settings-category-visibility.png -->
+<figure class="doc-media" data-kind="image" data-media-id="settings-category-visibility">
+  <img src="../../assets/media-placeholder.png" alt="Focus category visibility menu with several Quick Actions groups enabled" loading="lazy">
+  <figcaption>The header menu lets each editor user choose which Quick Actions categories occupy space in their Outliner.</figcaption>
+</figure>
+
+
 1. Open the World Outliner and locate the Focus header.
 2. Open its category menu.
 3. Check the groups you frequently use. Uncheck those that add clutter.

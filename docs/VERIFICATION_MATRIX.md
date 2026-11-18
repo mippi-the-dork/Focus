@@ -57,7 +57,7 @@ When executing tests, record the **exact engine version, Focus commit/release, p
 | DOC-03 | Simulate a failed/slow Markdown fetch during content indexing | Title search still works; index failure doesn't crash site | Source reviewed, browser not run |
 | DOC-04 | Keyboard /, Ctrl/Cmd+K, arrows, Enter, Escape | Search opens, navigates, activates and closes | Not run |
 | DOC-05 | Test 320px, 375px, tablet and desktop widths | Sidebar, content, tables and TOC remain usable | Not run |
-| DOC-06 | View Focus controls image and existing Solo and Lock GIFs | Images load with clear alt descriptions | Source asset path checked, browser not run |
+| DOC-06 | View updated hero, header icon, Focus controls, existing Solo/Lock GIFs and all placeholder figures | Assets render inside article width; captions/alt descriptions are clear; no overflow | Source asset paths checked, browser not run |
 | DOC-07 | Open old ?page= documentation URLs | Aliases lead to relevant current pages | Source reviewed, browser not run |
 | DOC-08 | Check heading links, history/back, focus and contrast | Correct links and keyboard accessibility | Not run |
 | DOC-09 | Read Roadmap v1.0, v2.0 and v3.0 labels | Shipped history distinct from v3.0 planned capabilities | Content reviewed |

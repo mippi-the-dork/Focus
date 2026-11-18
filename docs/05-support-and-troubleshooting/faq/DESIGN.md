@@ -36,6 +36,13 @@
 
 ## Physics and properties
 
+<!-- Media target: IMAGE | support-mixed-unavailable | docs/assets/media/support-mixed-unavailable.png -->
+<figure class="doc-media" data-kind="image" data-media-id="support-mixed-unavailable">
+  <img src="../../assets/media-placeholder.png" alt="Comparison of Mixed and Not Applicable states in Focus’s Outliner column" loading="lazy">
+  <figcaption>Mixed indicates differing eligible values, while Not Applicable indicates that the target lacks an editable matching property.</figcaption>
+</figure>
+
+
 **Why is a segment very dark or unclickable?** There may be no compatible registered component or instance-editable property. That's Not Applicable, not Off.
 
 **Does Enable Gravity enable physics simulation?** No. Simulation and Gravity are separate native properties.

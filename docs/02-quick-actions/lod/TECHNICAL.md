@@ -14,6 +14,13 @@ Forced LOD calls mesh-specific setters such as `SetForcedLodModel` or `SetForced
 
 ## Numeric LOD behavior
 
+<!-- Media target: IMAGE | lod-range | docs/assets/media/lod-range.png -->
+<figure class="doc-media" data-kind="image" data-media-id="lod-range">
+  <img src="../../assets/media-placeholder.png" alt="Diagram comparing a requested Forced LOD value against a mesh’s available authored LODs" loading="lazy">
+  <figcaption>Focus checks the authored LOD range and indicates when a requested forced level exceeds a target mesh’s available data.</figcaption>
+</figure>
+
+
 The UI's `SNumericEntryBox<int32>` uses non-spinning entry with minimum 0 and maximum 255. `FocusQuick::GetAvailableLODCount` queries `UStaticMesh::GetNumLODs()` or `USkinnedMeshComponent::GetNumLODs()`. A multi-target row can compute a common eligible range and flag any mesh for which the chosen forced value is out of range.
 
 The stored value follows Unreal's mapping: `0 = automatic`; positive `n` selects mesh LOD index `n-1`. A larger input is not necessarily blocked from entry merely because one target lacks that LOD; diagnostic color and range tooltip express that conflict.

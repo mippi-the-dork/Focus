@@ -8,6 +8,13 @@ Open **Edit → Plugins**, search for Focus, enable it if necessary and restart 
 
 ## A control is missing or unavailable
 
+<!-- Media target: IMAGE | support-unavailable-tooltip | docs/assets/media/support-unavailable-tooltip.png -->
+<figure class="doc-media" data-kind="image" data-media-id="support-unavailable-tooltip">
+  <img src="../../assets/media-placeholder.png" alt="Focus control tooltip explaining why a micro-widget is unavailable for an Actor" loading="lazy">
+  <figcaption>Eligibility tooltips help distinguish unavailable properties from controls that are simply switched off.</figcaption>
+</figure>
+
+
 First open the Focus header menu and check whether the relevant category is visible. If the group exists but a segment is dark, inspect the hovered tooltip. Some controls require an eligible registered Primitive, Shape, Mesh or Scene Component, and Unreal may prevent editing an instance property.
 
 A disabled control can be enabled; an unavailable control has no suitable editable target. Those are different conditions.

@@ -4,6 +4,13 @@
 
 ## Native property mapping
 
+<!-- Media target: IMAGE | world-native-flags | docs/assets/media/world-native-flags.png -->
+<figure class="doc-media" data-kind="image" data-media-id="world-native-flags">
+  <img src="../../assets/media-placeholder.png" alt="Diagram showing World Quick Actions flowing to Actor properties and engine subsystems" loading="lazy">
+  <figcaption>Focus updates native Actor flags; World Partition, HLOD generation and cooking interpret those flags independently.</figcaption>
+</figure>
+
+
 | Focus control | Actor property |
 | --- | --- |
 | In Main World Only | `bIsMainWorldOnly` |

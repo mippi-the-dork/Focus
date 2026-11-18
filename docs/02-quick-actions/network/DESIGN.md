@@ -4,6 +4,13 @@
 
 ## Available controls
 
+<!-- Media target: IMAGE | network-controls | docs/assets/media/network-controls.png -->
+<figure class="doc-media" data-kind="image" data-media-id="network-controls">
+  <img src="../../assets/media-placeholder.png" alt="Network Quick Actions displaying the available replication-related settings" loading="lazy">
+  <figcaption>Network actions expose three specific native configuration values without replacing the rest of Unreal’s replication setup.</figcaption>
+</figure>
+
+
 | Quick Action | Meaning | Doesn't replace |
 | --- | --- | --- |
 | **Net Load on Client** | Whether a placed Actor participates in loading on clients | Actor replication configuration |

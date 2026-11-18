@@ -26,6 +26,13 @@ Editor-hidden and Solo have saved metadata flags when persistence is enabled. Hi
 
 ## Per-view implementation
 
+<!-- Media target: IMAGE | visual-solo-primitive-filter | docs/assets/media/visual-solo-primitive-filter.png -->
+<figure class="doc-media" data-kind="image" data-media-id="visual-solo-primitive-filter">
+  <img src="../../assets/media-placeholder.png" alt="Diagram of Solo filtering visible primitives in an Unreal Editor viewport" loading="lazy">
+  <figcaption>Solo narrows the editor view to selected primitive scene IDs without rewriting the hidden state of unrelated Actors.</figcaption>
+</figure>
+
+
 `FFocusViewExtension::SetupView` checks `Focus::HasSolo(World)` and applies only in `EWorldType::Editor`. It gathers primitive scene IDs from Soloed Actors and puts them into `View.ShowOnlyPrimitives`. If another extension already restricts `ShowOnlyPrimitives`, Focus intersects the sets rather than replacing prior restrictions.
 
 

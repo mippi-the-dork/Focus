@@ -61,6 +61,7 @@ code,kbd,pre,.baseline,.top-link,.source,.nav-label,.toc-inner>b,.kind-link{
   box-shadow:inset 0 0 22px rgba(47,147,255,.12),0 0 22px rgba(47,147,255,.08);
   color:#fff;font:800 19px/1 "Cascadia Code",Consolas,monospace;letter-spacing:-.08em;
 }
+.brand-mark img{display:block;width:27px;height:27px;object-fit:contain}
 .brand-link span:not(.brand-mark){display:flex;flex-direction:column;min-width:0}
 .brand-link strong{font-size:12px;letter-spacing:.095em;white-space:nowrap}
 .brand-link small{
@@ -197,6 +198,18 @@ code,kbd,pre,.baseline,.top-link,.source,.nav-label,.toc-inner>b,.kind-link{
 }
 .markdown iframe{width:100%;border:0}
 .markdown p:has(> img){max-width:100%}
+/* Consistent documentation screenshots, diagrams, and animated examples. */
+.markdown figure.doc-media{
+  max-width:100%;margin:22px 0 26px;
+}
+.markdown figure.doc-media img{
+  display:block;max-width:100%;width:auto;height:auto;max-height:520px;
+  border:1px solid rgba(104,144,184,.23);background:#0a1018;
+}
+.markdown figure.doc-media figcaption{
+  max-width:760px;margin-top:8px;color:var(--muted);
+  font-size:12px;line-height:1.6;
+}
 .markdown>h1:first-child{margin-top:0}
 .markdown h1,.markdown h2,.markdown h3,.markdown h4{
   position:relative;scroll-margin-top:calc(var(--header) + 18px);color:#fff;line-height:1.18;

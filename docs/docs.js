@@ -286,6 +286,16 @@
       }
     });
 
+    // Images in Markdown are resolved relative to the Markdown source file,
+    // rather than the site's query-driven /Focus/ page URL. External images
+    // are left unchanged; this also keeps GitHub's Markdown preview correct.
+    els.article.querySelectorAll('img[src]').forEach(img=>{
+      const raw=img.getAttribute('src')||'';
+      if(!raw||/^(?:[a-z]+:|\/|#)/i.test(raw))return;
+      const target=resolveRelative(state.current,raw);
+      if(target.path)img.setAttribute('src',target.path+(target.hash||''));
+    });
+
     els.article.querySelectorAll('table').forEach(table=>{
       if(table.parentElement?.classList.contains('table-wrap')) return;
       const wrap=document.createElement('div'); wrap.className='table-wrap';

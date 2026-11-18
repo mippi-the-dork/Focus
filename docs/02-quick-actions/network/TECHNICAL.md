@@ -4,6 +4,13 @@
 
 ## Scope and native fields
 
+<!-- Media target: IMAGE | network-scopes | docs/assets/media/network-scopes.png -->
+<figure class="doc-media" data-kind="image" data-media-id="network-scopes">
+  <img src="../../assets/media-placeholder.png" alt="Diagram showing Actor-level and Primitive Component-level network property targets" loading="lazy">
+  <figcaption>The Network category uses different target scopes for Actor loading, movement replication and physics-to-proxy settings.</figcaption>
+</figure>
+
+
 | Focus control | Native property | Scope |
 | --- | --- | --- |
 | Net Load on Client | `bNetLoadOnClient` | Actor |

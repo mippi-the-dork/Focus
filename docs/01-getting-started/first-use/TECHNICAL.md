@@ -8,6 +8,13 @@
 
 ## Row state and toggling
 
+<!-- Media target: IMAGE | first-use-row-state | docs/assets/media/first-use-row-state.png -->
+<figure class="doc-media" data-kind="image" data-media-id="first-use-row-state">
+  <img src="../../assets/media-placeholder.png" alt="Diagram showing Focus evaluating a selected Outliner row and its eligible Actors" loading="lazy">
+  <figcaption>A row’s quick-action state is derived from the eligible loaded Actors in its resolved scope.</figcaption>
+</figure>
+
+
 `FFocusColumn::RefreshRow` aggregates eligible loaded Actors. Mixed controls depend on counts of enabled vs total eligible Actors, not simply the clicked parent row. Clicking a mixed or disabled control enables the entire affected scope; clicking fully enabled disables it.
 
 ## Editor guards

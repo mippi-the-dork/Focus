@@ -8,6 +8,13 @@ Open **Editor Preferences → Plugins → Focus** to customize control colors an
 
 ## Three things that are easy to confuse
 
+<!-- Media target: IMAGE | settings-overview | docs/assets/media/settings-overview.png -->
+<figure class="doc-media" data-kind="image" data-media-id="settings-overview">
+  <img src="../assets/media-placeholder.png" alt="Diagram comparing category visibility, control colors and persistence options" loading="lazy">
+  <figcaption>Visibility controls the Outliner layout, colors communicate state, and persistence determines which Focus edits are saved.</figcaption>
+</figure>
+
+
 | Decision | What it changes | What it does not change |
 | --- | --- | --- |
 | Category visibility | Which Quick Action groups appear in the Outliner | The values of the underlying Actor/Component properties |

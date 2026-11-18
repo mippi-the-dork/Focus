@@ -4,6 +4,13 @@
 
 ## The problem it solves
 
+<!-- Media target: IMAGE | overview-outliner | docs/assets/media/overview-outliner.png -->
+<figure class="doc-media" data-kind="image" data-media-id="overview-outliner">
+  <img src="../../assets/media-placeholder.png" alt="Focus controls displayed in the Unreal Engine World Outliner" loading="lazy">
+  <figcaption>Focus adds compact controls alongside Actors, keeping visibility and protection decisions within the Outliner.</figcaption>
+</figure>
+
+
 Large Unreal levels become slow to work in when routine questions require opening a Details panel, finding a component, and navigating several property categories. Focus brings frequently changed Actor and Component controls into one compact World Outliner column.
 
 ## What you can accomplish

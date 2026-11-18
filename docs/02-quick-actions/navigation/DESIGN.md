@@ -4,6 +4,13 @@
 
 ## Available controls
 
+<!-- Media target: IMAGE | navigation-controls | docs/assets/media/navigation-controls.png -->
+<figure class="doc-media" data-kind="image" data-media-id="navigation-controls">
+  <img src="../../assets/media-placeholder.png" alt="Navigation Quick Actions displaying the navigation contribution and obstacle flags" loading="lazy">
+  <figcaption>The Navigation category exposes native component settings that influence how Unreal builds and updates navigation data.</figcaption>
+</figure>
+
+
 | Quick Action | Appropriate target | Purpose |
 | --- | --- | --- |
 | **Can Ever Affect Navigation** | Eligible Actor Component | Permit contribution to navigation data |
@@ -12,6 +19,13 @@
 | **Rasterize as Filled Convex Volume** | Eligible Primitive Component | Rasterize geometry as a filled convex shape when supported |
 
 ## Workflow: prevent decorative collision from affecting routes
+
+<!-- Media target: GIF | navigation-navmesh | docs/assets/media/navigation-navmesh.gif -->
+<figure class="doc-media" data-kind="gif" data-media-id="navigation-navmesh">
+  <img src="../../assets/media-placeholder.png" alt="Animation comparing navmesh results before and after changing navigation contribution" loading="lazy">
+  <figcaption>Disabling navigation contribution on selected collision can remove its influence after Unreal updates the navigation data.</figcaption>
+</figure>
+
 
 1. Inspect the level's current NavMesh so you have a baseline.
 2. Enable **Navigation** in the Focus header.

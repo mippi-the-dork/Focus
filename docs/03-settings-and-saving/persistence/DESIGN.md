@@ -25,6 +25,13 @@ You Transform Lock a finished building and leave that control's persistence enab
 
 ## Session-only example
 
+<!-- Media target: GIF | settings-persistence-workflow | docs/assets/media/settings-persistence-workflow.gif -->
+<figure class="doc-media" data-kind="gif" data-media-id="settings-persistence-workflow">
+  <img src="../../assets/media-placeholder.png" alt="Animation changing Solo persistence and temporarily isolating Actors" loading="lazy">
+  <figcaption>With Solo configured as session-only, the editing view can be isolated without replacing the previously saved Solo state.</figcaption>
+</figure>
+
+
 You temporarily Solo a room or hide distractions while working. Disable persistence for the corresponding Focus control first. Changes through that Focus control remain active in the current editor session without replacing the last saved value. To discard outstanding temporary edits, choose **Restore Temporary Changes** from Focus's header menu.
 
 ## Two common misconceptions

@@ -4,6 +4,13 @@
 
 ## Choose a mobility mode
 
+<!-- Media target: IMAGE | mobility-options | docs/assets/media/mobility-options.png -->
+<figure class="doc-media" data-kind="image" data-media-id="mobility-options">
+  <img src="../../assets/media-placeholder.png" alt="Mobility micro-widget showing its Static, Stationary and Movable choices" loading="lazy">
+  <figcaption>The three vertically arranged Mobility choices map directly to Unreal’s native Scene Component mobility values.</figcaption>
+</figure>
+
+
 The compact Mobility widget contains **three vertically arranged choices**, top to bottom:
 
 | Choice | Native mode | Typical use |
@@ -15,6 +22,13 @@ The compact Mobility widget contains **three vertically arranged choices**, top 
 Hover the segment to confirm the label, then click the option you want. This is a **three-choice selector**, not a button you repeatedly cycle.
 
 ## Workflow: prepare a mesh to simulate physics
+
+<!-- Media target: GIF | mobility-bulk | docs/assets/media/mobility-bulk.gif -->
+<figure class="doc-media" data-kind="gif" data-media-id="mobility-bulk">
+  <img src="../../assets/media-placeholder.png" alt="Animation applying Movable to eligible Scene Components with Focus" loading="lazy">
+  <figcaption>Changing Mobility across a selected scope prepares eligible components for workflows that require movement.</figcaption>
+</figure>
+
 
 1. Enable **Mobility** in Focus's Outliner header menu.
 2. On an Actor with a suitable Scene Component, choose **Movable** using the bottom segment.

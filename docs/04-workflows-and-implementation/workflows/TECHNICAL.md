@@ -4,6 +4,13 @@
 
 ## How a row action resolves scope
 
+<!-- Media target: IMAGE | workflows-scope-resolution | docs/assets/media/workflows-scope-resolution.png -->
+<figure class="doc-media" data-kind="image" data-media-id="workflows-scope-resolution">
+  <img src="../../assets/media-placeholder.png" alt="Diagram of row scope resolution across folders, attachments, groups and selected Actors" loading="lazy">
+  <figcaption>Focus resolves its action targets from loaded Actor relationships rather than only from Outliner rows currently visible on screen.</figcaption>
+</figure>
+
+
 `FFocusColumn::ActionActors` and `Gather` construct the relevant loaded Actor set from the activated Actor/folder/group row and the currently selected rows. This uses live Actor relationships, not Outliner search-result child widgets, so collapsed and filtered items still contribute.
 
 ## How state is aggregated

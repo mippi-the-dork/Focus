@@ -4,6 +4,13 @@
 
 ## Available controls
 
+<!-- Media target: IMAGE | world-controls | docs/assets/media/world-controls.png -->
+<figure class="doc-media" data-kind="image" data-media-id="world-controls">
+  <img src="../../assets/media-placeholder.png" alt="World Quick Actions showing main-world, editor-only, spatial-loading and HLOD flags" loading="lazy">
+  <figcaption>The World category places four Actor-level configuration choices directly in the Outliner.</figcaption>
+</figure>
+
+
 | Quick Action | What it changes | Important consequence |
 | --- | --- | --- |
 | **In Main World Only** | Actor main-world-only configuration | Only has meaning where Unreal respects this world-context flag |
@@ -14,6 +21,13 @@
 These are **Actor-level** options. They do not edit every component separately.
 
 ## Workflow: examine World Partition participation
+
+<!-- Media target: IMAGE | world-partition | docs/assets/media/world-partition.png -->
+<figure class="doc-media" data-kind="image" data-media-id="world-partition">
+  <img src="../../assets/media-placeholder.png" alt="World Partition example showing an Actor’s spatial-loading setting" loading="lazy">
+  <figcaption>Spatial loading is an Actor configuration decision whose result depends on the surrounding World Partition setup.</figcaption>
+</figure>
+
 
 1. Enable the **World** category in the Focus header menu.
 2. Choose a loaded Actor in a World Partition level.

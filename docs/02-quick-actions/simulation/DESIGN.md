@@ -4,6 +4,13 @@
 
 ## Available controls
 
+<!-- Media target: IMAGE | simulation-controls | docs/assets/media/simulation-controls.png -->
+<figure class="doc-media" data-kind="image" data-media-id="simulation-controls">
+  <img src="../../assets/media-placeholder.png" alt="Simulation Quick Actions micro-widget showing its six controls" loading="lazy">
+  <figcaption>The Simulation category exposes physics, gravity, impulse and asynchronous ticking settings in one compact group.</figcaption>
+</figure>
+
+
 | Quick Action | Meaning | Needed for a visible result |
 | --- | --- | --- |
 | **Simulate Physics** | Enable rigid-body physics on eligible primitives | Compatible primitive/collision/mobility |
@@ -16,6 +23,13 @@
 These controls edit Unreal's native values, not a custom simulation system.
 
 ## Workflow: make a prop respond to gravity
+
+<!-- Media target: GIF | simulation-prop-physics | docs/assets/media/simulation-prop-physics.gif -->
+<figure class="doc-media" data-kind="gif" data-media-id="simulation-prop-physics">
+  <img src="../../assets/media-placeholder.png" alt="Animation of a mesh being configured for physics and gravity using Focus" loading="lazy">
+  <figcaption>An eligible movable mesh can be configured to simulate physics and respond to world gravity through separate controls.</figcaption>
+</figure>
+
 
 1. Enable the **Simulation** category through the Focus column-header menu.
 2. Use a Static Mesh Actor with a compatible Primitive Component, collision and mobility.

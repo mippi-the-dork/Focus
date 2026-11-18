@@ -4,6 +4,13 @@
 
 ## Exact native property targets
 
+<!-- Media target: IMAGE | simulation-component-scopes | docs/assets/media/simulation-component-scopes.png -->
+<figure class="doc-media" data-kind="image" data-media-id="simulation-component-scopes">
+  <img src="../../assets/media-placeholder.png" alt="Diagram distinguishing Actor-scoped and Primitive Component-scoped simulation controls" loading="lazy">
+  <figcaption>Async Physics Tick applies to Actors, while the remaining Simulation controls target compatible Primitive Components.</figcaption>
+</figure>
+
+
 | Focus control | Native property | Target |
 | --- | --- | --- |
 | Simulate Physics | `BodyInstance.bSimulatePhysics` | Primitive Component |

@@ -26,6 +26,13 @@
 
 ## Mixed protection levels
 
+<!-- Media target: IMAGE | interaction-mixed-protection | docs/assets/media/interaction-mixed-protection.png -->
+<figure class="doc-media" data-kind="image" data-media-id="interaction-mixed-protection">
+  <img src="../../assets/media-placeholder.png" alt="Focus protection widget displaying different lock levels across a folder" loading="lazy">
+  <figcaption>A mixed protection state shows that eligible Actors do not currently share the same protection level.</figcaption>
+</figure>
+
+
 If a folder contains different protection levels, its combined control is **Mixed**. Clicking that mixed protection control makes the applicable scope **Transform Locked**, even if some members had Edit Lock. Further clicks cycle the shared level. Check the tooltip and scope before clicking a mixed folder.
 
 ## Why might a locked Actor still change?

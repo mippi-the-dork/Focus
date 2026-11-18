@@ -28,6 +28,13 @@ Hover a control to confirm its exact purpose and current state. Click it on the 
 
 ## Workflow: distinguish editor and gameplay visibility
 
+<!-- Media target: IMAGE | visual-editor-vs-game | docs/assets/media/visual-editor-vs-game.png -->
+<figure class="doc-media" data-kind="image" data-media-id="visual-editor-vs-game">
+  <img src="../../assets/media-placeholder.png" alt="Side-by-side comparison of Hide in Editor and Hidden in Game" loading="lazy">
+  <figcaption>Hide in Editor changes the editing view, while Hidden in Game configures a separate native Actor property.</figcaption>
+</figure>
+
+
 Hide a decorative Actor in the editor, then inspect its native **Hidden in Game** value in Details: these are separate decisions. If you intend a gameplay-visible Actor to remain hidden only during editing, avoid changing Hidden in Game.
 
 ## When an action seems ineffective
