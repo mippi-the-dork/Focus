@@ -4,52 +4,54 @@
 
 ## What this category controls
 
-**Forced LOD Model** overrides mesh LOD selection, while **Never Distance Cull** and **Allow Cull Distance Volume** control different distance-culling behaviors.
+The LOD micro-widget contains a central **Forced LOD Model number** and two separate distance-culling toggles. Forced LOD changes which mesh LOD is displayed; the culling options change whether eligible primitives participate in supported distance-culling mechanisms.
 
-| Forced LOD entry | Meaning |
+| Control | What it does | What it does not do |
+| --- | --- | --- |
+| Forced LOD Model | Requests automatic or forced mesh LOD selection | It does not generate missing LODs |
+| Never Distance Cull | Prevents distance culling by systems that honor this native setting | It does not override every visibility, occlusion or streaming system |
+| Allow Cull Distance Volume | Allows an eligible primitive to respond to a Cull Distance Volume | It does nothing without a suitable volume |
+
+## Exactly how to operate the Forced LOD number
+
+The compact numeric control supports more than typing a number. The gestures are:
+
+| Input | Result |
 | --- | --- |
-| 0 | Let Unreal choose automatically |
-| 1 | Force mesh LOD 0 |
-| 2 | Force mesh LOD 1 |
-| n | Force mesh LOD n-1 |
+| **Left-click once** | Increase the displayed value by one |
+| **Alt + left-click** | Decrease the value by one |
+| **Mouse wheel up or down** | Increase or decrease by one |
+| **Double left-click** | Open a small text-entry popup to enter a specific number |
+| **Right-click** | Retains the normal Outliner context-menu interaction |
 
-## Workflow
+A single-click increment is delayed briefly so a double-click can open text entry without accidentally changing the value first. When typing, enter a number from **0 to 255** and commit it. The popup is deliberately separate from the narrow Outliner column.
 
-Use Forced LOD when inspecting mesh LOD quality or debugging a distant object. Check the mesh has enough LODs; an out-of-range request is highlighted with the Alert color.
+### How the number maps to mesh LOD
 
-Never Distance Cull only affects systems respecting that property. Allow Cull Distance Volume requires a suitable volume to exist. Neither can disable every form of streaming or occlusion.
+| Focus entry | Meaning |
+| --- | --- |
+| **0** | Automatic: Unreal chooses LOD |
+| **1** | Force mesh LOD **0** |
+| **2** | Force mesh LOD **1** |
+| **n** | Force mesh LOD **n-1** |
 
-## Forced LOD: read the index carefully
+This is Unreal's one-based *forced* LOD setting, not the mesh asset's zero-based LOD index.
 
-- **0** means Unreal selects the mesh LOD automatically.
-- **1** forces mesh **LOD 0**.
-- **2** forces mesh **LOD 1**, and so on.
+## Practical workflow: diagnose a disappearing mesh
 
-The numeric entry is a request, not proof that the mesh contains that many LODs. An out-of-range value can be highlighted with the alert color. Use a reasonable common LOD across a multi-selection.
+1. Enable the **LOD** category in the Focus column-header menu.
+2. Find an Actor with an eligible Static Mesh or Skeletal/Skinned Mesh Component.
+3. Double-click the LOD number and enter **1** to inspect the first authored LOD.
+4. Try higher values only if the mesh actually contains those LODs. Hover to inspect the common valid range when several meshes are selected.
+5. Restore **0** afterward to return to automatic selection.
+6. If the Actor disappears with distance, separately inspect **Never Distance Cull** and **Allow Cull Distance Volume**. Do not assume that Forced LOD controls actor streaming.
 
+## Out-of-range and mixed values
 
-## Distance-culling flags
+The input can accept values beyond an individual mesh's authored LOD count. Focus can flag an invalid request with its **Alert** color. A multi-selection may contain meshes with different available LOD ranges; an empty or mixed display indicates the eligible targets don't share the same current value.
 
-**Never Distance Cull** disables culling in systems that respect that native property; it does not disable every visibility or streaming system. **Allow Cull Distance Volume** permits compatible Cull Distance Volumes to influence primitives when such a volume exists in the level.
+## Target scope and saving
 
+Changes affect eligible components on loaded Actors in the activated row, attachments, folder/group, or selected rows. Edit-Locked Actors are skipped for native quick-property writes. LOD settings use native Unreal property persistence, not Focus's Visual/Interaction session-only options. Use Undo for an unintended batch edit.
 
-## Example
-
-When investigating disappearing props, temporarily set Never Distance Cull on a few loaded primitives and examine the result. If streaming or another visibility mechanism is responsible, changing this one flag may not affect the symptom.
-
-
-## Common confusions
-
-Mobility and physics simulation are distinct. Forced LOD and distance culling are distinct. A valid property can have no visible effect in a scene whose required engine feature is absent.
-
----
-
-For editable C++ property targets, transaction details and native constraints, [see Technical](TECHNICAL.md).
-
-## Shared Quick Action behavior
-
-Quick Actions apply to **currently loaded eligible Actors**, including applicable attached descendants, nested folders, native groups and selected rows. If the row is part of a multi-selection, the action can cover the other selected rows. A Mixed control means different eligible targets disagree, while Not Applicable means no editable compatible target exists. An Edit-Locked Actor is skipped by native quick-property writes.
-
-For the full eligibility and saved/temporary editing rules, see [Quick Actions overview](../README.md) and [Settings and Saving](../../03-settings-and-saving/README.md).
-
-For the Unreal implementation and exact property mapping, [read Technical](TECHNICAL.md).
+For exact mesh component setters and eligibility checks, [read Technical](TECHNICAL.md). For common states and hierarchy rules, see [Quick Actions overview](../README.md).

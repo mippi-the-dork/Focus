@@ -42,6 +42,12 @@ Focus is an **editor tool**, not a packaged gameplay system or an access-control
 
 For save behavior on shared levels, see [Session-Only and Persistent Edits](03-settings-and-saving/persistence/DESIGN.md). For protection scope, see [Interaction Quick Actions](02-quick-actions/interaction/DESIGN.md).
 
+## What's next for Focus?
+
+The [Focus Roadmap](ROADMAP.md) outlines three planned areas: additional built-in Quick Actions categories, a public extension API so other plugins can contribute categories and micro-widgets, and a data-driven Quick Widget Builder for users.
+
+These are **planned features**, not capabilities in Focus v2.1.0. The [documentation audit](DOCUMENTATION_AUDIT.md) also tracks current gaps and improvements to the manual.
+
 ## Project and support
 
 - [Focus source repository](https://github.com/mippi-the-dork/Focus)
