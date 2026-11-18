@@ -510,7 +510,7 @@
     els.menu?.addEventListener('click',toggleNav);
     els.scrim?.addEventListener('click',closeNav);
     els.search.addEventListener('input',()=>{if(els.search.value.trim())void buildFullTextIndex();renderSearch();});
-    els.search.addEventListener('focus',()=>{void buildFullTextIndex();renderSearch();});
+    els.search.addEventListener('focus',renderSearch);
     els.search.addEventListener('keydown',e=>{
       if(e.key==='ArrowDown'){e.preventDefault();moveSearch(1);}
       else if(e.key==='ArrowUp'){e.preventDefault();moveSearch(-1);}
