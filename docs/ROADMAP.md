@@ -10,7 +10,7 @@
 <!-- Media target: IMAGE | roadmap-milestones | docs/assets/media/roadmap-milestones.png -->
 <figure class="doc-media" data-kind="image" data-media-id="roadmap-milestones">
   <img src="assets/media-placeholder.png" alt="Timeline showing Focus v1.0, v2.0 and planned v3.0 capabilities" loading="lazy">
-  <figcaption>Focus evolved from Visual and Interaction controls in v1.0 to broader native Quick Actions in v2.0, with extensibility planned for v3.0.</figcaption>
+  <figcaption>Focus evolved from Visual and Interaction controls in v1.0 to broader native Quick Actions in v2.0, with extensibility planned for v3.0.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Create a clean horizontal timeline with v1.0 Released (Visual, Interaction), v2.0 Released (eight more Quick Action categories and session-only Focus editing), and v3.0 Planned (new categories, provider API, Widget Builder). Use a visually distinct Planned treatment.</span></figcaption>
 </figure>
 
 
@@ -103,7 +103,7 @@ Therefore, public registration must be designed **below the existing UI**, rathe
 <!-- Media target: IMAGE | roadmap-extension-api | docs/assets/media/roadmap-extension-api.png -->
 <figure class="doc-media" data-kind="image" data-media-id="roadmap-extension-api">
   <img src="assets/media-placeholder.png" alt="Conceptual architecture of Focus categories, third-party providers and the Quick Widget Builder" loading="lazy">
-  <figcaption>The planned extension registry would provide a shared foundation for built-in actions, plugin contributions and user-authored widgets.</figcaption>
+  <figcaption>The planned extension registry would provide a shared foundation for built-in actions, plugin contributions and user-authored widgets.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Create a conceptual, clearly labeled Planned architecture diagram: Focus Quick Actions registry in the center; built-in providers and third-party plugin providers register categories/micro-widgets; the Quick Widget Builder supplies data-driven definitions; all feed the same Outliner rendering/eligibility/transaction system.</span></figcaption>
 </figure>
 
 
