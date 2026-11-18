@@ -11,7 +11,7 @@
 <!-- Media target: IMAGE | architecture-editor-layers | docs/assets/media/architecture-editor-layers.png -->
 <figure class="doc-media" data-kind="image" data-media-id="architecture-editor-layers">
   <img src="../../assets/media-placeholder.png" alt="Architecture diagram linking the Focus module, Outliner column, editor guards and view extension" loading="lazy">
-  <figcaption>The editor module coordinates presentation, input protection, state persistence and view filtering through Unreal’s native interfaces.</figcaption>
+  <figcaption>The editor module coordinates presentation, input protection, state persistence and view filtering through Unreal’s native interfaces.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Create a technical architecture diagram with FFocusModule, FFocusColumn, FocusQuick, UFocusEditorMode, transform/command/interaction guards, FFocusViewExtension, UFocusSettings, and the Actor/package state. Use labeled arrows for registration, reading, writes, and viewport filtering.</span></figcaption>
 </figure>
 
 

@@ -7,7 +7,7 @@
 <!-- Media target: GIF | workflows-bulk-lock | docs/assets/media/workflows-bulk-lock.gif -->
 <figure class="doc-media" data-kind="gif" data-media-id="workflows-bulk-lock">
   <img src="../../assets/media-placeholder.png" alt="Animation applying Selection and Transform Lock to a completed Outliner folder" loading="lazy">
-  <figcaption>Bulk protection makes finished environment content harder to select or transform accidentally during adjacent work.</figcaption>
+  <figcaption>Bulk protection makes finished environment content harder to select or transform accidentally during adjacent work.<span class="media-capture-instructions"><strong>Capture instructions · GIF:</strong> Record selecting a completed environment folder and applying Selection Lock, then Transform Lock via Focus. Demonstrate that ordinary viewport picking/transforming is blocked, and finally select a protected Actor from the Outliner to show the intentional exception.</span></figcaption>
 </figure>
 
 
