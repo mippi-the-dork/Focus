@@ -4,6 +4,13 @@
 
 ## Available controls
 
+<!-- Media target: IMAGE | physics-events-controls | docs/assets/media/physics-events-controls.png -->
+<figure class="doc-media" data-kind="image" data-media-id="physics-events-controls">
+  <img src="../../assets/media-placeholder.png" alt="Physics Events micro-widget showing hit, overlap and wake event controls" loading="lazy">
+  <figcaption>The Physics Events category exposes the three native notification settings for eligible primitive components.</figcaption>
+</figure>
+
+
 | Quick Action | What you configure | Additional Unreal prerequisites |
 | --- | --- | --- |
 | **Generate Hit Events** | Rigid-body collision hit notifications | Compatible collision and contact behavior |
@@ -11,6 +18,13 @@
 | **Generate Wake Events** | Physics wake/sleep notifications | A body supporting physics simulation |
 
 ## Workflow: investigate a missing overlap
+
+<!-- Media target: GIF | physics-events-overlap | docs/assets/media/physics-events-overlap.gif -->
+<figure class="doc-media" data-kind="gif" data-media-id="physics-events-overlap">
+  <img src="../../assets/media-placeholder.png" alt="Animation showing overlap generation being enabled and tested in Play" loading="lazy">
+  <figcaption>Overlap notifications require a compatible collision setup as well as the Generate Overlap Events setting.</figcaption>
+</figure>
+
 
 1. Enable the **Physics Events** category.
 2. Select an Actor with a registered, editable Primitive Component; activate **Generate Overlap Events**.

@@ -4,6 +4,13 @@
 
 ## Exact native property targets
 
+<!-- Media target: IMAGE | physics-events-path | docs/assets/media/physics-events-path.png -->
+<figure class="doc-media" data-kind="image" data-media-id="physics-events-path">
+  <img src="../../assets/media-placeholder.png" alt="Diagram of primitive collision and physics event generation paths" loading="lazy">
+  <figcaption>Hit, overlap and wake notifications originate from distinct native properties and require corresponding engine conditions.</figcaption>
+</figure>
+
+
 | Focus control | Native property | Target |
 | --- | --- | --- |
 | Generate Hit Events | `BodyInstance.bNotifyRigidBodyCollision` | Primitive Component |
