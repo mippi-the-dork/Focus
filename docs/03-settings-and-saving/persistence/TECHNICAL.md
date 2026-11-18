@@ -16,6 +16,13 @@ The state cache is held in `TMap<TWeakObjectPtr<AActor>, FFlags> States`, with s
 
 ## Serializing only intended changes
 
+<!-- Media target: IMAGE | settings-package-overlay | docs/assets/media/settings-package-overlay.png -->
+<figure class="doc-media" data-kind="image" data-media-id="settings-package-overlay">
+  <img src="../../assets/media-placeholder.png" alt="Diagram of Focus temporarily restoring persistent Actor values during package serialization" loading="lazy">
+  <figcaption>During a package save, Focus substitutes recorded persistent values for active session-only native changes before restoring the live editor state.</figcaption>
+</figure>
+
+
 `PersistentMetadata` computes saved Focus metadata from the current shared state, substituting pre-temporary values for controls whose session-only baselines remain active. This prevents saving an unrelated persistent Focus control from unintentionally persisting temporary neighbors.
 
 `OnPackagePreSave` collects temporary values for Actors in the package and temporarily substitutes the prior persistent Hidden in Game, editor-hidden and native movement-lock values. `OnPackagePostSave` returns the live temporary values to the editor. The module subscribes to `UPackage::PreSavePackageWithContextEvent` and `PackageSavedWithContextEvent`.

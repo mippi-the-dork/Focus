@@ -4,6 +4,13 @@
 
 ## Five different visual meanings
 
+<!-- Media target: IMAGE | settings-state-colors | docs/assets/media/settings-state-colors.png -->
+<figure class="doc-media" data-kind="image" data-media-id="settings-state-colors">
+  <img src="../../assets/media-placeholder.png" alt="Focus controls showing enabled, disabled, mixed, unavailable and alert colors" loading="lazy">
+  <figcaption>Distinct visual states help differentiate active settings, mixed selections, unavailable properties and important warnings.</figcaption>
+</figure>
+
+
 | Meaning | Typical default | What it tells you |
 | --- | --- | --- |
 | Enabled | White | The control is available and on |

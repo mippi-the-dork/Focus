@@ -4,6 +4,13 @@
 
 ## Restore Temporary Changes
 
+<!-- Media target: GIF | settings-restore-temporary | docs/assets/media/settings-restore-temporary.gif -->
+<figure class="doc-media" data-kind="gif" data-media-id="settings-restore-temporary">
+  <img src="../../assets/media-placeholder.png" alt="Animation restoring temporarily hidden, Soloed and protected Actors" loading="lazy">
+  <figcaption>Restore Temporary Changes reverts tracked session-only Focus edits while leaving unrelated persistent changes intact.</figcaption>
+</figure>
+
+
 The Focus header menu has **Restore Temporary Changes**. It discards outstanding session-only edits made through Focus's Visual and Interaction controls and restores the previous recorded values. It does **not** reset saved persistent changes, change your persistence preferences, or undo unrelated native Details edits.
 
 Use it when you have temporarily hidden, Soloed, or locked a collection of Actors and want to return to the state from before those temporary edits.

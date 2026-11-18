@@ -14,6 +14,13 @@ Use **Solo** on the loaded Actors or folder you want to inspect. It filters rend
 
 ### Change a property across many Actors
 
+<!-- Media target: IMAGE | workflows-hierarchy | docs/assets/media/workflows-hierarchy.png -->
+<figure class="doc-media" data-kind="image" data-media-id="workflows-hierarchy">
+  <img src="../assets/media-placeholder.png" alt="Outliner hierarchy showing a loaded folder, attachments and mixed selected Actors" loading="lazy">
+  <figcaption>A Quick Action can apply across eligible loaded members of a folder, group, attachment hierarchy or selection.</figcaption>
+</figure>
+
+
 Select a folder, group, Actor hierarchy or multi-selection. Enable the corresponding Quick Action category, read the control's eligibility tooltip and apply. A mixed state tells you eligible targets disagree. Unloaded World Partition Actors aren't included in these operations.
 
 ### Investigate why an editor action isn't blocked
