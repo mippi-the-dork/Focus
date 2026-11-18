@@ -176,6 +176,12 @@
       });
     });
 
+    pages.push({title:'Roadmap',path:'ROADMAP.md',kind:'Document',
+      summary:'Planned Quick Action categories, third-party extension API and Quick Widget Builder',
+      search:'roadmap planned features future extension api third party plugin micro widget builder'});
+    pages.push({title:'Documentation Audit',path:'DOCUMENTATION_AUDIT.md',kind:'Document',
+      summary:'Documentation quality findings, prioritized fixes and verification gaps',
+      search:'audit documentation improvements quality gaps testing screenshots search'});
     state.pages=pages;
     state.byPath=new Map(pages.map(p=>[p.path,p]));
   }
@@ -183,6 +189,7 @@
   function renderNav(){
     const out=[];
     out.push('<a class="nav-home" data-page="'+esc(state.manifest.home)+'" href="'+pageUrl(state.manifest.home)+'">⌂ Documentation Home</a>');
+    out.push('<a class="ref-link" data-page="ROADMAP.md" href="'+pageUrl('ROADMAP.md')+'">Roadmap · Planned Features</a>');
     out.push('<div class="nav-label">CURRENT VERSION · '+esc((state.manifest.baseline||'v2.1.0').replace('Focus ','').toUpperCase())+'</div>');
     
     

@@ -8,12 +8,17 @@ Before documenting changed behavior, inspect the current Focus C++ source and re
 
 ## Separate Design and Technical responsibilities
 
-Each of the 23 feature topics, with each of the ten Quick Actions categories documented as a single complete Design/Technical pair has two complementary, independently useful pages:
+Each of the 23 feature topics has two complementary, independently useful pages. All ten Quick Actions categories follow this same Design/Technical pattern:
 
 - **DESIGN.md:** The user manual. Explain what a setting does, why to use it, where to find it, expected results, concrete workflows, examples, exceptions and common questions. Avoid internal function names unless the user actually needs them.
 - **TECHNICAL.md:** The implementation reference. Document native property types, applicability checks, Actor and Component targets, state ownership, package serialization, undo, editor delegates, native API constraints and supported versus unsupported execution paths. Link to the relevant C++ source.
   
 Never fill both pages with the same copied README material or generic text under different headings. Keep native implementation explanations primarily in Technical and practical instructions primarily in Design. Both should link to each other.
+
+## Roadmap and audit
+
+- [Roadmap](ROADMAP.md) contains proposed product development directions. Label all unimplemented features **Planned**, and do not list them among current Quick Actions until they ship.
+- [Documentation Audit](DOCUMENTATION_AUDIT.md) tracks editorial gaps, known verification limits and improvement priorities. Revise its status entries when improvements are actually delivered.
 
 ## Adding or changing features
 
