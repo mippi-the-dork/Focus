@@ -456,7 +456,7 @@
       const r=await fetch('site-manifest.json',{cache:'no-cache'});
       if(!r.ok)throw new Error('Could not load documentation manifest.');
       state.manifest=await r.json();
-      const currentVersion=String(state.manifest.baseline||'Focus v2.1.0').match(/v\d+\.\d+/)?.[0]||'v2.1.0';
+      const currentVersion=String(state.manifest.baseline||'Focus v2.1.0').match(/v\d+\.\d+(?:\.\d+)?/)?.[0]||'v2.1.0';
       if(els.version) els.version.textContent=currentVersion+' DOCUMENTED';
       await loadStructure();
       buildPages();
