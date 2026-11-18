@@ -8,7 +8,7 @@ Before documenting changed behavior, inspect the current Focus C++ source and re
 
 ## Separate Design and Technical responsibilities
 
-Each of the 23 feature topics has two complementary, independently useful pages:
+Each of the 23 feature topics, with each of the ten Quick Actions categories documented as a single complete Design/Technical pair has two complementary, independently useful pages:
 
 - **DESIGN.md:** The user manual. Explain what a setting does, why to use it, where to find it, expected results, concrete workflows, examples, exceptions and common questions. Avoid internal function names unless the user actually needs them.
 - **TECHNICAL.md:** The implementation reference. Document native property types, applicability checks, Actor and Component targets, state ownership, package serialization, undo, editor delegates, native API constraints and supported versus unsupported execution paths. Link to the relevant C++ source.

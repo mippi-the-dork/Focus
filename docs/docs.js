@@ -36,6 +36,36 @@
     return out.join('/');
   }
 
+  // Redirect published bookmarks from the original category layout.
+  const legacyRoutes = {
+    '02-visual-and-interaction/visibility/': '02-quick-actions/visual/',
+    '02-visual-and-interaction/solo/': '02-quick-actions/visual/',
+    '02-visual-and-interaction/locks/': '02-quick-actions/interaction/',
+    '02-visual-and-interaction/hierarchies/': '04-workflows-and-implementation/workflows/',
+    '03-quick-properties/simulation/': '02-quick-actions/simulation/',
+    '03-quick-properties/lighting/': '02-quick-actions/lighting/',
+    '03-quick-properties/network/': '02-quick-actions/network/',
+    '03-quick-properties/mobility/': '02-quick-actions/mobility/',
+    '03-quick-properties/eligibility/': '04-workflows-and-implementation/reference/',
+    '04-settings-and-saving/': '03-settings-and-saving/',
+    '05-implementation/': '04-workflows-and-implementation/',
+    '06-support/': '05-support-and-troubleshooting/'
+  };
+  function canonicalPath(path){
+    const normalized = normalize(path);
+    if (normalized === '02-visual-and-interaction/README.md' || normalized === '03-quick-properties/README.md' ||
+        normalized.startsWith('03-quick-properties/eligibility/') ||
+        normalized.startsWith('05-implementation/reference/'))
+      return '02-quick-actions/README.md';
+    for (const [oldPrefix,newPrefix] of Object.entries(legacyRoutes)){
+      if (normalized.startsWith(oldPrefix)) return newPrefix+normalized.slice(oldPrefix.length);
+    }
+    if (normalized === '04-settings-and-saving/README.md') return '03-settings-and-saving/README.md';
+    if (normalized === '05-implementation/README.md') return '04-workflows-and-implementation/README.md';
+    if (normalized === '06-support/README.md') return '05-support-and-troubleshooting/README.md';
+    return normalized;
+  }
+
   function splitHash(value){
     const i=value.indexOf('#');
     return i<0?[value,'']:[value.slice(0,i),value.slice(i+1)];
@@ -58,7 +88,7 @@
 
   function currentFromUrl(){
     const raw=new URLSearchParams(location.search).get('page')||'README.md';
-    const path=normalize(raw);
+    const path=canonicalPath(raw);
     return path&& !path.startsWith('../') ? path : 'README.md';
   }
 
@@ -146,15 +176,6 @@
       });
     });
 
-    state.manifest.references.forEach(x=>pages.push({
-      title:x.title,path:x.path,kind:'Reference',category:'Reference',summary:x.summary,
-      search:x.title+' reference '+x.summary
-    }));
-    state.manifest.qa.forEach(x=>pages.push({
-      title:x.title,path:x.path,kind:'QA',category:'QA',summary:x.summary,
-      search:x.title+' qa testing release '+x.summary
-    }));
-
     state.pages=pages;
     state.byPath=new Map(pages.map(p=>[p.path,p]));
   }
@@ -187,14 +208,6 @@
       out.push('</div></details>');
     });
 
-    out.push('<div class="nav-label">REFERENCE</div>');
-    state.manifest.references.forEach(x=>out.push(
-      '<a class="ref-link" data-page="'+esc(x.path)+'" href="'+pageUrl(x.path)+'">'+esc(x.title)+'</a>'
-    ));
-    out.push('<div class="nav-label">QA · CURRENT & HISTORICAL</div>');
-    state.manifest.qa.forEach(x=>out.push(
-      '<a class="ref-link" data-page="'+esc(x.path)+'" href="'+pageUrl(x.path)+'">'+esc(x.title)+'</a>'
-    ));
     els.nav.innerHTML=out.join('');
   }
 
@@ -218,10 +231,6 @@
         out.push('<span class="sep">/</span>');
         out.push('<a data-page="'+esc(cat.overview)+'" href="'+pageUrl(cat.overview)+'">'+esc(cat.number+' '+cat.title.toUpperCase())+'</a>');
       }
-    }else if(meta?.kind==='Reference'){
-      out.push('<span class="sep">/</span><span>REFERENCE</span>');
-    }else if(meta?.kind==='QA'){
-      out.push('<span class="sep">/</span><span>QA</span>');
     }
     if(meta?.feature){
       out.push('<span class="sep">/</span><span>'+esc(meta.feature.toUpperCase())+'</span>');
@@ -331,7 +340,7 @@
 
   async function loadPage(path,{push=false,hash=''}={}){
     const token=++state.request;
-    const normalized=normalize(path||'README.md')||'README.md';
+    const normalized=canonicalPath(path||'README.md')||'README.md';
     state.current=normalized;
     state.currentMeta=state.byPath.get(normalized)||{title:normalized.split('/').pop(),path:normalized,kind:'Document'};
 

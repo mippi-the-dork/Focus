@@ -1,46 +1,51 @@
 # Focus Documentation
 
-**Focus v2.1.0 | Unreal Engine 5.8.x | Windows 64-bit | Editor only**
+**Focus v2.1.0 · Unreal Engine 5.8.x · Win64 · Editor-only**
 
-**Focus** brings compact Actor and Component controls directly into Unreal Engine's World Outliner: visibility, Solo, selection/edit protection, simulation, physics events, lighting, networking, navigation, mobility and LOD. This manual documents both **how to use it** and **what its code actually does**.
+Focus is a set of compact **Quick Actions for Unreal Engine's World Outliner**. It brings visibility, interaction protection and 28 native Actor/Component properties into the Outliner so you can manage the current level without repeatedly searching through Details panels.
 
-## Which documentation should I read?
+![Focus controls shown in the Unreal Engine World Outliner](https://raw.githubusercontent.com/mippi-the-dork/Focus/main/Doc/Images/Focus-Hero.png)
 
-**Design** pages are the everyday user manual. They describe controls, steps, examples, expected results, and which common misunderstandings to avoid. You do not need to understand Unreal C++ to follow them.
+## What can I do with Focus?
 
-**Technical** pages are the implementation and integration reference. They identify native engine properties and component scopes, editor hooks, package metadata, transactions, persistence rules, and known system boundaries. They are useful when debugging a project, integrating tools, or extending Focus.
+**Manage scene visibility:** Hide Actors in the editor, set Hidden in Game, or Solo part of a scene without manually hiding everything else.
 
-Both page types are kept in a matched pair for each feature. They deliberately **do not duplicate the README**: use the Design/Technical switch to move between behavior and implementation.
+**Protect your work:** Prevent accidental viewport selection, ordinary transform edits, or a broader set of supported editor property changes.
 
-## Start here
+**Change native Unreal settings:** Use ten consistent Quick Action categories covering Visual, Interaction, Simulation, Physics Events, Lighting, World, Network, Navigation, Mobility and LOD.
 
-- [Installation](01-getting-started/install/DESIGN.md)
-- [First Use](01-getting-started/first-use/DESIGN.md)
-- [Common Questions](06-support/faq/DESIGN.md)
-- [Complete Native Property Reference](05-implementation/reference/TECHNICAL.md)
-- [Session-Only and Persistent Edits](04-settings-and-saving/persistence/TECHNICAL.md)
+**Work on collections:** Apply compatible actions to loaded Actor hierarchies, nested folders, groups or several selected Outliner rows. Mixed-state controls show when targets disagree.
 
-## Numbered Documentation Categories
+## Get started in three steps
 
-| Category | Features | Description |
+1. **[Install and enable Focus](01-getting-started/install/DESIGN.md)** in an Unreal Engine 5.8.x editor project on Win64.
+2. **[Try your first Quick Actions](01-getting-started/first-use/DESIGN.md)** on a disposable test Actor; Visual and Interaction are already visible by default.
+3. **[Explore all ten categories](02-quick-actions/README.md)** and reveal the ones you need from the Focus header menu.
+
+## Which guide do I read?
+
+Choose **Design** when you need to understand a control, perform a workflow or troubleshoot an expected result. Choose **Technical** when you need exact Unreal property names, eligible Actor/Component types, C++ integration, transactions or persistence behavior. Every Quick Action category has **one complete Design page and one complete Technical page**.
+
+## Explore the manual
+
+| Category | Topics | What you'll find |
 | --- | ---: | --- |
-| [01. Getting Started](01-getting-started/README.md) | 3 | What Is Focus?, Installation and Compatibility, First Use |
-| [02. Visual and Interaction](02-visual-and-interaction/README.md) | 4 | Hide in Editor and Hidden in Game, Solo, Selection, Transform and Edit Locks, Folders, Groups and Multi-Selection |
-| [03. Native Quick Properties](03-quick-properties/README.md) | 5 | Simulation and Physics Events, Lighting and World, Network and Navigation, Mobility and LOD, Applicability, Mixed States and Undo |
-| [04. Settings and Saving](04-settings-and-saving/README.md) | 4 | Category Visibility, State Colors, Session-Only and Persistent Edits, Restore, Save, Undo and Redo |
-| [05. Workflows and Implementation](05-implementation/README.md) | 4 | Practical Workflows, How Focus Works Internally, Full Quick-Property Reference, Data Ownership and Source Map |
-| [06. Support and Troubleshooting](06-support/README.md) | 3 | Questions and Answers, Troubleshooting, Updates and Support |
+| [01. Getting Started](01-getting-started/README.md) | 3 | Purpose, installation, first use and navigation |
+| [02. Quick Actions](02-quick-actions/README.md) | 10 | One Design/Technical pair for each of the ten Focus categories |
+| [03. Settings and Saving](03-settings-and-saving/README.md) | 4 | Control visibility, colors, persistence, Undo and restoration |
+| [04. Workflows and Implementation](04-workflows-and-implementation/README.md) | 3 | Practical authoring, editor architecture and source ownership |
+| [05. Support and Troubleshooting](05-support-and-troubleshooting/README.md) | 3 | Common questions, diagnostic steps and updating |
 
-## Behavior boundaries
+## Understand Focus's limits
 
-Focus is an editor utility, not a security or runtime permission layer. Folder and hierarchy controls affect loaded Actors. Some quick properties are unavailable on Actors without eligible registered components. Session-only edits can be visible in the editor without becoming saved package state. See the Design/Technical pairs for exact behavior.
+Focus is an **editor tool**, not a packaged gameplay system or an access-control layer. Bulk actions affect **currently loaded eligible Actors**, not future folder additions or unloaded World Partition Actors. Not every property is applicable to every Actor type. The eight native quick-property categories use ordinary Unreal property saving; Focus's Visual and Interaction controls also offer optional session-only persistence.
 
-## Support
+For save behavior on shared levels, see [Session-Only and Persistent Edits](03-settings-and-saving/persistence/DESIGN.md). For protection scope, see [Interaction Quick Actions](02-quick-actions/interaction/DESIGN.md).
 
-- [Focus repository](https://github.com/mippi-the-dork/Focus)
-- [Focus releases](https://github.com/mippi-the-dork/Focus/releases)
-- [Report issues](https://github.com/mippi-the-dork/Focus/issues)
+## Project and support
 
-## Documentation status
+- [Focus source repository](https://github.com/mippi-the-dork/Focus)
+- [Releases](https://github.com/mippi-the-dork/Focus/releases)
+- [Report an issue](https://github.com/mippi-the-dork/Focus/issues)
 
-The public Focus 2.1.0 C++ code, its settings, editor integration and quick-property definitions were inspected. Live website rendering and project-specific UE 5.8 workflows remain separate QA tasks.
+**Documentation basis:** Focus v2.1.0 public C++ source and README. Technical behavior has been source-reviewed; comprehensive in-editor cross-project testing is not claimed complete.
