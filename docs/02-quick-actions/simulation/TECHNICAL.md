@@ -29,10 +29,15 @@ A property being editable says nothing about collision viability, body creation,
 
 ---
 
-## Shared implementation contracts
+## Scope, transactions and saved values
 
-For the eight native-property categories, `FocusQuick::GetTargets` finds valid, registered and instance-editable Actor/Component targets. `FocusQuick::FindProperty` respects native `CanEditChange`, EditConst and EditCondition restrictions. Writes are wrapped in Unreal transactions and dispatch native setters or property-change notifications; Edit Lock skips Actor targets. Visual and Interaction use `Focus::Get/Set`, including distinct persistence options.
+Five Simulation controls target eligible Primitive Components; Async Physics Tick targets the Actor. `FFocusColumn::ApplyQuick` skips Edit-Locked Actors and invokes `FocusQuick::Write` under an `FScopedTransaction`. These settings use Unreal's normal native save behavior, not Focus's Visual/Interaction session-only option.
 
-Refer to [FocusQuickProperties.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp) and [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp).
+## Source references
 
-For steps and expected behavior, [read Design](DESIGN.md).
+- [FocusQuickProperties.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp) — property definition, eligibility and write implementation
+- [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp) — state, Slate widget, transaction and Editor integrations
+
+For the user workflow, [read Design](DESIGN.md).
+
+**Verification:** Code reviewed; live Unreal Editor behavior must be confirmed using the [Verification Matrix](../../VERIFICATION_MATRIX.md).

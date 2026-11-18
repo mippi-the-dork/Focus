@@ -12,20 +12,15 @@
 
 Focus does not create NetDrivers, configure role/ownership automatically, or implement replication. Eligibility depends on an actual editable native property on the given Actor or Component.
 
-## Exact network property targets
+## Networking boundary
 
-| Label | Scope | Native property |
-| --- | --- | --- |
-| Net Load on Client | Actor | `bNetLoadOnClient` |
-| Replicate Physics to Autonomous Proxy | Primitive | `bReplicatePhysicsToAutonomousProxy` |
-| Static Mesh Replicate Movement | Actor | `bStaticMeshReplicateMovement` |
+`GetTargets` selects either the Actor or registered eligible Primitive Components according to each definition. A native property being enabled does not configure net roles, ownership, drivers or the correct physics replication setup. Test the observable effect in multi-client PIE; reading a boolean alone cannot verify replication.
 
-The last property is exposed through the Actor-level scope and is subject to that Actor's property availability; other classes do not gain a new replication system from Focus.
+## Source references
 
-## Shared implementation contracts
+- [FocusQuickProperties.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp) — property definition, eligibility and write implementation
+- [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp) — state, Slate widget, transaction and Editor integrations
 
-For the eight native-property categories, `FocusQuick::GetTargets` finds valid, registered and instance-editable Actor/Component targets. `FocusQuick::FindProperty` respects native `CanEditChange`, EditConst and EditCondition restrictions. Writes are wrapped in Unreal transactions and dispatch native setters or property-change notifications; Edit Lock skips Actor targets. Visual and Interaction use `Focus::Get/Set`, including distinct persistence options.
+For the user workflow, [read Design](DESIGN.md).
 
-Refer to [FocusQuickProperties.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp) and [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp).
-
-For steps and expected behavior, [read Design](DESIGN.md).
+**Verification:** Code reviewed; live Unreal Editor behavior must be confirmed using the [Verification Matrix](../../VERIFICATION_MATRIX.md).

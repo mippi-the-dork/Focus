@@ -17,10 +17,15 @@ All four use `EScope::Actor` and validated instance-editable reflected propertie
 
 World options use `EScope::Actor`, so a folder/multi-selection applies them to the eligible loaded Actors individually. `FindProperty` requires instance-editable properties; engine-imposed `EditCondition` restrictions, `EditConst`, and `CanEditChange` can render a control unavailable.
 
-## Shared implementation contracts
+## Scope, cooking and World Partition
 
-For the eight native-property categories, `FocusQuick::GetTargets` finds valid, registered and instance-editable Actor/Component targets. `FocusQuick::FindProperty` respects native `CanEditChange`, EditConst and EditCondition restrictions. Writes are wrapped in Unreal transactions and dispatch native setters or property-change notifications; Edit Lock skips Actor targets. Visual and Interaction use `Focus::Get/Set`, including distinct persistence options.
+Each control is a reflected **Actor** property, not a component setting. Native `CanEditChange` and edit conditions may make a field unavailable. Focus neither cooks Actors nor drives streaming/HLOD generation: saved flags are inputs to their respective engine subsystems.
 
-Refer to [FocusQuickProperties.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp) and [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp).
+## Source references
 
-For steps and expected behavior, [read Design](DESIGN.md).
+- [FocusQuickProperties.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp) — property definition, eligibility and write implementation
+- [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp) — state, Slate widget, transaction and Editor integrations
+
+For the user workflow, [read Design](DESIGN.md).
+
+**Verification:** Code reviewed; live Unreal Editor behavior must be confirmed using the [Verification Matrix](../../VERIFICATION_MATRIX.md).

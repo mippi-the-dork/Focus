@@ -40,10 +40,15 @@ The extension checks whether any Solo state is active before building an allowed
 
 ---
 
-## Shared implementation contracts
+## Verification boundaries
 
-For the eight native-property categories, `FocusQuick::GetTargets` finds valid, registered and instance-editable Actor/Component targets. `FocusQuick::FindProperty` respects native `CanEditChange`, EditConst and EditCondition restrictions. Writes are wrapped in Unreal transactions and dispatch native setters or property-change notifications; Edit Lock skips Actor targets. Visual and Interaction use `Focus::Get/Set`, including distinct persistence options.
+`Focus::Set` changes Actor-specific state, not the 28 native quick-property definitions. Solo is applied by `FFocusViewExtension::SetupView` in editor worlds. Session-only Hidden in Game and editor-hidden values use temporary baselines and package-save overlays; see [Persistence Technical](../../03-settings-and-saving/persistence/TECHNICAL.md).
 
-Refer to [FocusQuickProperties.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp) and [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp).
+## Source references
 
-For steps and expected behavior, [read Design](DESIGN.md).
+- [FocusQuickProperties.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp) — property definition, eligibility and write implementation
+- [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp) — state, Slate widget, transaction and Editor integrations
+
+For the user workflow, [read Design](DESIGN.md).
+
+**Verification:** Code reviewed; live Unreal Editor behavior must be confirmed using the [Verification Matrix](../../VERIFICATION_MATRIX.md).
