@@ -2,28 +2,37 @@
 
 **Focus v2.1.0 · Quick Actions · User guide**
 
-## What this category controls
+## Available controls
 
-Lighting contains **Lighting Channel 0**, **Lighting Channel 1**, **Lighting Channel 2**, and **Cast Shadows**.
+| Quick Action | Effect |
+| --- | --- |
+| **Lighting Channel 0** | Enable/disable channel 0 for eligible lights or primitives |
+| **Lighting Channel 1** | Enable/disable channel 1 |
+| **Lighting Channel 2** | Enable/disable channel 2 |
+| **Cast Shadows** | Control the native shadow-casting choice on eligible light/primitive components |
 
-Light and primitive components must share an appropriate lighting channel for channel-based interaction. Changing a light's channels alone may not affect a mesh still on another channel. Cast Shadows is a separate setting from the lighting channels.
+Lighting channels and Cast Shadows are independent. Changing a channel preserves the other channel settings.
 
-## Example
+## Workflow: light only selected props
 
-To have a particular light affect only selected props, configure matching channels on that light and receiving props, while giving other props a different channel arrangement. Then verify actual lighting in the editor.
+1. Enable **Lighting** in the Focus header menu.
+2. Select a compatible light Actor and enable **Channel 1** on its light component.
+3. Select the intended receiving mesh Actor(s), enabling the corresponding **Channel 1** on eligible primitives.
+4. Arrange other lights/objects so their channels don't unintentionally overlap.
+5. Verify the final lighting under the project's render settings and mobility constraints.
 
-Channels are not a replacement for light visibility, mobility, materials, or other rendering constraints.
+## Common misconceptions
 
-## Lighting: four separate toggles
+**Why is my light still affecting other objects?** Check channel combinations on both the light and receiving primitives, not just the selected light.
 
-Lighting Channel **0**, **1**, and **2** decide which enabled channels an eligible light or primitive belongs to. For a light to affect a receiving primitive through lighting channels, they generally need an overlapping enabled channel. **Cast Shadows** controls shadow casting for eligible components; shadow visibility still depends on light, material, and renderer settings.
+**Why are shadows missing even though Cast Shadows is on?** The final shadow result also depends on light, renderer, materials and other settings.
 
-A useful test: set a light and selected props to Channel 1, leave unrelated props on Channel 0, then inspect the lighting. Channel flags are not a replacement for normal light visibility or mobility rules.
+**Why can't I toggle Lighting on this Actor?** The category requires eligible editable lighting/primitive components. A generic Actor with none can show **Not Applicable**.
 
-## Shared Quick Action behavior
+## Scope, state and saving
 
-Quick Actions apply to **currently loaded eligible Actors**, including applicable attached descendants, nested folders, native groups and selected rows. If the row is part of a multi-selection, the action can cover the other selected rows. A Mixed control means different eligible targets disagree, while Not Applicable means no editable compatible target exists. An Edit-Locked Actor is skipped by native quick-property writes.
+A row can represent one Actor or a loaded folder, attachment hierarchy, group or selection. Focus resolves eligible targets across that scope, even if Outliner children are collapsed or hidden by a search filter. **Mixed** means applicable targets disagree; **Not Applicable** means no editable matching property or control target exists. New Actors and unloaded World Partition Actors do not inherit previous bulk actions.
 
-For the full eligibility and saved/temporary editing rules, see [Quick Actions overview](../README.md) and [Settings and Saving](../../03-settings-and-saving/README.md).
+For the six Visual/Interaction controls, review **Editor Preferences → Plugins → Focus** for session-only persistence. The other eight Quick Actions categories change native Unreal properties using ordinary save and Undo/Redo behavior. See the [Quick Actions overview](../README.md) and [Saving guide](../../03-settings-and-saving/README.md).
 
-For the Unreal implementation and exact property mapping, [read Technical](TECHNICAL.md).
+For native LightingChannels and shadow setter behavior, [read Technical](TECHNICAL.md).

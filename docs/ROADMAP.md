@@ -1,10 +1,42 @@
 # Focus Roadmap
 
-**Planning status:** Proposed directions, not shipped commitments.  
-**Current documented release:** Focus v2.1.0 (Unreal Engine 5.8.x · Win64 · Editor-only).  
-**Last reviewed:** November 18, 2026.
+**Current release:** Focus v2.1.0 · UE 5.8.x · Win64 · Editor-only  
+**Historical milestones:** v1.0 and v2.0 (provided by the plugin author; milestone summaries rather than independently reconstructed changelogs)  
+**Next major direction:** **v3.0 — Planned** (scope is directional; no date, completed API, or release commitment)  
+**Reviewed:** November 18, 2026
 
-Focus currently offers ten built-in Quick Actions categories, including 28 native-property controls across the eight property-focused categories. The three future directions below were supplied by the plugin author. **None of the three is presented as implemented.**
+## At a glance
+
+| Milestone | Status | What changed / is planned |
+| --- | --- | --- |
+| **v1.0 — The essentials** | Released · historical | The original **Visual** and **Interaction** Quick Actions: visibility, Solo, and protection workflows |
+| **v2.0 — Expanded Quick Actions** | Released · historical | The other eight built-in categories and support for **session-only (non-persistent) Focus Visual/Interaction changes** |
+| **v2.1.0 — Current documented release** | Released · current | Current ten-category implementation documented throughout this site; this entry is a documentation baseline, not a claim of additional specific v2.1.0 features |
+| **v3.0 — Extensible Focus** | **Planned** | Additional Quick Action categories, an extension API for other plugins, and a user-facing Quick Widget Builder |
+
+> **Important distinction:** “Non-persistence” in the v2.0 milestone refers to Focus-initiated **Visual/Interaction** changes that can be session-only. The eight native-property categories still edit Unreal properties with normal save behavior.
+
+## History and evolution
+
+### v1.0 — Visual and Interaction
+
+Focus began as a compact Outliner workflow tool. The initial set consisted of **Visual** controls (Hide in Editor, Hidden in Game and Solo) and **Interaction** controls (Selection Lock and Transform/Edit protection). The goal was faster scene organization and fewer accidental edits without requiring a separate Actor or editor window.
+
+### v2.0 — More categories and optional non-persistence
+
+v2.0 expanded Focus beyond visibility and locking by adding **Simulation, Physics Events, Lighting, World, Network, Navigation, Mobility and LOD** Quick Actions. These are shortcuts for *native Unreal Actor/Component properties*, not new Focus gameplay systems.
+
+v2.0 also introduced the ability to choose session-only behavior for Focus's Visual and Interaction operations. This lets users temporarily hide, Solo or protect Actors without intending those actions to replace the saved Actor state. The precise current implementation and its save/checkout limitations are documented in [Settings and Saving](03-settings-and-saving/README.md).
+
+### v3.0 — Planned extensibility
+
+The next major direction is to evolve Focus from a fixed list of built-in controls into a **Quick Actions platform**. The three planned pillars are:
+
+1. **More built-in Quick Action categories.** Research and deliver useful new compact native workflows.
+2. **Plugin extension API.** Other Unreal Editor plugins register Focus-compatible categories and micro-widgets without modifying Focus or the engine.
+3. **Quick Widget Builder.** Users design and configure Focus-compatible Quick Actions themselves in the editor, using the same underlying extension system.
+
+**None of these v3.0 features exists in the current v2.1.0 release.** The order of engineering work and exact v3.0 feature scope may change as the design is validated; v3.0 is a proposed major-version target, not a delivery date.
 
 ## Product direction
 
@@ -12,7 +44,7 @@ Focus should become a practical, native-feeling **World Outliner Quick Actions p
 
 The user experience should remain compact. Advanced extensibility should not make the default Outliner wider, slower or harder to understand.
 
-## Planned capabilities
+## v3.0 planned capabilities
 
 | Direction | Status | Goal | Dependencies |
 | --- | --- | --- | --- |
@@ -20,9 +52,9 @@ The user experience should remain compact. Advanced extensibility should not mak
 | Extension API for external plugins | Planned · architecture/design | Let third-party Unreal plugins register Focus-compatible categories and micro-widgets | Extensible registry, stable identifiers, native Slate lifecycle and ownership contracts |
 | Quick Widget Builder | Planned · product/design | Let users create their own Focus-compatible categories and micro-widgets in the editor | The same registration/evaluation framework used by built-ins and plugin extensions |
 
-No additional category names, release versions, release dates or exact editor UI are committed yet.
+No specific new category names, delivery date or editor UI are committed. **v3.0 is the planned major-version target**, not an already shipped release.
 
-## 1. Additional built-in Quick Actions
+## v3.0 / 1. Additional built-in Quick Actions
 
 **Goal:** Add categories that remove high-frequency Outliner/Details friction while retaining Focus's compact feel.
 
@@ -44,7 +76,7 @@ New categories can be added in small, coherent groups of related actions. Do not
 
 **Acceptance:** A new category can be hidden, shown, operated, reverted, persisted appropriately and used safely in mixed/loaded hierarchy scopes. Unsupported target types are marked unavailable rather than silently altered.
 
-## 2. Extension API for third-party plugins
+## v3.0 / 2. Extension API for third-party plugins
 
 **Goal:** Allow other Unreal Editor plugins to supply **their own Focus-compatible Quick Actions categories and micro-widgets** without modifying the Focus source or replacing the Outliner column.
 
@@ -90,7 +122,7 @@ Therefore, public registration must be designed **below the existing UI**, rathe
 
 An example **separate Editor plugin** registers a new category with at least one custom micro-widget, updates values on single Actors and mixed folder selections, survives changing visibility, supports Undo/Redo, and unregisters cleanly while Focus continues working. The example must work without editing Focus or Unreal Engine source. Existing ten categories must retain their appearance and behavior.
 
-## 3. Quick Widget Builder
+## v3.0 / 3. Quick Widget Builder
 
 **Goal:** Let users create and manage Focus-compatible micro-widgets and optionally user-defined categories **inside Unreal Editor**, without writing an extension plugin.
 
@@ -147,7 +179,7 @@ These should be answered during API discovery rather than assumed:
 
 ## Not planned or promised
 
-No specific new category list, no replication implementation, no runtime Focus framework, no arbitrary scripting sandbox, no public API available in v2.1.0, and no delivery dates or release numbers have been committed in this roadmap.
+No specific new category list, replication system, runtime Focus framework, arbitrary scripting sandbox or delivery dates are committed. **The extension API and Widget Builder remain planned for v3.0**, not available in v2.1.0.
 
 ---
 

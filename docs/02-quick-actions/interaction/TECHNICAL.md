@@ -27,10 +27,15 @@
 
 ---
 
-## Shared implementation contracts
+## Verification boundaries
 
-For the eight native-property categories, `FocusQuick::GetTargets` finds valid, registered and instance-editable Actor/Component targets. `FocusQuick::FindProperty` respects native `CanEditChange`, EditConst and EditCondition restrictions. Writes are wrapped in Unreal transactions and dispatch native setters or property-change notifications; Edit Lock skips Actor targets. Visual and Interaction use `Focus::Get/Set`, including distinct persistence options.
+Selection Lock, Transform Lock and Edit Lock are handled by distinct native-editor paths, not a universal permission check. `FFocusModule::BindView` preserves previous Details delegates, and `FFocusInteractionGuard` wraps selected native Slate interactions. Scripted editing can bypass these safeguards. See [Architecture Technical](../../04-workflows-and-implementation/architecture/TECHNICAL.md).
 
-Refer to [FocusQuickProperties.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp) and [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp).
+## Source references
 
-For steps and expected behavior, [read Design](DESIGN.md).
+- [FocusQuickProperties.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp) — property definition, eligibility and write implementation
+- [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp) — state, Slate widget, transaction and Editor integrations
+
+For the user workflow, [read Design](DESIGN.md).
+
+**Verification:** Code reviewed; live Unreal Editor behavior must be confirmed using the [Verification Matrix](../../VERIFICATION_MATRIX.md).

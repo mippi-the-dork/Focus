@@ -15,10 +15,15 @@ Lighting channels are applied as a combined three-channel state through `SetLigh
 
 `FocusQuick::Write` reads all three current channel booleans before writing the chosen channel, then calls `SetLightingChannels(A,B,C)` on eligible primitives or lights. This prevents toggling one miniwidget segment from unintentionally clearing the others. `FindProperty` handles the light-component shadow-property naming variation.
 
-## Shared implementation contracts
+## Eligibility and resulting render behavior
 
-For the eight native-property categories, `FocusQuick::GetTargets` finds valid, registered and instance-editable Actor/Component targets. `FocusQuick::FindProperty` respects native `CanEditChange`, EditConst and EditCondition restrictions. Writes are wrapped in Unreal transactions and dispatch native setters or property-change notifications; Edit Lock skips Actor targets. Visual and Interaction use `Focus::Get/Set`, including distinct persistence options.
+`FocusQuick::EScope::Lighting` resolves applicable light/primitive components; `FindProperty` checks native editability. A matching channel property is not proof that a light contributes to a given primitive: renderer settings, compatible channels on **both** participants and supported lighting features determine the result.
 
-Refer to [FocusQuickProperties.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp) and [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp).
+## Source references
 
-For steps and expected behavior, [read Design](DESIGN.md).
+- [FocusQuickProperties.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp) — property definition, eligibility and write implementation
+- [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp) — state, Slate widget, transaction and Editor integrations
+
+For the user workflow, [read Design](DESIGN.md).
+
+**Verification:** Code reviewed; live Unreal Editor behavior must be confirmed using the [Verification Matrix](../../VERIFICATION_MATRIX.md).

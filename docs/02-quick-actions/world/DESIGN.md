@@ -2,36 +2,37 @@
 
 **Focus v2.1.0 · Quick Actions · User guide**
 
-## What this category controls
+## Available controls
 
-World contains four Actor-level options:
-
-| Control | Meaning |
-| --- | --- |
-| In Main World Only | Restrict supported Actors to the main world context |
-| Is Editor Only Actor | Exclude eligible Actor from cooked gameplay content |
-| Is Spatially Loaded | Control World Partition spatial loading eligibility |
-| Include Actor in HLOD | Permit participation in applicable HLOD generation |
-
-## Use with care
-
-These options affect how Unreal handles whole Actors, not merely the Outliner presentation. An editor-only Actor referenced by runtime content, or a spatial-loading choice made without understanding World Partition, can have consequences outside the current viewport.
-
-For World Partition and HLOD options, confirm behavior in the actual world configuration.
-
-## World: four Actor-level options
-
-| Control | Purpose | When to use it carefully |
+| Quick Action | What it changes | Important consequence |
 | --- | --- | --- |
-| In Main World Only | Restricts supported Actors to their main-world context | World duplication and editor previews |
-| Is Editor Only Actor | Marks an Actor as editor-only where supported | Do not leave gameplay references dependent on stripped Actors |
-| Is Spatially Loaded | Controls World Partition spatial-loading eligibility | Relevant only in supported World Partition contexts |
-| Include Actor in HLOD | Requests HLOD generation participation | Requires a suitable HLOD-enabled world |
+| **In Main World Only** | Actor main-world-only configuration | Only has meaning where Unreal respects this world-context flag |
+| **Is Editor Only Actor** | Native editor-only Actor status | The Actor may be excluded from cooked content; check game references |
+| **Is Spatially Loaded** | World Partition spatial-loading eligibility | Unrelated to whether the Actor happens to be loaded right now |
+| **Include Actor in HLOD** | Actor HLOD-generation participation | Does not build HLODs on its own |
 
-## Shared Quick Action behavior
+These are **Actor-level** options. They do not edit every component separately.
 
-Quick Actions apply to **currently loaded eligible Actors**, including applicable attached descendants, nested folders, native groups and selected rows. If the row is part of a multi-selection, the action can cover the other selected rows. A Mixed control means different eligible targets disagree, while Not Applicable means no editable compatible target exists. An Edit-Locked Actor is skipped by native quick-property writes.
+## Workflow: examine World Partition participation
 
-For the full eligibility and saved/temporary editing rules, see [Quick Actions overview](../README.md) and [Settings and Saving](../../03-settings-and-saving/README.md).
+1. Enable the **World** category in the Focus header menu.
+2. Choose a loaded Actor in a World Partition level.
+3. Read the **Is Spatially Loaded** tooltip and its current setting before toggling it.
+4. If you intentionally change the value, save the relevant Actor package and inspect the level's data layers and streaming setup.
+5. Verify the intended loaded/unloaded behavior in the project's World Partition workflow. Undo if the result is undesirable.
 
-For the Unreal implementation and exact property mapping, [read Technical](TECHNICAL.md).
+## Workflow: include an Actor in HLOD
+
+Select a loaded Actor eligible for the native HLOD flag, toggle **Include Actor in HLOD**, then inspect the world's HLOD configuration and build/generation process. The property is an input to HLOD, not proof of generation.
+
+## Risk and diagnosis
+
+**Editor Only** can affect cooked gameplay content. Before enabling it, confirm nothing at runtime relies on that Actor. **Spatial loading** and **Main World Only** have no guaranteed visible effect in every level type. A missing or dark control means the native Actor property is not instance-editable for that target.
+
+## Target scope, state and saving
+
+These Quick Actions operate on **currently loaded, eligible Actors**, including compatible attached descendants, nested folders, groups and selected Outliner rows. Hover for the state and number of eligible targets. **Mixed** means values differ across those targets; **Not Applicable** means no editable target exists.
+
+Native-property changes respect Edit Lock, support Unreal transactions/Undo and follow normal Actor/Component save behavior. They are not part of Focus's separate Visual/Interaction session-only persistence system. See [Quick Actions overview](../README.md) and [Settings and Saving](../../03-settings-and-saving/README.md).
+
+For reflected Actor fields and target eligibility, [read Technical](TECHNICAL.md).

@@ -14,10 +14,13 @@ The engine may apply mobility and registration constraints beyond those represen
 
 Mobility offers three individual UI choices mapped to `EComponentMobility::Type`. `FocusQuick::Write` uses the native setter, `Modify()`, `PreEditChange`, and `PostEditChangeProperty`. Other components can reject edits because of native edit conditions.
 
-## Shared implementation contracts
+## Native setter and conditions
 
-For the eight native-property categories, `FocusQuick::GetTargets` finds valid, registered and instance-editable Actor/Component targets. `FocusQuick::FindProperty` respects native `CanEditChange`, EditConst and EditCondition restrictions. Writes are wrapped in Unreal transactions and dispatch native setters or property-change notifications; Edit Lock skips Actor targets. Visual and Interaction use `Focus::Get/Set`, including distinct persistence options.
+`EScope::Scene` resolves registered, non-template Scene Components. `FocusQuick::Write` dispatches `USceneComponent::SetMobility` using an `EComponentMobility` value and appropriate transaction/change notifications. A mixed row can include eligible components with different mobility; engine restrictions remain in force.
 
-Refer to [FocusQuickProperties.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp) and [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp).
+## Source references
 
-For steps and expected behavior, [read Design](DESIGN.md).
+- [FocusQuickProperties.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp)
+- [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
+
+For user interaction, [read Design](DESIGN.md). The [Verification Matrix](../../VERIFICATION_MATRIX.md) contains unperformed UE and website checks.

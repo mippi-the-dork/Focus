@@ -13,21 +13,15 @@
 
 The navigation contribution path uses `SetCanEverAffectNavigation` where applicable; other properties use validated reflected writes. Focus does not implement navmesh generation or pathfinding.
 
-## Exact navigation property targets
+## Navigation boundary
 
-| Label | Scope | Native property |
-| --- | --- | --- |
-| Can Ever Affect Navigation | Actor Component | `bCanEverAffectNavigation` |
-| Dynamic Obstacle | Shape Component | `bDynamicObstacle` |
-| Fill Collision Underneath for Navmesh | Primitive | `bFillCollisionUnderneathForNavmesh` |
-| Rasterize as Filled Convex Volume | Primitive | `bRasterizeAsFilledConvexVolume` |
+Targets are scoped to Actor Components, Shape Components or Primitive Components as defined. `SetCanEverAffectNavigation` is invoked for the supported contribution path; other properties use native reflected writes. Rebuild/inspect the navmesh after a change; Focus itself does not calculate navigation paths.
 
-`FocusQuick::Write` invokes `UActorComponent::SetCanEverAffectNavigation` for that property, rather than only setting the reflected field. Remaining applicable flags go through validated property writes and normal edit-change notifications.
+## Source references
 
-## Shared implementation contracts
+- [FocusQuickProperties.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp) — property definition, eligibility and write implementation
+- [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp) — state, Slate widget, transaction and Editor integrations
 
-For the eight native-property categories, `FocusQuick::GetTargets` finds valid, registered and instance-editable Actor/Component targets. `FocusQuick::FindProperty` respects native `CanEditChange`, EditConst and EditCondition restrictions. Writes are wrapped in Unreal transactions and dispatch native setters or property-change notifications; Edit Lock skips Actor targets. Visual and Interaction use `Focus::Get/Set`, including distinct persistence options.
+For the user workflow, [read Design](DESIGN.md).
 
-Refer to [FocusQuickProperties.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp) and [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp).
-
-For steps and expected behavior, [read Design](DESIGN.md).
+**Verification:** Code reviewed; live Unreal Editor behavior must be confirmed using the [Verification Matrix](../../VERIFICATION_MATRIX.md).

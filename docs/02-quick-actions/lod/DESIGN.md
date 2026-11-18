@@ -2,56 +2,53 @@
 
 **Focus v2.1.0 · Quick Actions · User guide**
 
-## What this category controls
+## Available controls
 
-The LOD micro-widget contains a central **Forced LOD Model number** and two separate distance-culling toggles. Forced LOD changes which mesh LOD is displayed; the culling options change whether eligible primitives participate in supported distance-culling mechanisms.
-
-| Control | What it does | What it does not do |
+| Quick Action | Meaning | What it doesn't guarantee |
 | --- | --- | --- |
-| Forced LOD Model | Requests automatic or forced mesh LOD selection | It does not generate missing LODs |
-| Never Distance Cull | Prevents distance culling by systems that honor this native setting | It does not override every visibility, occlusion or streaming system |
-| Allow Cull Distance Volume | Allows an eligible primitive to respond to a Cull Distance Volume | It does nothing without a suitable volume |
+| **Forced LOD Model** | Override a compatible mesh's automatic LOD choice | Cannot create missing mesh LODs |
+| **Never Distance Cull** | Keep eligible primitives from distance-culling systems that honor this flag | Cannot stop all streaming, occlusion or manual hiding |
+| **Allow Cull Distance Volume** | Permit applicable Cull Distance Volumes to affect the primitive | No effect without a suitable volume |
 
-## Exactly how to operate the Forced LOD number
-
-The compact numeric control supports more than typing a number. The gestures are:
+## How to operate the Forced LOD number
 
 | Input | Result |
 | --- | --- |
-| **Left-click once** | Increase the displayed value by one |
-| **Alt + left-click** | Decrease the value by one |
-| **Mouse wheel up or down** | Increase or decrease by one |
-| **Double left-click** | Open a small text-entry popup to enter a specific number |
-| **Right-click** | Retains the normal Outliner context-menu interaction |
+| **Left-click** | Increase value by 1 (slightly delayed to distinguish double-click) |
+| **Alt + left-click** | Decrease value by 1 |
+| **Mouse wheel** | Up/down changes by ±1 |
+| **Double left-click** | Open a small popup and type a numeric value |
+| **Right-click** | Leave native Outliner context-menu behavior available |
 
-A single-click increment is delayed briefly so a double-click can open text entry without accidentally changing the value first. When typing, enter a number from **0 to 255** and commit it. The popup is deliberately separate from the narrow Outliner column.
+Numeric entry accepts values **0–255**, but that does **not** mean every mesh has 255 LODs. An out-of-range requested value is indicated with the **Alert** color.
 
-### How the number maps to mesh LOD
-
-| Focus entry | Meaning |
+| Focus number | Result |
 | --- | --- |
-| **0** | Automatic: Unreal chooses LOD |
+| **0** | Automatic selection |
 | **1** | Force mesh LOD **0** |
 | **2** | Force mesh LOD **1** |
-| **n** | Force mesh LOD **n-1** |
+| **n** | Force mesh LOD **n−1** |
 
-This is Unreal's one-based *forced* LOD setting, not the mesh asset's zero-based LOD index.
+## Workflow: diagnose an unexpected mesh change
 
-## Practical workflow: diagnose a disappearing mesh
+1. Enable **LOD**, select an Actor containing an eligible Static or Skinned Mesh Component and hover the numeric control.
+2. Double-click the number and enter **1**, forcing mesh LOD 0.
+3. Increase cautiously and watch for the Alert color when the mesh lacks the requested level. On multiple eligible meshes, the common valid range can be smaller.
+4. Return to **0** for automatic LOD selection once you've finished comparing.
+5. If a distant Actor disappears, separately inspect **Never Distance Cull** and **Allow Cull Distance Volume**. They control different native behavior from Forced LOD.
 
-1. Enable the **LOD** category in the Focus column-header menu.
-2. Find an Actor with an eligible Static Mesh or Skeletal/Skinned Mesh Component.
-3. Double-click the LOD number and enter **1** to inspect the first authored LOD.
-4. Try higher values only if the mesh actually contains those LODs. Hover to inspect the common valid range when several meshes are selected.
-5. Restore **0** afterward to return to automatic selection.
-6. If the Actor disappears with distance, separately inspect **Never Distance Cull** and **Allow Cull Distance Volume**. Do not assume that Forced LOD controls actor streaming.
+## Common problems
 
-## Out-of-range and mixed values
+**The number shows a dash:** mixed current values or no applicable target can prevent a single numeric value from being displayed; hover to distinguish Mixed from Not Applicable.
 
-The input can accept values beyond an individual mesh's authored LOD count. Focus can flag an invalid request with its **Alert** color. A multi-selection may contain meshes with different available LOD ranges; an empty or mixed display indicates the eligible targets don't share the same current value.
+**The Actor still disappears in the distance:** streaming and other visibility systems can hide it regardless of distance-cull flags.
 
-## Target scope and saving
+**A click changed multiple meshes:** when an Outliner selected row is activated, Focus can apply to the combined selected loaded scope.
 
-Changes affect eligible components on loaded Actors in the activated row, attachments, folder/group, or selected rows. Edit-Locked Actors are skipped for native quick-property writes. LOD settings use native Unreal property persistence, not Focus's Visual/Interaction session-only options. Use Undo for an unintended batch edit.
+## Target scope, state and saving
 
-For exact mesh component setters and eligibility checks, [read Technical](TECHNICAL.md). For common states and hierarchy rules, see [Quick Actions overview](../README.md).
+These Quick Actions operate on **currently loaded, eligible Actors**, including compatible attached descendants, nested folders, groups and selected Outliner rows. Hover for the state and number of eligible targets. **Mixed** means values differ across those targets; **Not Applicable** means no editable target exists.
+
+Native-property changes respect Edit Lock, support Unreal transactions/Undo and follow normal Actor/Component save behavior. They are not part of Focus's separate Visual/Interaction session-only persistence system. See [Quick Actions overview](../README.md) and [Settings and Saving](../../03-settings-and-saving/README.md).
+
+For mesh-specific setters, LOD counts and native constraints, [read Technical](TECHNICAL.md).

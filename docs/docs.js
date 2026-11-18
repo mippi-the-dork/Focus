@@ -19,7 +19,9 @@
     currentMeta:null,
     request:0,
     searchCursor:-1,
-    converter:null
+    converter:null,
+    searchIndexPromise:null,
+    searchIndexReady:false
   };
 
   const esc=v=>String(v??'')
@@ -182,6 +184,9 @@
     pages.push({title:'Documentation Audit',path:'DOCUMENTATION_AUDIT.md',kind:'Document',
       summary:'Documentation quality findings, prioritized fixes and verification gaps',
       search:'audit documentation improvements quality gaps testing screenshots search'});
+    pages.push({title:'Verification Matrix',path:'VERIFICATION_MATRIX.md',kind:'Document',
+      summary:'Native Unreal Editor and website QA checklists with explicit results',
+      search:'verification matrix qa tests perforce one file per actor world partition focus website'});
     state.pages=pages;
     state.byPath=new Map(pages.map(p=>[p.path,p]));
   }
@@ -390,34 +395,92 @@
     if(els.scrim) els.scrim.hidden=!open;
   }
 
+  // Index page bodies on first search with bounded network concurrency.
+  // Title-based results remain available while indexing is in progress.
+  function stripSearchText(markdown){
+    return String(markdown||'')
+      .replace(/!\[([^\]]*)\]\([^)]+\)/g,' $1 ')
+      .replace(/\[([^\]]+)\]\([^)]+\)/g,' $1 ')
+      .replace(/<[^>]*>/g,' ')
+      .replace(/[\x60*_#>|]/g,' ')
+      .replace(/\s+/g,' ').trim();
+  }
+
+  function buildFullTextIndex(){
+    if(state.searchIndexPromise)return state.searchIndexPromise;
+    const pages=state.pages.slice();
+    let cursor=0;
+    async function worker(){
+      while(cursor<pages.length){
+        const p=pages[cursor++];
+        try{
+          const r=await fetch(p.path,{cache:'force-cache'});
+          if(!r.ok)continue;
+          p.searchBody=stripSearchText(await r.text());
+          p.searchBodyLower=p.searchBody.toLowerCase();
+        }catch(error){
+          console.warn('Focus search could not index',p.path,error);
+        }
+      }
+    }
+    state.searchIndexPromise=Promise.all(Array.from({length:Math.min(5,pages.length)},()=>worker()))
+      .then(()=>{
+        state.searchIndexReady=true;
+        if(els.search.value.trim())renderSearch();
+      });
+    return state.searchIndexPromise;
+  }
+
+  function searchExcerpt(page,terms){
+    const body=page.searchBody||'';
+    if(!body)return page.summary||page.category||'';
+    const lower=page.searchBodyLower||body.toLowerCase();
+    let at=-1;
+    for(const term of terms){
+      const i=lower.indexOf(term);
+      if(i>=0&&(at<0||i<at))at=i;
+    }
+    if(at<0)return (page.summary||body).slice(0,170);
+    const start=Math.max(0,at-52),end=Math.min(body.length,at+140);
+    return (start?'…':'')+body.slice(start,end)+(end<body.length?'…':'');
+  }
+
   function searchPages(query){
-    const q=query.trim().toLowerCase(); if(!q)return[];
+    const q=query.trim().toLowerCase();if(!q)return[];
     const terms=q.split(/\s+/).filter(Boolean);
     return state.pages.map(page=>{
       const title=label(page).toLowerCase();
       const hay=((page.search||'')+' '+page.path).toLowerCase();
+      const body=page.searchBodyLower||'';
       let score=0;
       if(title===q)score+=100;
       if(title.startsWith(q))score+=55;
       if(title.includes(q))score+=32;
-      if(page.path.toLowerCase().includes(q))score+=12;
+      if(hay.includes(q))score+=20;
       for(const term of terms){
-        if(!hay.includes(term))return null;
-        score+=title.includes(term)?10:3;
+        if(hay.includes(term))score+=title.includes(term)?12:5;
+        else if(body.includes(term))score+=2;
+        else return null;
       }
-      return {page,score};
-    }).filter(Boolean).sort((a,b)=>b.score-a.score||label(a.page).localeCompare(label(b.page))).slice(0,14).map(x=>x.page);
+      return {page,score,excerpt:searchExcerpt(page,terms)};
+    }).filter(Boolean).sort((a,b)=>b.score-a.score||label(a.page).localeCompare(label(b.page))).slice(0,16);
   }
 
   function renderSearch(){
-    const q=els.search.value, found=searchPages(q); state.searchCursor=-1;
+    const q=els.search.value,found=searchPages(q);state.searchCursor=-1;
     if(!q.trim()){els.results.hidden=true;els.results.innerHTML='';return;}
     els.results.hidden=false;
-    if(!found.length){els.results.innerHTML='<div class="search-empty">No matching documentation pages.</div>';return;}
-    els.results.innerHTML=found.map(p=>
-      '<a class="result" data-page="'+esc(p.path)+'" href="'+pageUrl(p.path)+'">'+
-      '<strong>'+esc(label(p))+'</strong><small>'+esc(p.summary||p.category||'')+'</small>'+
-      '<span class="result-path">'+esc(p.path)+'</span></a>'
+    const indexing=!state.searchIndexReady;
+    if(!found.length){
+      els.results.innerHTML='<div class="search-empty">'+
+        (indexing?'Searching page titles; indexing full documentation…':'No matching documentation pages.')+'</div>';
+      return;
+    }
+    els.results.innerHTML=(indexing?'<div class="search-empty">Indexing page content… title matches shown now.</div>':'')+
+      found.map(x=>
+      '<a class="result" data-page="'+esc(x.page.path)+'" href="'+pageUrl(x.page.path)+'">'+
+      '<strong>'+esc(label(x.page))+'</strong><small>'+esc(x.excerpt)+'</small>'+
+      '<span class="result-path">'+esc(x.page.path)+'</span></a>'
     ).join('');
   }
 
@@ -446,7 +509,7 @@
     });
     els.menu?.addEventListener('click',toggleNav);
     els.scrim?.addEventListener('click',closeNav);
-    els.search.addEventListener('input',renderSearch);
+    els.search.addEventListener('input',()=>{if(els.search.value.trim())void buildFullTextIndex();renderSearch();});
     els.search.addEventListener('focus',renderSearch);
     els.search.addEventListener('keydown',e=>{
       if(e.key==='ArrowDown'){e.preventDefault();moveSearch(1);}
