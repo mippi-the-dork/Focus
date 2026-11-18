@@ -21,7 +21,7 @@
 <!-- Media target: IMAGE | interaction-native-guards | docs/assets/media/interaction-native-guards.png -->
 <figure class="doc-media" data-kind="image" data-media-id="interaction-native-guards">
   <img src="../../assets/media-placeholder.png" alt="Diagram of Focus selection, transform, command and Details editing guards" loading="lazy">
-  <figcaption>Focus enforces its editing protections through multiple native editor integration paths rather than a single global lock.</figcaption>
+  <figcaption>Focus enforces its editing protections through multiple native editor integration paths rather than a single global lock.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Create a branching diagram from Interaction protection to viewport selection, transform edits, Details edits, Outliner commands, and component hierarchy operations. Label the native Focus editor mode and guard paths, and mark scripting/custom tools as outside universal lock enforcement.</span></figcaption>
 </figure>
 
 

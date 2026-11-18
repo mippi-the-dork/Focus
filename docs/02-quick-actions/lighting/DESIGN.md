@@ -7,7 +7,7 @@
 <!-- Media target: IMAGE | lighting-controls | docs/assets/media/lighting-controls.png -->
 <figure class="doc-media" data-kind="image" data-media-id="lighting-controls">
   <img src="../../assets/media-placeholder.png" alt="Lighting Quick Actions category displaying channels and shadow settings" loading="lazy">
-  <figcaption>Lighting Channel 0, 1 and 2 can be adjusted independently of the Cast Shadows setting.</figcaption>
+  <figcaption>Lighting Channel 0, 1 and 2 can be adjusted independently of the Cast Shadows setting.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Capture a World Outliner containing an eligible light and mesh with the Lighting category enabled. Show the three lighting-channel segments and Cast Shadows together, preferably with differing channel states that make the independent choices obvious.</span></figcaption>
 </figure>
 
 
@@ -25,7 +25,7 @@ Lighting channels and Cast Shadows are independent. Changing a channel preserves
 <!-- Media target: IMAGE | lighting-channel-example | docs/assets/media/lighting-channel-example.png -->
 <figure class="doc-media" data-kind="image" data-media-id="lighting-channel-example">
   <img src="../../assets/media-placeholder.png" alt="Comparison showing a light and selected meshes sharing a lighting channel" loading="lazy">
-  <figcaption>Matching channel selections allow compatible lights and primitives to interact without changing the other channel flags.</figcaption>
+  <figcaption>Matching channel selections allow compatible lights and primitives to interact without changing the other channel flags.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Create two side-by-side viewport captures with the same light and props: one with matching channel assignments so selected props receive the light, and one with mismatched assignments showing the different result. Add readable callouts for the light and mesh channel settings.</span></figcaption>
 </figure>
 
 

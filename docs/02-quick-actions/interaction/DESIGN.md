@@ -29,7 +29,7 @@
 <!-- Media target: IMAGE | interaction-mixed-protection | docs/assets/media/interaction-mixed-protection.png -->
 <figure class="doc-media" data-kind="image" data-media-id="interaction-mixed-protection">
   <img src="../../assets/media-placeholder.png" alt="Focus protection widget displaying different lock levels across a folder" loading="lazy">
-  <figcaption>A mixed protection state shows that eligible Actors do not currently share the same protection level.</figcaption>
+  <figcaption>A mixed protection state shows that eligible Actors do not currently share the same protection level.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Capture an expanded Outliner folder containing at least three loaded Actors with Unlocked, Transform Lock, and Edit Lock states. Show the folder’s Mixed protection indicator and the individual child states in the same frame.</span></figcaption>
 </figure>
 
 

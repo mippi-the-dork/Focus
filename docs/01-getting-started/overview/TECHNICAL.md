@@ -11,7 +11,7 @@
 <!-- Media target: IMAGE | overview-editor-integration | docs/assets/media/overview-editor-integration.png -->
 <figure class="doc-media" data-kind="image" data-media-id="overview-editor-integration">
   <img src="../../assets/media-placeholder.png" alt="Diagram of Focus integrations with Unreal Engine editor systems" loading="lazy">
-  <figcaption>The Focus Editor module coordinates Outliner widgets, editor interaction guards, viewport filtering and Actor state.</figcaption>
+  <figcaption>The Focus Editor module coordinates Outliner widgets, editor interaction guards, viewport filtering and Actor state.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Create a labeled architecture diagram with FFocusModule at the center, connected to the Scene Outliner column, native selection/transform/edit guards, Solo view extension, settings, and Actor package state. Separate UI, editor hooks, and data storage visually.</span></figcaption>
 </figure>
 
 
