@@ -7,7 +7,7 @@
 <!-- Media target: IMAGE | network-controls | docs/assets/media/network-controls.png -->
 <figure class="doc-media" data-kind="image" data-media-id="network-controls">
   <img src="../../assets/media-placeholder.png" alt="Network Quick Actions displaying the available replication-related settings" loading="lazy">
-  <figcaption>Network actions expose three specific native configuration values without replacing the rest of Unreal’s replication setup.</figcaption>
+  <figcaption>Network actions expose three specific native configuration values without replacing the rest of Unreal’s replication setup.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Capture the Network category enabled on an eligible Actor, with its three micro-controls and a tooltip visible. Include a Static Mesh Actor or component setup that demonstrates at least one valid property target.</span></figcaption>
 </figure>
 
 

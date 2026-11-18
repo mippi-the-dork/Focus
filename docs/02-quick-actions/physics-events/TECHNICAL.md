@@ -7,7 +7,7 @@
 <!-- Media target: IMAGE | physics-events-path | docs/assets/media/physics-events-path.png -->
 <figure class="doc-media" data-kind="image" data-media-id="physics-events-path">
   <img src="../../assets/media-placeholder.png" alt="Diagram of primitive collision and physics event generation paths" loading="lazy">
-  <figcaption>Hit, overlap and wake notifications originate from distinct native properties and require corresponding engine conditions.</figcaption>
+  <figcaption>Hit, overlap and wake notifications originate from distinct native properties and require corresponding engine conditions.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Make a three-lane diagram for Hit, Overlap, and Wake events. Each lane should show its Focus flag, the relevant collision/physics prerequisite, and the event produced by Unreal when those conditions are met.</span></figcaption>
 </figure>
 
 

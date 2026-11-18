@@ -17,7 +17,7 @@ Forced LOD calls mesh-specific setters such as `SetForcedLodModel` or `SetForced
 <!-- Media target: IMAGE | lod-range | docs/assets/media/lod-range.png -->
 <figure class="doc-media" data-kind="image" data-media-id="lod-range">
   <img src="../../assets/media-placeholder.png" alt="Diagram comparing a requested Forced LOD value against a mesh’s available authored LODs" loading="lazy">
-  <figcaption>Focus checks the authored LOD range and indicates when a requested forced level exceeds a target mesh’s available data.</figcaption>
+  <figcaption>Focus checks the authored LOD range and indicates when a requested forced level exceeds a target mesh’s available data.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Create a diagram showing a mesh with authored LOD 0, 1, and 2; compare Focus forced values 0 (Auto), 1, 2, 3, and an invalid higher value. Show the alert state for the out-of-range request.</span></figcaption>
 </figure>
 
 

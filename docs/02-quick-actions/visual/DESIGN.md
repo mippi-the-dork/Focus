@@ -31,7 +31,7 @@ Hover a control to confirm its exact purpose and current state. Click it on the 
 <!-- Media target: IMAGE | visual-editor-vs-game | docs/assets/media/visual-editor-vs-game.png -->
 <figure class="doc-media" data-kind="image" data-media-id="visual-editor-vs-game">
   <img src="../../assets/media-placeholder.png" alt="Side-by-side comparison of Hide in Editor and Hidden in Game" loading="lazy">
-  <figcaption>Hide in Editor changes the editing view, while Hidden in Game configures a separate native Actor property.</figcaption>
+  <figcaption>Hide in Editor changes the editing view, while Hidden in Game configures a separate native Actor property.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Use a two-panel Unreal Editor comparison of the same Actor: one panel demonstrates Hide in Editor while retaining its Hidden in Game setting, and the other demonstrates Hidden in Game while the Actor remains visible in the editing viewport. Keep the relevant Focus controls or Details values legible.</span></figcaption>
 </figure>
 
 
