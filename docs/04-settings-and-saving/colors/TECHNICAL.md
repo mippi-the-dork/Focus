@@ -1,41 +1,37 @@
-# State Colors — Technical
+# Control State Colors and Reading Signals — Technical
 
-**Focus v2.1.0 | Unreal Engine 5.8.x | Windows 64-bit | Editor only**
+**Focus v2.1.0 · Source-reviewed implementation**
 
-Enabled, disabled, mixed and unavailable states.
+## Settings ownership
 
-## Verified behavior
+`UFocusSettings` inherits `UDeveloperSettings` with `config=EditorPerProjectUserSettings` and `defaultconfig`. It appears in the Editor/Plugins preferences container. `EnabledColor`, `DisabledColor`, `MixedColor`, `NotApplicableColor`, and `AlertColor` are the general state palette.
 
-Settings use distinct colors for persistent and session-only changes. Unavailable is not the same as disabled.
+Session-only equivalents are `SessionEnabledColor`, `SessionDisabledColor`, `SessionMixedColor`, `SessionNotApplicableColor`, and `SessionAlertColor`.
 
-## Native behavior and original reference
+## Default values
 
-### State colors
+The general enabled color is white, disabled is displayed sRGB **#616161**, Not Applicable is **#242424**, Mixed is yellow, and Alert is red. Session-only enabled is **#2196F3**, Mixed **#FF9800**, Alert **#FF4DA6**; default disabled and unavailable remain #616161 and #242424.
 
-Focus uses two independently configurable color palettes in **Edit > Editor Preferences > Plugins > Focus**. **Control State Colors** apply to persistent controls and to the eight native quick-property categories. **Session-Only State Colors** apply to Visual and Interaction controls when their individual persistence options are turned off.
+## Choosing the palette
 
-| State | Persistent default | Session-only default | Meaning |
-|---|---|---|---|
-| Enabled | White | Blue (`#2196F3`) | A control is active or a supported option is selected |
-| Disabled | `#616161` | `#616161` | A control is inactive or an option is not selected |
-| Mixed | Yellow | Orange (`#FF9800`) | Eligible targets have different values |
-| Not Applicable | `#242424` | `#242424` | The control cannot be edited for the current target |
-| Alert | Red | Pink (`#FF4DA6`) | A warning or strong protection state |
+`Focus::EnabledTint`, `DisabledTint`, `MixedTint` and `AlertTint` select the standard or session palette using `Focus::IsPersistent(EControl)`. Native quick-property categories are ordinarily persistent and use the general palette.
 
-Each of the ten colors is independently customizable in Editor Preferences. The default grays match between palettes, but they can be changed separately. The color settings affect presentation only, not Actor or Component property values.
+## sRGB/linear migrations
 
-For **Hide in Editor**, an active hidden dot uses the **Enabled** color (white or blue), not the Mixed color. A genuinely Mixed selection uses yellow or orange. **Hidden in Game** uses the **Alert** color (red or pink) when active; this is distinct from the Mixed color. Tooltips identify the current persistence mode even where the two palettes share the same gray.
+Slate paint colors are linear values. `FFocusModule` includes one-time color-default migration flags (`bMigratedSlateStateColorDefaults` and `bMigratedDisabledColorDefaultTo616161`) to correct older shipped gray defaults without overwriting user-customized colors.
 
-### Visual and Interaction persistence
+## Rendering is not state authority
 
-## Verification boundary
+The tint expresses row state and persistence policy. Native eligibility, property data, and saved metadata are determined independently. Altering a palette never invokes an Actor or Component edit.
 
-These details are grounded in current v2.1.0 C++ source and the public README. Editor-specific combinations, such as external Actor saving and nonstandard editing modes, require validation in the target Unreal project.
+---
 
-## Related source
+## Relevant source files
 
-- [Main editor module](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
-- [Native quick properties](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp)
-- [Editor preferences](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusSettings.h)
-- [Interaction guards](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusInteractionGuard.h)
-- [Full README](https://github.com/mippi-the-dork/Focus/blob/main/README.md)
+- [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
+- [FocusSettings.h](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusSettings.h)
+- [FocusSettings.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusSettings.cpp)
+
+For editor workflows and examples, [see Design](DESIGN.md).
+
+**QA status:** Source verification completed; exhaustive real-editor package-save and source-control testing not claimed.

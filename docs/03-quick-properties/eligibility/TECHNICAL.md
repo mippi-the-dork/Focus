@@ -1,93 +1,39 @@
 # Applicability, Mixed States and Undo — Technical
 
-**Focus v2.1.0 | Unreal Engine 5.8.x | Windows 64-bit | Editor only**
+**Focus v2.1.0 · Source-verified implementation reference**
 
-Why a quick control is unavailable.
+## Property validation
 
-## Verified behavior
+`FocusQuick::FindProperty` calls `FindFProperty` on the Actor/Component or nested `FStructProperty` as appropriate. It checks:
+- valid, non-template instance;
+- `CPF_Edit`;
+- absence of `CPF_DisableEditOnInstance` and `CPF_EditConst`;
+- absence of `EditCondition` metadata (handled conservatively);
+- `UObject::CanEditChange`.
 
-Only instance-editable properties on eligible registered Actor/Component targets can be changed. Edit-locked Actors are skipped; writes use native transactions.
+A property can therefore be unavailable even when a matching component exists, because Unreal does not allow editing that instance.
 
-## Source eligibility checks
+## Target collection
 
-The source excludes template objects, missing or unregistered components, properties without CPF_Edit, instance-disabled, EditConst or EditCondition metadata, and properties denied by CanEditChange. A disabled boolean, a mixed value and an unavailable property are distinct states. Quick edits call Modify, PreEditChange and PostEditChangeProperty; physics/lighting/mobility/LOD changes use their dedicated engine setters where necessary.
-## Native property catalog (source-derived)
+`GetTargets` walks registered, valid, non-template components and filters by `EScope::Primitive`, `Scene`, `Shape`, `ActorComponent`, `Mesh`, or `Lighting`. `EScope::Actor` directly returns the Actor.
 
-| Category | Display label | Eligible scope | Property |
-| --- | --- | --- | --- |
-| Simulation | Simulate Physics | Primitive | `BodyInstance.bSimulatePhysics` |
-| Simulation | Enable Gravity | Primitive | `BodyInstance.bEnableGravity` |
-| Simulation | Ignore Radial Impulse | Primitive | `bIgnoreRadialImpulse` |
-| Simulation | Ignore Radial Force | Primitive | `bIgnoreRadialForce` |
-| Simulation | Apply Impulse on Damage | Primitive | `bApplyImpulseOnDamage` |
-| Simulation | Async Physics Tick Enabled | Actor | `bAsyncPhysicsTickEnabled` |
-| PhysicsEvents | Generate Hit Events | Primitive | `BodyInstance.bNotifyRigidBodyCollision` |
-| PhysicsEvents | Generate Overlap Events | Primitive | `bGenerateOverlapEvents` |
-| PhysicsEvents | Generate Wake Events | Primitive | `BodyInstance.bGenerateWakeEvents` |
-| Lighting | Lighting Channel 0 | Lighting | `LightingChannels.bChannel0` |
-| Lighting | Lighting Channel 1 | Lighting | `LightingChannels.bChannel1` |
-| Lighting | Lighting Channel 2 | Lighting | `LightingChannels.bChannel2` |
-| Lighting | Cast Shadows | Lighting | `CastShadow` |
-| World | In Main World Only | Actor | `bIsMainWorldOnly` |
-| World | Is Editor Only Actor | Actor | `bIsEditorOnlyActor` |
-| World | Is Spatially Loaded | Actor | `bIsSpatiallyLoaded` |
-| World | Include Actor in HLOD | Actor | `bEnableAutoLODGeneration` |
-| Network | Net Load on Client | Actor | `bNetLoadOnClient` |
-| Network | Replicate Physics to Autonomous Proxy | Primitive | `bReplicatePhysicsToAutonomousProxy` |
-| Network | Static Mesh Replicate Movement | Actor | `bStaticMeshReplicateMovement` |
-| Navigation | Can Ever Affect Navigation | ActorComponent | `bCanEverAffectNavigation` |
-| Navigation | Dynamic Obstacle | Shape | `bDynamicObstacle` |
-| Navigation | Fill Collision Underneath for Navmesh | Primitive | `bFillCollisionUnderneathForNavmesh` |
-| Navigation | Rasterize as Filled Convex Volume | Primitive | `bRasterizeAsFilledConvexVolume` |
-| Mobility | Mobility | Scene | `Mobility` |
-| LOD | Forced LOD Model | Mesh | `ForcedLodModel` |
-| LOD | Never Distance Cull | Primitive | `bNeverDistanceCull` |
-| LOD | Allow Cull Distance Volume | Primitive | `bAllowCullDistanceVolume` |
-## Native behavior and original reference
+## Read and mixed aggregation
 
-# Mixed States
+`Read` handles `FBoolProperty`, `FIntProperty` for forced LOD, and `FByteProperty` for mobility. The Outliner row's quick state accumulates first eligible value, eligible target count, and mixed status. If no eligible value exists, the segment is unavailable and must not be toggled.
 
-Folders and selections can contain Actors with different Focus settings.
+## Transaction and property update
 
-Focus represents this using a mixed state.
+`FFocusColumn::ApplyQuick` wraps the operation in `FScopedTransaction`, resolves the current Actor action scope, skips Edit-Locked Actors, and applies `FocusQuick::Write` to each eligible target. `Write` skips unchanged values, calls `Modify`, `PreEditChange`, dispatches the correct native setter or reflected edit, then `PostEditChangeProperty`.
 
-For example:
-
-```text
-Environment
-├── Wall_A        Transform Locked
-├── Wall_B        Transform Locked
-└── Door          Unlocked
-```
-
-The protection control for the `Environment` Folder will show that its contents do not all share the same state.
-
-This makes it easier to understand the actual state of a hierarchy without expanding and inspecting every Actor individually.
+This does not bypass native edit conditions, and it does not make every Actor capable of every property. Any restrictions applied by other Unreal systems remain relevant.
 
 ---
 
-# Example Workflow
+## Source files
 
----
+- [FocusQuickProperties.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp) — definitions, property validation and setters
+- [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp) — row state, mixed state and transactional editing
 
-### Mixed States
+For user interaction, examples and interpretations, [see Design](DESIGN.md).
 
-Focus indicates when a hierarchy contains a mixture of enabled and disabled states.
-
-### Undo / Redo
-
-Focus control changes participate in Unreal Engine's normal Undo and Redo workflow.
-
-### Persistent Settings
-
-## Verification boundary
-
-These details are grounded in current v2.1.0 C++ source and the public README. Editor-specific combinations, such as external Actor saving and nonstandard editing modes, require validation in the target Unreal project.
-
-## Related source
-
-- [Main editor module](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
-- [Native quick properties](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp)
-- [Editor preferences](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusSettings.h)
-- [Interaction guards](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusInteractionGuard.h)
-- [Full README](https://github.com/mippi-the-dork/Focus/blob/main/README.md)
+**Verification scope:** source-reviewed; no claim of a completed live editor QA matrix.

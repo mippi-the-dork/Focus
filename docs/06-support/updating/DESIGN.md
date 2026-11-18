@@ -1,144 +1,43 @@
-# Updates and Support — Design
+# Updating Focus and Getting Support — Design
 
-**Focus v2.1.0 | Unreal Engine 5.8.x | Windows 64-bit | Editor only**
+**Focus v2.1.0 · User guide and workflow reference**
 
-Releases, versions, reports and contributions.
+## Choose the right update route
 
-## Verified behavior
+### From a precompiled release
 
-Releases replace the complete plugin folder. Source installs can pull and rebuild; supported configuration is UE 5.8.x Win64.
+1. Close the Unreal Editor.
+2. Download the new compatible ZIP from [Focus Releases](https://github.com/mippi-the-dork/Focus/releases).
+3. Remove the old `YourProject/Plugins/Focus/` folder.
+4. Extract the new package as `YourProject/Plugins/Focus/`.
+5. Restart the project, confirm the plugin version, and test your ordinary Outliner controls.
 
-## Usage and workflows
+Replacing the complete plugin folder avoids leaving orphaned C++ or Resource files from a previous release.
 
-# Updating Focus
+### From Git source
 
-## GitHub Release Installation
+If you cloned Focus into the project's Plugins directory, pull the version or tag you intend to use and rebuild the Editor target. Avoid mixing source checkout and precompiled release files without checking exactly what is installed.
 
-When updating a manually installed release:
+## Compatibility
 
-1. Close Unreal Editor.
-    
-2. Remove the existing `Plugins/Focus` folder.
-    
-3. Extract the new Focus release into the `Plugins` directory.
-    
-4. Reopen the project.
-    
+Focus v2.1.0 currently targets **Unreal Engine 5.8.x, Windows 64-bit**, and is an **Editor** plugin. Additional engine versions and platforms are not implied by this manual.
 
-Replacing the complete plugin folder is recommended rather than copying individual files over an older version.
+## Report a problem
 
-## Git Source Installation
+Open an issue at [Focus Issues](https://github.com/mippi-the-dork/Focus/issues) and include: Focus version; Unreal version; Windows version; installation source; target Actor/Component class; Actor/folder/group/multi-selection scope; World Partition status; persistence preference; steps; screenshots/video; and relevant Output Log lines.
 
-If you cloned the repository using Git:
+## Suggest a feature
 
-```bash
-cd YourProject/Plugins/Focus
-git pull
-```
+Describe the underlying workflow problem and expected outcome, rather than only naming an implementation. That helps distinguish a native Unreal feature that could simply be exposed from a capability requiring new Focus behavior.
 
-Rebuild the project if the source has changed.
+## Contributing
 
----
+Pull requests are welcome. For significant new behavior, discuss the intended scope first so it remains a compact, native World Outliner tool.
 
-# Compatibility
+## License
 
-Focus supports the following target configuration:
-
-|||
-|---|---|
-|**Focus Version**|2.1.0|
-|**Unreal Engine**|5.8.x|
-
-|**Platform**|Windows 64-bit|
-|**Plugin Type**|Editor|
-|**Runtime Dependency**|None|
-|**Packaged Game Impact**|None|
-
-Focus is currently configured as a Win64 editor plugin.
-
-Compatibility with additional Unreal Engine versions or platforms should not be assumed unless explicitly listed in a release.
+Focus's repository uses the **MIT License**. Refer to the repository's LICENSE for actual terms.
 
 ---
 
-# How Focus Works
-
----
-
-# Reporting Bugs
-
-If you encounter a problem, please open an issue:
-
-[https://github.com/mippi-the-dork/Focus/issues](https://github.com/mippi-the-dork/Focus/issues)
-
-When reporting a bug, include:
-
-- Focus version
-    
-- Unreal Engine version
-    
-- Windows version
-    
-- Whether Focus was installed from Fab, a GitHub Release, or source
-    
-- The Focus control involved
-    
-- Whether the target was an Actor, Folder, Group, or multi-selection
-    
-- Whether World Partition was involved
-    
-- Steps to reproduce the problem
-    
-- Screenshots or video when relevant
-    
-- Any relevant Unreal Editor log output
-    
-
-Clear reproduction steps make issues much easier to diagnose.
-
----
-
-# Feature Requests
-
-Suggestions and feature requests are welcome through GitHub Issues.
-
-When proposing a feature, describe the workflow problem you're trying to solve rather than only the implementation you would like to see.
-
-That makes it easier to determine whether the feature belongs in Focus and whether there may be a simpler solution.
-
----
-
-# Contributions
-
-Pull requests are welcome.
-
-If you're considering a significant change, opening an Issue first is recommended so the direction can be discussed before substantial work is done.
-
-Focus concentrates frequently used Actor and Component settings into optional Outliner categories, while preserving the compact Visual and Interaction defaults.
-
----
-
-# License
-
-Focus is distributed under the **MIT License**.
-
-See the [repository license](https://github.com/mippi-the-dork/Focus/blob/main/LICENSE) for details.
-
----
-
-# About
-
-Focus is an Unreal Engine editor utility created by **Mippi the Dork**.
-
-The plugin was built around a simple idea:
-
-## Expected limits
-
-Focus is an Editor-only workflow tool. Folder and selected-row changes affect eligible loaded Actors and are not automatically inherited by Actors added later. Supported native protections do not prevent arbitrary external tools or scripts.
-
-## Related source
-
-- [Main editor module](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
-- [Native quick properties](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp)
-- [Editor preferences](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusSettings.h)
-- [Interaction guards](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusInteractionGuard.h)
-- [Full README](https://github.com/mippi-the-dork/Focus/blob/main/README.md)
+For diagnostics, native editor paths and compatibility, [see Technical](TECHNICAL.md).

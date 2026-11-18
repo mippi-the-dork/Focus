@@ -1,59 +1,33 @@
-# Restore, Save, Undo and Redo — Design
+# Restore Temporary Changes, Undo and Reload — Design
 
-**Focus v2.1.0 | Unreal Engine 5.8.x | Windows 64-bit | Editor only**
+**Focus v2.1.0 · Unreal Engine 5.8.x · Editor only**
 
-Restoring temporary edits and preserving real changes.
+## Restore Temporary Changes
 
-## Verified behavior
+The Focus header menu has **Restore Temporary Changes**. It discards outstanding session-only edits made through Focus's Visual and Interaction controls and restores the previous recorded values. It does **not** reset saved persistent changes, change your persistence preferences, or undo unrelated native Details edits.
 
-Restore Temporary Changes discards only temporary Focus edits. Switching persistence on promotes current values; native Details edits follow native save behavior.
+Use it when you have temporarily hidden, Soloed, or locked a collection of Actors and want to return to the state from before those temporary edits.
 
-## Usage and workflows
+## Example: temporary scene isolation
 
-### Mixed States
+1. Turn off Solo persistence in Editor Preferences.
+2. Solo the area you are currently authoring.
+3. Work normally while the other visible primitives are filtered out.
+4. Open the Focus header menu and choose **Restore Temporary Changes**.
+5. Check that temporary Solo changes have been discarded.
 
-Focus indicates when a hierarchy contains a mixture of enabled and disabled states.
+## Undo/Redo
 
-### Undo / Redo
+Focus's authored controls support Unreal Undo/Redo. After changing a whole folder, Undo is the quickest way to reverse an accidental bulk operation. Do not confuse Undo (which reverses the last transaction) with Restore Temporary Changes (which clears pending session-only changes across affected Actors).
 
-Focus control changes participate in Unreal Engine's normal Undo and Redo workflow.
+## After closing and reopening
 
-### Persistent Settings
+Session-only changes are intentionally not written as the saved value. Persistent Focus states reappear from saved Actor packages when the editor reloads the level. For an Actor streamed in later under World Partition, its saved state is restored when that Actor is loaded.
 
----
+## Switching persistence while a value is active
 
-# Saving Focus Settings
-
-Focus separates **editor interface preferences**, **persistent Actor settings**, and **session-only Visual and Interaction edits**:
-
-- **Interface preferences:** Category visibility, Visual and Interaction persistence checkboxes, and both state-color palettes are saved as editor-per-project user preferences. They do not modify Actors or levels.
-- **Persistent Focus edits:** With a Visual or Interaction persistence checkbox enabled, changes made through its Focus control can be stored with the affected Actor or level package when you save.
-- **Session-only Focus edits:** With that checkbox disabled, changes made through the corresponding Focus control remain active in the editor but are not intended to replace the last persistent value on disk. This affects only Focus-initiated Visual and Interaction edits; native Details and Outliner edits retain normal Unreal saving behavior.
-- **Other quick-property categories:** Simulation, Physics Events, Lighting, World, Network, Navigation, Mobility, and LOD change native properties with Unreal's regular persistent behavior.
-
-The persistent Visual and Interaction states include **Hide in Editor, Hidden in Game, Solo, Selection Lock, Transform Lock, and Edit Lock**. Hidden in Game and native movement locking use Actor properties; Focus's other Visual and Interaction states use saved Actor-package metadata.
-
-For projects using External Actors / One File Per Actor, that metadata is stored in the corresponding Actor package. Otherwise, it is typically stored with the level package. To keep persistent changes across level reloads, editor sessions, or source-control syncs, save the affected packages using Unreal's normal workflow.
-
-**Switching persistence off does not immediately reset a property.** Switching it back on does not restore an older value either. The current value is kept and becomes eligible for the next normal save. To discard outstanding session-only changes instead, use **Restore Temporary Changes** from the Focus header menu.
-
-> [!WARNING]  
-> **Session-only native property editing requires save-workflow validation.**
->
-> Hidden in Game and movement locking are native Unreal properties. Focus isolates temporary values during package saves, but Save All, autosaves, World Partition / External Actors, Undo/Redo, and interrupted saves should be tested in your project before relying on the behavior for production levels. A previously dirty Actor may still appear in the save list due to unrelated changes.
+Disabling persistence does not restore an earlier state by itself. Enabling persistence for a temporarily changed control promotes its **current** value for subsequent saving. Choose Restore Temporary Changes instead if you want to discard it.
 
 ---
 
-# Installation
-
-## Expected limits
-
-Focus is an Editor-only workflow tool. Folder and selected-row changes affect eligible loaded Actors and are not automatically inherited by Actors added later. Supported native protections do not prevent arbitrary external tools or scripts.
-
-## Related source
-
-- [Main editor module](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
-- [Native quick properties](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp)
-- [Editor preferences](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusSettings.h)
-- [Interaction guards](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusInteractionGuard.h)
-- [Full README](https://github.com/mippi-the-dork/Focus/blob/main/README.md)
+For exact native settings, serialization and recovery, [see Technical](TECHNICAL.md).

@@ -1,59 +1,37 @@
-# Restore, Save, Undo and Redo — Technical
+# Restore Temporary Changes, Undo and Reload — Technical
 
-**Focus v2.1.0 | Unreal Engine 5.8.x | Windows 64-bit | Editor only**
+**Focus v2.1.0 · Source-reviewed implementation**
 
-Restoring temporary edits and preserving real changes.
+## RestoreTemporaryChanges implementation
 
-## Verified behavior
+`Focus::RestoreTemporaryChanges` creates an `FScopedTransaction` and iterates the `Temporary` baseline map. For each editor Actor with outstanding mask bits, it restores editor-hidden, Solo, Selection and Protection state from prior metadata/baselines, and Hidden in Game from its previous native value. Temporary Hidden in Game undo uses `FTemporaryGameHiddenChange`.
 
-Restore Temporary Changes discards only temporary Focus edits. Switching persistence on promotes current values; native Details edits follow native save behavior.
+At completion it clears the temporary map, redraws editor viewports, and returns the count of restored Actors for the notification in `FFocusColumn::CategoryMenu`.
 
-## Native behavior and original reference
+## Undo of shared Focus metadata
 
-### Mixed States
+Because `FMetaData` is not itself a UObject with ordinary transaction tracking, Focus uses `FSharedStateChange`, holding before/after snapshots. `ApplySharedState` restores the exact metadata state and live lock/hidden properties. This is distinct from native `Modify` on ordinary Actor or Component properties.
 
-Focus indicates when a hierarchy contains a mixture of enabled and disabled states.
+## Promoting temporary values
 
-### Undo / Redo
+`Focus::OnPersistenceSettingsChanged` compares the previous five persistence booleans with updated settings. On an OFF → ON transition, it clears relevant temporary mask bits while retaining the live value and marking the appropriate package dirty for future saving.
 
-Focus control changes participate in Unreal Engine's normal Undo and Redo workflow.
+## Reload and streamed Actors
 
-### Persistent Settings
+`RestoreLoadedWorld` initializes saved metadata on loaded editor-world Actors. The module listens for maps opening, level additions and Actor additions and defers restoration until editor objects are ready. It also handles replacement Actors after Blueprint recompilation without copying unrelated metadata.
 
----
+## Interrupted saves and shutdown
 
-# Saving Focus Settings
-
-Focus separates **editor interface preferences**, **persistent Actor settings**, and **session-only Visual and Interaction edits**:
-
-- **Interface preferences:** Category visibility, Visual and Interaction persistence checkboxes, and both state-color palettes are saved as editor-per-project user preferences. They do not modify Actors or levels.
-- **Persistent Focus edits:** With a Visual or Interaction persistence checkbox enabled, changes made through its Focus control can be stored with the affected Actor or level package when you save.
-- **Session-only Focus edits:** With that checkbox disabled, changes made through the corresponding Focus control remain active in the editor but are not intended to replace the last persistent value on disk. This affects only Focus-initiated Visual and Interaction edits; native Details and Outliner edits retain normal Unreal saving behavior.
-- **Other quick-property categories:** Simulation, Physics Events, Lighting, World, Network, Navigation, Mobility, and LOD change native properties with Unreal's regular persistent behavior.
-
-The persistent Visual and Interaction states include **Hide in Editor, Hidden in Game, Solo, Selection Lock, Transform Lock, and Edit Lock**. Hidden in Game and native movement locking use Actor properties; Focus's other Visual and Interaction states use saved Actor-package metadata.
-
-For projects using External Actors / One File Per Actor, that metadata is stored in the corresponding Actor package. Otherwise, it is typically stored with the level package. To keep persistent changes across level reloads, editor sessions, or source-control syncs, save the affected packages using Unreal's normal workflow.
-
-**Switching persistence off does not immediately reset a property.** Switching it back on does not restore an older value either. The current value is kept and becomes eligible for the next normal save. To discard outstanding session-only changes instead, use **Restore Temporary Changes** from the Focus header menu.
-
-> [!WARNING]  
-> **Session-only native property editing requires save-workflow validation.**
->
-> Hidden in Game and movement locking are native Unreal properties. Focus isolates temporary values during package saves, but Save All, autosaves, World Partition / External Actors, Undo/Redo, and interrupted saves should be tested in your project before relying on the behavior for production levels. A previously dirty Actor may still appear in the save list due to unrelated changes.
+The module's shutdown calls `OnPackagePostSave` for any outstanding package overlays, avoiding leaving saved-only values in the working editor session. This is a recovery path, not proof that all editor crash and save-interruption cases are impossible.
 
 ---
 
-# Installation
+## Relevant source files
 
-## Verification boundary
+- [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
+- [FocusSettings.h](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusSettings.h)
+- [FocusSettings.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusSettings.cpp)
 
-These details are grounded in current v2.1.0 C++ source and the public README. Editor-specific combinations, such as external Actor saving and nonstandard editing modes, require validation in the target Unreal project.
+For editor workflows and examples, [see Design](DESIGN.md).
 
-## Related source
-
-- [Main editor module](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
-- [Native quick properties](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp)
-- [Editor preferences](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusSettings.h)
-- [Interaction guards](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusInteractionGuard.h)
-- [Full README](https://github.com/mippi-the-dork/Focus/blob/main/README.md)
+**QA status:** Source verification completed; exhaustive real-editor package-save and source-control testing not claimed.

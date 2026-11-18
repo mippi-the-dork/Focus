@@ -4,6 +4,14 @@
 
 **Focus** brings compact Actor and Component controls directly into Unreal Engine's World Outliner: visibility, Solo, selection/edit protection, simulation, physics events, lighting, networking, navigation, mobility and LOD. This manual documents both **how to use it** and **what its code actually does**.
 
+## Which documentation should I read?
+
+**Design** pages are the everyday user manual. They describe controls, steps, examples, expected results, and which common misunderstandings to avoid. You do not need to understand Unreal C++ to follow them.
+
+**Technical** pages are the implementation and integration reference. They identify native engine properties and component scopes, editor hooks, package metadata, transactions, persistence rules, and known system boundaries. They are useful when debugging a project, integrating tools, or extending Focus.
+
+Both page types are kept in a matched pair for each feature. They deliberately **do not duplicate the README**: use the Design/Technical switch to move between behavior and implementation.
+
 ## Start here
 
 - [Installation](01-getting-started/install/DESIGN.md)

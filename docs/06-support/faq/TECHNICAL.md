@@ -1,115 +1,40 @@
-# Questions and Answers — Technical
+# Frequently Asked Questions — Technical
 
-**Focus v2.1.0 | Unreal Engine 5.8.x | Windows 64-bit | Editor only**
+**Focus v2.1.0 · Source-reviewed diagnostics and integration**
 
-Common behavioral questions with clear answers.
+## FAQ diagnosis by implementation owner
 
-## Verified behavior
+| Question family | Relevant implementation |
+| --- | --- |
+| Column missing | `FFocusModule` Actor Browser column registration and plugin loading |
+| Category absent | `FocusQuick::CategoryVisible` and Editor-per-project config |
+| Control unavailable | `FocusQuick::FindProperty`, `GetTargets`, `CanEditChange` |
+| Unexpected mixed state | `FFocusColumn::RefreshRow` eligible value aggregation |
+| Lock bypass | Editor mode, transform/command guards and native interaction guard |
+| Unexpected Solo content | `FFocusViewExtension::SetupView` primitive visibility filtering |
+| Save or checkout | `Focus::Temporary`, `PersistentMetadata`, package pre/post-save hooks |
+| World Partition scope | Live loaded Actor traversal and Actor addition restoration |
+| Unreal crashes on disable | Guard lifetime/delegate cleanup and in-flight save overlay restoration |
 
-Unloaded Actors are not changed; Solo is viewport-only; Outliner selection still works with Selection Lock; custom tools can bypass Edit Lock.
+## Confirmation order
 
-## Fast answers
+Inspect plugin/module load and platform first, then category visibility, target eligibility, Actor scope, lock state, and finally persistence. A Not Applicable segment is not a failure of the column. Similarly, Focus metadata persisting in an Actor package is not evidence that a native property edited through Details followed Focus's session-only configuration.
 
-**Can I select a Selection-Locked Actor in the Outliner?** Yes. The lock intentionally prevents viewport picking rather than all access.
+## Testing strategy
 
-**Does Edit Lock stop scripts?** No. It protects standard supported editor interactions, not arbitrary scripts and custom tools.
+For any unexpected editor behavior, reproduce in a clean UE 5.8 project with one Actor of a known class and one compatible component. Repeat through a loaded folder and multi-selection only after the single-Actor case passes. Use normal editor transaction history and the Output Log to distinguish Focus control state from Unreal's underlying systems.
 
-**Does Solo rewrite other Actors' visibility?** No. It filters visible primitives per editor view; lights/volumes can still contribute.
-
-**Why is a quick control unavailable?** No eligible instance-editable property or compatible registered component may exist, or an Unreal property condition may restrict it.
-
-**Do new Actors inherit folder operations?** No. Apply the operation again after loading or adding them.
-
-**Can I edit unloaded World Partition Actors?** No, not through these bulk controls. Load the Actors first.
-
-**What does LOD 0 mean?** Automatic; 1 forces the mesh's first LOD, and invalid high values display an alert.
-
-**Does session-only mean native Details edits are temporary?** No. Focus's Visual/Interaction persistence options affect Focus-initiated edits only.
-
-**Can a plugin affect packaged games?** Focus does not load as a runtime module. It is an Editor plugin.
-## Native behavior and original reference
-
-# What Focus Does Not Do
-
-Focus is an **editor workflow utility**, not a permissions or security system.
-
-It does not:
-
-- Prevent deliberate source-code changes
-    
-- Prevent scripts from modifying Actors
-    
-- Replace source control
-    
-- Implement user permissions
-    
-- Automatically check out files
-    
-- Prevent another developer from unlocking something
-    
-- Modify packaged game behavior
-    
-- Automatically apply Folder states to Actors added later
-    
-
-Focus is intended to prevent accidental editor interactions and make complex scenes easier to manage.
+**Scope:** These are source-directed diagnostics. The site does not claim an automated compatibility result for every project configuration.
 
 ---
 
-# Limitations
+## Implementation references
 
-### Newly Added Actors
+- [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
+- [FocusQuickProperties.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp)
+- [FocusInteractionGuard.h](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusInteractionGuard.h)
+- [Focus.uplugin](https://github.com/mippi-the-dork/Focus/blob/main/Focus.uplugin)
 
-Focus Folder and hierarchy operations affect the Actors currently contained within that scope.
+For normal user steps, [see Design](DESIGN.md).
 
-They are not inheritance rules.
-
-If another Actor is added to a Folder later, apply the Focus state again if you want the new Actor included.
-
-### World Partition
-
-Bulk operations affect loaded Actors.
-
-Unloaded World Partition Actors are not modified.
-
-Load the required Actors before performing a bulk Focus operation.
-
-### Selection Lock
-
-Selection Lock prevents normal viewport selection.
-
-The Actor remains intentionally selectable through the World Outliner so it can be inspected or unlocked.
-
-### Edit Lock
-
-Edit Lock protects supported standard editor workflows.
-
-Specialized editor tools, scripts, custom editor systems, or direct engine operations may provide ways to modify an Actor outside those guarded workflows.
-
-### Solo
-
-Solo primarily isolates rendered primitive components.
-
-Some scene contributions, such as lighting or volumes, may continue affecting the viewport even when their Actor is outside the Solo set.
-
-### Session-Only Native Properties
-
-Session-only **Hidden in Game** and native movement locking use package pre-save and post-save handling to avoid writing temporary values as persistent property changes. This needs in-editor validation across Save All, autosaves, External Actors / World Partition, Undo/Redo, and interrupted or failed saves. On a disposable level, confirm that Focus-only temporary edits do not request checkout on an otherwise clean Actor, that unrelated native edits save correctly, and that reloading restores the last persistent values.
-
-An Actor already marked dirty for unrelated reasons can still appear in Unreal's save or checkout workflows. Focus's persistence options do not suppress native Details panel or Outliner edits, and they do not prevent other plugins or tools from dirtying a package.
-
----
-
-# Troubleshooting
-
-## Verification boundary
-
-These details are grounded in current v2.1.0 C++ source and the public README. Editor-specific combinations, such as external Actor saving and nonstandard editing modes, require validation in the target Unreal project.
-
-## Related source
-
-- [Main editor module](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
-- [Native quick properties](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp)
-- [Editor preferences](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusSettings.h)
-- [Interaction guards](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusInteractionGuard.h)
-- [Full README](https://github.com/mippi-the-dork/Focus/blob/main/README.md)
+**QA limit:** This documents the source behavior and test suggestions, not a full live UE 5.8 test report.

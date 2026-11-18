@@ -1,65 +1,37 @@
 # Lighting and World — Technical
 
-**Focus v2.1.0 | Unreal Engine 5.8.x | Windows 64-bit | Editor only**
+**Focus v2.1.0 · Source-verified implementation reference**
 
-Lighting channels, shadow, HLOD and World Partition.
+## Native field mapping
 
-## Verified behavior
+| Category | Control | Scope | Property |
+| --- | --- | --- | --- |
+| Lighting | Channel 0/1/2 | Lighting components | `LightingChannels.bChannel0/1/2` |
+| Lighting | Cast Shadows | Eligible primitives/lights | `CastShadow` (or light-component `CastShadows`) |
+| World | In Main World Only | Actor | `bIsMainWorldOnly` |
+| World | Is Editor Only Actor | Actor | `bIsEditorOnlyActor` |
+| World | Is Spatially Loaded | Actor | `bIsSpatiallyLoaded` |
+| World | Include Actor in HLOD | Actor | `bEnableAutoLODGeneration` |
 
-Lighting channel edits use SetLightingChannels, retaining the other channels.
+## Lighting channels are a combined update
 
-## Native behavior and original reference
+`FocusQuick::Write` reads all three current channel booleans before writing the chosen channel, then calls `SetLightingChannels(A,B,C)` on eligible primitives or lights. This prevents toggling one miniwidget segment from unintentionally clearing the others. `FindProperty` handles the light-component shadow-property naming variation.
 
-## Lighting
+## World flags are reflected Actor edits
 
-The **Lighting** miniwidget groups four independent properties. Its **three upright upper bars** are Lighting Channels **0**, **1**, and **2**, from left to right. The **lower horizontal bar** controls **Cast Shadows**.
+World options use `EScope::Actor`, so a folder/multi-selection applies them to the eligible loaded Actors individually. `FindProperty` requires instance-editable properties; engine-imposed `EditCondition` restrictions, `EditConst`, and `CanEditChange` can render a control unavailable.
 
-### Lighting channels
+## No special runtime ownership
 
-Lighting channels help determine which eligible lights can interact with which eligible primitives. For a light to affect a primitive through this mechanism, both need compatible channel assignments, and the normal rendering rules must still permit the interaction.
-
-You can use the upper bars to check or change channels on supported light and primitive components. Focus changes the selected channel without intentionally resetting the other two channels. For example, you might place a set of character meshes on Channel 1 and assign a dedicated light to that same channel while leaving ordinary environment lighting on Channel 0.
-
-The individual channel controls can show different states within a multi-selection. Hover a bar to confirm its channel and target eligibility before toggling it.
-
-### Cast Shadows
-
-The bottom bar toggles the corresponding **Cast Shadows** property on eligible components. A component's final shadow behavior also depends on its material, lighting type, and render configuration. Turning this on does not override those other requirements.
-
-This category is useful for checking channel assignments and shadow casting across a group of supported objects without repeatedly opening their individual Details panels.
+Focus only edits the native properties and propagates normal Unreal property notifications and transactions. It does not override the World Partition scheduler, HLOD builder, light transport, cooking behavior, or renderer's lighting-channel rules. Those systems determine the actual result.
 
 ---
 
-## World
+## Source files
 
-The **World** miniwidget displays four Actor-level settings in a **two-by-two grid**. Unlike categories that operate on component properties, these controls apply to an Actor's own world-related flags.
+- [FocusQuickProperties.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp) — definitions, property validation and setters
+- [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp) — row state, mixed state and transactional editing
 
-### Main-world and editor-only behavior
+For user interaction, examples and interpretations, [see Design](DESIGN.md).
 
-The **top-left square**, **In Main World Only**, controls the corresponding main-world restriction where Unreal supports it. It does not otherwise change which level or folder contains the Actor.
-
-The **top-right square**, **Is Editor Only Actor**, marks the Actor as editor-only where the engine honors that flag. Editor-only Actors can be excluded from cooked gameplay content, so use this carefully if other gameplay objects reference the Actor. Hiding something in the editor is not the same as marking it editor-only.
-
-### World Partition and HLOD
-
-The **bottom-left square**, **Is Spatially Loaded**, controls eligibility for World Partition spatial loading. Its effect depends on whether the world uses World Partition and how the world is configured. Changing the flag does not itself load every cell or alter unloaded Actors.
-
-The **bottom-right square**, **Include Actor in HLOD**, controls participation in supported Hierarchical Level of Detail generation. This does not immediately build new HLODs. The world must have an applicable HLOD setup and generation workflow.
-
-When preparing a large World Partition level, use the bottom two squares to review spatial loading and HLOD participation across loaded Actors. The four settings remain independent, and only eligible, instance-editable Actor properties can be changed.
-
----
-
-## Network
-
-## Verification boundary
-
-These details are grounded in current v2.1.0 C++ source and the public README. Editor-specific combinations, such as external Actor saving and nonstandard editing modes, require validation in the target Unreal project.
-
-## Related source
-
-- [Main editor module](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
-- [Native quick properties](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp)
-- [Editor preferences](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusSettings.h)
-- [Interaction guards](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusInteractionGuard.h)
-- [Full README](https://github.com/mippi-the-dork/Focus/blob/main/README.md)
+**Verification scope:** source-reviewed; no claim of a completed live editor QA matrix.

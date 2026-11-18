@@ -1,242 +1,34 @@
 # Installation and Compatibility — Design
 
-**Focus v2.1.0 | Unreal Engine 5.8.x | Windows 64-bit | Editor only**
+**Focus 2.1.0 · Unreal Engine 5.8.x · Win64 · Editor only**
 
-Fab, GitHub and source build workflows.
+## Choose an installation method
 
-## Verified behavior
+The easiest option is a matching **Fab installation** or a **precompiled GitHub Release**. If you want to inspect or change the code, install the source instead.
 
-The module is Editor-only, Win64, PostEngineInit.
-
-## Usage and workflows
-
-# Installation
-
-Focus can be installed through **Fab**, from a **precompiled GitHub Release**, or directly from the **GitHub source**.
-
-For most users, the Fab or GitHub Release installation is recommended.
-
----
-
-## Fab / Epic Games Launcher
-
-> Use this method if Focus is available in your Fab library.
-
-1. Add **Focus** to your library on Fab.
-    
-2. Open the **Epic Games Launcher**.
-    
-3. Navigate to your Unreal Engine Library.
-    
-4. Locate Focus in your Fab / Vault library.
-    
-5. Install Focus to the supported Unreal Engine version.
-    
-6. Launch your Unreal Engine project.
-    
-7. Open **Edit > Plugins**.
-    
-8. Search for **Focus**.
-    
-9. Enable the plugin if it is not already enabled.
-    
-10. Restart Unreal Editor if prompted.
-    
-
-Once enabled, Focus controls will appear in the World Outliner.
-
----
-
-## GitHub Release
-
-This is the easiest GitHub installation method because the release package is already prepared for the supported Unreal Engine version.
-
-### 1. Download Focus
-
-Open the repository's **Releases** page:
-
-[https://github.com/mippi-the-dork/Focus/releases](https://github.com/mippi-the-dork/Focus/releases)
-
-Download the latest package matching your Unreal Engine version and platform.
-
-For example:
-
-```text
-Focus-vX.Y.Z-UE5.8.x-Win64.zip
-```
-
-### 2. Close Unreal Editor
-
-Close the project before installing the plugin.
-
-### 3. Locate Your Project Plugins Folder
-
-Your project should contain a `Plugins` directory beside the `.uproject` file:
-
-```text
-YourProject/
-├── Config/
-├── Content/
-├── Plugins/
-└── YourProject.uproject
-```
-
-If the `Plugins` directory does not exist, create it.
-
-### 4. Extract Focus
-
-Extract the `Focus` folder into:
-
-```text
-YourProject/Plugins/
-```
-
-The final structure should look similar to:
-
-```text
-YourProject/
-├── Plugins/
-│   └── Focus/
-│       ├── Config/
-│       ├── Resources/
-│       ├── Source/
-│       └── Focus.uplugin
-└── YourProject.uproject
-```
-
-### 5. Launch the Project
-
-Open your Unreal Engine project.
-
-If necessary, navigate to:
-
-**Edit > Plugins**
-
-Search for:
-
-```text
-Focus
-```
-
-Enable the plugin and restart Unreal Editor if prompted.
-
----
-
-## GitHub Source
-
-Developers who want the latest source or want to modify Focus can clone the repository directly.
-
-### Requirements
-
-Building Focus from source requires a working Unreal Engine C++ development environment.
-
-For Windows this generally means:
-
-- Unreal Engine 5.8.x
-    
-- Visual Studio with the appropriate C++ workloads
-    
-- A project capable of compiling C++ plugins
-    
-
-### Clone the Repository
-
-Close Unreal Editor and navigate to your project's `Plugins` directory.
-
-```bash
-cd YourProject/Plugins
-git clone https://github.com/mippi-the-dork/Focus.git
-```
-
-Your project should now contain:
-
-```text
-YourProject/Plugins/Focus/
-```
-
-### Generate Project Files
-
-If necessary:
-
-1. Right-click your `.uproject`.
-    
-2. Select **Generate Visual Studio project files**.
-    
-
-Then open the generated solution and build your project's Editor target.
-
-For example:
-
-```text
-YourProjectEditor
-Win64
-Development Editor
-```
-
-Launch the project after compilation completes.
-
----
-
-# Updating Focus
-
-## GitHub Release Installation
-
-When updating a manually installed release:
+### Precompiled release
 
 1. Close Unreal Editor.
-    
-2. Remove the existing `Plugins/Focus` folder.
-    
-3. Extract the new Focus release into the `Plugins` directory.
-    
-4. Reopen the project.
-    
+2. Download the release ZIP for your Unreal Engine and platform from [Focus Releases](https://github.com/mippi-the-dork/Focus/releases).
+3. Extract the **Focus** folder to `YourProject/Plugins/Focus/`.
+4. Verify that `Focus.uplugin` is directly under `Focus/`, not nested in a second Focus folder.
+5. Open the project, enable Focus under **Edit → Plugins** if necessary, and restart if prompted.
+6. Find the Focus column in the World Outliner.
 
-Replacing the complete plugin folder is recommended rather than copying individual files over an older version.
+### Source installation
 
-## Git Source Installation
+With Unreal closed, clone the [Focus repository](https://github.com/mippi-the-dork/Focus) into `YourProject/Plugins/Focus`. Generate your project's Visual Studio files if required and build the Editor target with the UE C++ toolchain.
 
-If you cloned the repository using Git:
+## Updating
 
-```bash
-cd YourProject/Plugins/Focus
-git pull
-```
+For a downloaded release, replace the *entire* old plugin directory while the editor is closed. For a Git checkout, pull the desired version, rebuild, and restart. Do not mix source files from different releases.
 
-Rebuild the project if the source has changed.
+## Troubleshooting first launch
+
+Check that you installed into the right project, enabled the plugin, used a supported engine/platform, and are looking at the standard World Outliner. If the column was manually hidden, restore it through the Outliner column menu.
 
 ---
 
-# Compatibility
+## Technical detail
 
-Focus supports the following target configuration:
-
-|||
-|---|---|
-|**Focus Version**|2.1.0|
-|**Unreal Engine**|5.8.x|
-
-|**Platform**|Windows 64-bit|
-|**Plugin Type**|Editor|
-|**Runtime Dependency**|None|
-|**Packaged Game Impact**|None|
-
-Focus is currently configured as a Win64 editor plugin.
-
-Compatibility with additional Unreal Engine versions or platforms should not be assumed unless explicitly listed in a release.
-
----
-
-# How Focus Works
-
-## Expected limits
-
-Focus is an Editor-only workflow tool. Folder and selected-row changes affect eligible loaded Actors and are not automatically inherited by Actors added later. Supported native protections do not prevent arbitrary external tools or scripts.
-
-## Related source
-
-- [Main editor module](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
-- [Native quick properties](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp)
-- [Editor preferences](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusSettings.h)
-- [Interaction guards](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusInteractionGuard.h)
-- [Full README](https://github.com/mippi-the-dork/Focus/blob/main/README.md)
+[Read the Technical page](TECHNICAL.md) for engine integration, persistence and implementation boundaries.

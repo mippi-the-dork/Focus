@@ -1,115 +1,61 @@
-# Questions and Answers — Design
+# Frequently Asked Questions — Design
 
-**Focus v2.1.0 | Unreal Engine 5.8.x | Windows 64-bit | Editor only**
+**Focus v2.1.0 · User guide and workflow reference**
 
-Common behavioral questions with clear answers.
+## Basics
 
-## Verified behavior
+**Does Focus change my packaged game?** No. Focus is an Unreal Editor plugin. The 28 native quick-property groups may change ordinary properties that subsequently influence a game, but the Focus editor UI itself is not packaged.
 
-Unloaded Actors are not changed; Solo is viewport-only; Outliner selection still works with Selection Lock; custom tools can bypass Edit Lock.
+**Why isn't every category visible?** Visual and Interaction are enabled by default. Use the Focus column-header menu to reveal the eight optional native-property groups.
 
-## Fast answers
+**Does Focus require a special Actor?** No. It adds controls to standard Actor Browser rows and edits native Actor/Component data.
 
-**Can I select a Selection-Locked Actor in the Outliner?** Yes. The lock intentionally prevents viewport picking rather than all access.
+## Visibility
 
-**Does Edit Lock stop scripts?** No. It protects standard supported editor interactions, not arbitrary scripts and custom tools.
+**Does Hide in Editor also hide an Actor in game?** No. They are independent controls.
 
-**Does Solo rewrite other Actors' visibility?** No. It filters visible primitives per editor view; lights/volumes can still contribute.
+**Why can a Soloed Actor still be influenced by lighting or volumes?** Solo primarily filters rendered primitives. It is not guaranteed to suppress every lighting and volume contribution.
 
-**Why is a quick control unavailable?** No eligible instance-editable property or compatible registered component may exist, or an Unreal property condition may restrict it.
+**Does Solo permanently change the other Actors?** No. Solo isolation itself does not rewrite all other Actors' hidden state.
 
-**Do new Actors inherit folder operations?** No. Apply the operation again after loading or adding them.
+## Protection
 
-**Can I edit unloaded World Partition Actors?** No, not through these bulk controls. Load the Actors first.
+**Why can I still select a Selection-Locked Actor in the Outliner?** That is intentional, so you can inspect and unlock it. The protection is for normal viewport selection.
 
-**What does LOD 0 mean?** Automatic; 1 forces the mesh's first LOD, and invalid high values display an alert.
+**What's the difference between Transform Lock and Edit Lock?** Transform Lock protects position, rotation and scale in supported editor paths. Edit Lock adds broader editing protection and includes transform protection.
 
-**Does session-only mean native Details edits are temporary?** No. Focus's Visual/Interaction persistence options affect Focus-initiated edits only.
+**Can a Python script or third-party tool modify an Edit-Locked Actor?** Potentially, yes. Focus is intended to prevent accidental edits through supported native workflows; it is not an authorization system.
 
-**Can a plugin affect packaged games?** Focus does not load as a runtime module. It is an Editor plugin.
-## Usage and workflows
+## Hierarchies
 
-# What Focus Does Not Do
+**Does locking a folder protect Actors created inside it tomorrow?** No. Folder operations apply to currently loaded members. Reapply after adding Actors.
 
-Focus is an **editor workflow utility**, not a permissions or security system.
+**Why didn't an unloaded World Partition Actor change?** Focus bulk operations do not modify unloaded Actors. Load it first.
 
-It does not:
+**What happens to a mixed state when I click?** A mixed or off toggle generally enables the setting on eligible targets; a fully on toggle disables it. Protection level cycling has its own sequence.
 
-- Prevent deliberate source-code changes
-    
-- Prevent scripts from modifying Actors
-    
-- Replace source control
-    
-- Implement user permissions
-    
-- Automatically check out files
-    
-- Prevent another developer from unlocking something
-    
-- Modify packaged game behavior
-    
-- Automatically apply Folder states to Actors added later
-    
+## Physics and properties
 
-Focus is intended to prevent accidental editor interactions and make complex scenes easier to manage.
+**Why is a segment very dark or unclickable?** There may be no compatible registered component or instance-editable property. That's Not Applicable, not Off.
 
----
+**Does Enable Gravity enable physics simulation?** No. Simulation and Gravity are separate native properties.
 
-# Limitations
+**Why doesn't Generate Hit Events produce callbacks?** Collision compatibility, physics setup and event bindings must also be valid.
 
-### Newly Added Actors
+**What does Forced LOD 0 mean?** Automatic LOD; 1 selects mesh LOD 0.
 
-Focus Folder and hierarchy operations affect the Actors currently contained within that scope.
+## Saving
 
-They are not inheritance rules.
+**Does session-only apply to every native property?** No. Focus session-only controls are limited to Visual and Interaction. Other quick property groups save normally.
 
-If another Actor is added to a Folder later, apply the Focus state again if you want the new Actor included.
+**Why is there still a Perforce checkout?** Another native edit may have dirtied the Actor or level package. Test on a clean package to isolate the cause.
 
-### World Partition
+**What does Restore Temporary Changes do?** It discards pending session-only Focus changes. It doesn't undo unrelated persistent changes or rewrite preference checkboxes.
 
-Bulk operations affect loaded Actors.
+## Need more detail?
 
-Unloaded World Partition Actors are not modified.
-
-Load the required Actors before performing a bulk Focus operation.
-
-### Selection Lock
-
-Selection Lock prevents normal viewport selection.
-
-The Actor remains intentionally selectable through the World Outliner so it can be inspected or unlocked.
-
-### Edit Lock
-
-Edit Lock protects supported standard editor workflows.
-
-Specialized editor tools, scripts, custom editor systems, or direct engine operations may provide ways to modify an Actor outside those guarded workflows.
-
-### Solo
-
-Solo primarily isolates rendered primitive components.
-
-Some scene contributions, such as lighting or volumes, may continue affecting the viewport even when their Actor is outside the Solo set.
-
-### Session-Only Native Properties
-
-Session-only **Hidden in Game** and native movement locking use package pre-save and post-save handling to avoid writing temporary values as persistent property changes. This needs in-editor validation across Save All, autosaves, External Actors / World Partition, Undo/Redo, and interrupted or failed saves. On a disposable level, confirm that Focus-only temporary edits do not request checkout on an otherwise clean Actor, that unrelated native edits save correctly, and that reloading restores the last persistent values.
-
-An Actor already marked dirty for unrelated reasons can still appear in Unreal's save or checkout workflows. Focus's persistence options do not suppress native Details panel or Outliner edits, and they do not prevent other plugins or tools from dirtying a package.
+Use the corresponding Design topic for examples and exact user behavior. The matching Technical topic explains property eligibility, storage and editor implementation.
 
 ---
 
-# Troubleshooting
-
-## Expected limits
-
-Focus is an Editor-only workflow tool. Folder and selected-row changes affect eligible loaded Actors and are not automatically inherited by Actors added later. Supported native protections do not prevent arbitrary external tools or scripts.
-
-## Related source
-
-- [Main editor module](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
-- [Native quick properties](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp)
-- [Editor preferences](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusSettings.h)
-- [Interaction guards](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusInteractionGuard.h)
-- [Full README](https://github.com/mippi-the-dork/Focus/blob/main/README.md)
+For diagnostics, native editor paths and compatibility, [see Technical](TECHNICAL.md).

@@ -1,69 +1,27 @@
 # Hide in Editor and Hidden in Game — Design
 
-**Focus v2.1.0 | Unreal Engine 5.8.x | Windows 64-bit | Editor only**
+**Focus 2.1.0 · Unreal Engine 5.8.x · Win64 · Editor only**
 
-Different visibility states and their effects.
+## Two independent visibility settings
 
-## Verified behavior
+**Hide in Editor** controls whether an Actor appears in editor viewports. It is useful for reducing visual noise without changing the Actor's gameplay visibility choice.
 
-Editor Hide does not change Hidden in Game. The former is editor viewport visibility, the latter a native Actor property.
+**Hidden in Game** changes the Actor's native Hidden in Game setting. Use it when you intentionally want that runtime property configured. Hiding an Actor in the editor does **not** automatically set Hidden in Game, and the reverse is also true.
 
-## Usage and workflows
+## Use them
 
-## Hide in Editor
+Select an Actor or folder in the Outliner and toggle the appropriate Focus visual segment. Hover first when unsure which is which. A mixed folder means some eligible Actors are hidden while others are not. Toggle mixed to apply one consistent state to the loaded scope.
 
-The upper visibility control determines whether an Actor is hidden in editor viewports.
+## Example
 
-When enabled:
+You can hide decorative geometry in the editor while leaving it set to appear in game. Conversely, you can see a debug Actor while editing but mark it Hidden in Game.
 
-- The Actor is hidden while editing.
-    
-- Hidden in Game is not changed.
-    
-- The Actor can still remain part of the level.
-    
+## Saving matters
 
-Use this when something needs to be temporarily removed from view while working.
-
-When **Hide in Editor persistence is on**, the hidden state can be saved with the Actor. When it is **off**, changes made by the Focus dot remain session-only. A fully hidden state uses **white** or **blue** depending on persistence; a Mixed row uses **yellow** or **orange**. Gray means visible. Hidden in Game is unaffected.
+These two Focus controls have separate persistence checkboxes. Turning persistence off makes **Focus-initiated** changes temporary for the editor session. Native Details panel changes still save normally; use **Restore Temporary Changes** to discard eligible temporary Focus changes. Edit-Locked Actors are not changed by the Focus Hidden in Game toggle.
 
 ---
 
-## Hidden in Game
+## Technical detail
 
-The lower visibility control modifies Unreal's existing **Hidden in Game** property.
-
-When enabled, the Actor is hidden during gameplay according to Unreal's normal runtime behavior.
-
-This is separate from Hide in Editor.
-
-With **Hidden in Game persistence off**, clicking Focus's dot changes the property for the current session without intentionally marking an otherwise clean Actor package dirty or prompting checkout. The active dot is **red** when persistent or **pink** when session-only. Mixed uses **yellow** or **orange**; gray means off.
-
-If you change Hidden in Game through the **Details panel** or a native Outliner command instead, Unreal's ordinary edit and save behavior still applies. Focus's persistence preference does not override native editing.
-
-That separation allows an Actor to be:
-
-- Visible in the editor but hidden in game
-    
-- Hidden in the editor but visible in game
-    
-- Visible in both
-    
-- Hidden in both
-    
-
----
-
-## Solo
-
-## Expected limits
-
-Focus is an Editor-only workflow tool. Folder and selected-row changes affect eligible loaded Actors and are not automatically inherited by Actors added later. Supported native protections do not prevent arbitrary external tools or scripts.
-
-## Related source
-
-- [Main editor module](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
-- [Native quick properties](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp)
-- [Editor preferences](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusSettings.h)
-- [Interaction guards](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusInteractionGuard.h)
-- [Full README](https://github.com/mippi-the-dork/Focus/blob/main/README.md)
+[Read the Technical page](TECHNICAL.md) for engine integration, persistence and implementation boundaries.
