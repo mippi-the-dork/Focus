@@ -44,9 +44,9 @@ For save behavior on shared levels, see [Session-Only and Persistent Edits](03-s
 
 ## What's next for Focus?
 
-The [Focus Roadmap](ROADMAP.md) outlines three planned areas: additional built-in Quick Actions categories, a public extension API so other plugins can contribute categories and micro-widgets, and a data-driven Quick Widget Builder for users.
+The [Focus Roadmap](ROADMAP.md) traces **v1.0** (Visual and Interaction), **v2.0** (eight additional categories and optional session-only Visual/Interaction changes), and **v3.0 (planned)**: new Quick Action categories, an API for other plugins and a Quick Widget Builder.
 
-These are **planned features**, not capabilities in Focus v2.1.0. The [documentation audit](DOCUMENTATION_AUDIT.md) also tracks current gaps and improvements to the manual.
+These are **planned features**, not capabilities in Focus v2.1.0. The [documentation audit](DOCUMENTATION_AUDIT.md) tracks improvements and remaining gaps. The [verification matrix](VERIFICATION_MATRIX.md) defines tests awaiting real editor/browser results.
 
 ## Project and support
 
