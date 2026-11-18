@@ -1,61 +1,34 @@
 # Applicability, Mixed States and Undo — Design
 
-**Focus v2.1.0 | Unreal Engine 5.8.x | Windows 64-bit | Editor only**
+**Focus v2.1.0 · Unreal Engine 5.8.x · Editor only**
 
-Why a quick control is unavailable.
+## Understand the colors and states
 
-## Verified behavior
+Focus distinguishes **On**, **Off**, **Mixed**, and **Not Applicable**.
 
-Only instance-editable properties on eligible registered Actor/Component targets can be changed. Edit-locked Actors are skipped; writes use native transactions.
+- **On:** every eligible target in the row has the property enabled.
+- **Off:** every eligible target has it disabled.
+- **Mixed:** eligible targets differ; the next click normally enables them together.
+- **Not Applicable:** there is no suitable editable target for that control. It is not the same as Off.
 
-## Source eligibility checks
+Hover a segment to see the property name, meaning, current row state, and number of eligible targets. A folder may contain many Actors but only some have a component to which a given quick-property control applies.
 
-The source excludes template objects, missing or unregistered components, properties without CPF_Edit, instance-disabled, EditConst or EditCondition metadata, and properties denied by CanEditChange. A disabled boolean, a mixed value and an unavailable property are distinct states. Quick edits call Modify, PreEditChange and PostEditChangeProperty; physics/lighting/mobility/LOD changes use their dedicated engine setters where necessary.
-## Usage and workflows
+## What counts as a target
 
-# Mixed States
+Simulation and most physics settings require eligible Primitive Components; some World and network flags belong to Actors directly; Mobility targets Scene Components; LOD targets mesh components. A property may also be restricted by Unreal's own edit conditions.
 
-Folders and selections can contain Actors with different Focus settings.
+## Multi-selection example
 
-Focus represents this using a mixed state.
+Select one Static Mesh Actor and one Actor without a mesh. Forced LOD should apply only to eligible mesh components and not silently invent a mesh on the other Actor. If two eligible meshes have different settings, the row is Mixed.
 
-For example:
+## Edit Lock and history
 
-```text
-Environment
-├── Wall_A        Transform Locked
-├── Wall_B        Transform Locked
-└── Door          Unlocked
-```
+Edit-Locked Actors are skipped when applying native quick-property controls. Eligible edits support Unreal's normal Undo/Redo transaction path. To reverse a mistaken batch, use Undo before proceeding.
 
-The protection control for the `Environment` Folder will show that its contents do not all share the same state.
+## Why a dark segment is useful
 
-This makes it easier to understand the actual state of a hierarchy without expanding and inspecting every Actor individually.
+Unavailable is an explanation, not a failure. It indicates there was no compatible instance-editable property for this row and the attempted action is disabled.
 
 ---
 
-# Example Workflow
-
----
-
-### Mixed States
-
-Focus indicates when a hierarchy contains a mixture of enabled and disabled states.
-
-### Undo / Redo
-
-Focus control changes participate in Unreal Engine's normal Undo and Redo workflow.
-
-### Persistent Settings
-
-## Expected limits
-
-Focus is an Editor-only workflow tool. Folder and selected-row changes affect eligible loaded Actors and are not automatically inherited by Actors added later. Supported native protections do not prevent arbitrary external tools or scripts.
-
-## Related source
-
-- [Main editor module](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
-- [Native quick properties](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp)
-- [Editor preferences](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusSettings.h)
-- [Interaction guards](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusInteractionGuard.h)
-- [Full README](https://github.com/mippi-the-dork/Focus/blob/main/README.md)
+For editable C++ property targets, transaction details and native constraints, [see Technical](TECHNICAL.md).

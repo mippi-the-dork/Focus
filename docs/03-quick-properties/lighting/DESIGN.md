@@ -1,65 +1,30 @@
 # Lighting and World — Design
 
-**Focus v2.1.0 | Unreal Engine 5.8.x | Windows 64-bit | Editor only**
+**Focus v2.1.0 · Unreal Engine 5.8.x · Editor only**
 
-Lighting channels, shadow, HLOD and World Partition.
+## Lighting: four separate toggles
 
-## Verified behavior
+Lighting Channel **0**, **1**, and **2** decide which enabled channels an eligible light or primitive belongs to. For a light to affect a receiving primitive through lighting channels, they generally need an overlapping enabled channel. **Cast Shadows** controls shadow casting for eligible components; shadow visibility still depends on light, material, and renderer settings.
 
-Lighting channel edits use SetLightingChannels, retaining the other channels.
+A useful test: set a light and selected props to Channel 1, leave unrelated props on Channel 0, then inspect the lighting. Channel flags are not a replacement for normal light visibility or mobility rules.
 
-## Usage and workflows
+## World: four Actor-level options
 
-## Lighting
+| Control | Purpose | When to use it carefully |
+| --- | --- | --- |
+| In Main World Only | Restricts supported Actors to their main-world context | World duplication and editor previews |
+| Is Editor Only Actor | Marks an Actor as editor-only where supported | Do not leave gameplay references dependent on stripped Actors |
+| Is Spatially Loaded | Controls World Partition spatial-loading eligibility | Relevant only in supported World Partition contexts |
+| Include Actor in HLOD | Requests HLOD generation participation | Requires a suitable HLOD-enabled world |
 
-The **Lighting** miniwidget groups four independent properties. Its **three upright upper bars** are Lighting Channels **0**, **1**, and **2**, from left to right. The **lower horizontal bar** controls **Cast Shadows**.
+## Workflow
 
-### Lighting channels
+Enable **Lighting** or **World** under the Focus header. Hover the miniwidget to identify each segment and read the current eligible-target count. Use the Lighting controls on Actors containing lights or primitives; World flags apply at the Actor level. Check the result in the appropriate editor rendering and world-loading context.
 
-Lighting channels help determine which eligible lights can interact with which eligible primitives. For a light to affect a primitive through this mechanism, both need compatible channel assignments, and the normal rendering rules must still permit the interaction.
+## Understand 'enabled'
 
-You can use the upper bars to check or change channels on supported light and primitive components. Focus changes the selected channel without intentionally resetting the other two channels. For example, you might place a set of character meshes on Channel 1 and assign a dedicated light to that same channel while leaving ordinary environment lighting on Channel 0.
-
-The individual channel controls can show different states within a multi-selection. Hover a bar to confirm its channel and target eligibility before toggling it.
-
-### Cast Shadows
-
-The bottom bar toggles the corresponding **Cast Shadows** property on eligible components. A component's final shadow behavior also depends on its material, lighting type, and render configuration. Turning this on does not override those other requirements.
-
-This category is useful for checking channel assignments and shadow casting across a group of supported objects without repeatedly opening their individual Details panels.
+An enabled native flag is not proof that a light contributes to the final render or an Actor will be included in HLOD. These are inputs to Unreal's systems, not a preview or diagnostics engine.
 
 ---
 
-## World
-
-The **World** miniwidget displays four Actor-level settings in a **two-by-two grid**. Unlike categories that operate on component properties, these controls apply to an Actor's own world-related flags.
-
-### Main-world and editor-only behavior
-
-The **top-left square**, **In Main World Only**, controls the corresponding main-world restriction where Unreal supports it. It does not otherwise change which level or folder contains the Actor.
-
-The **top-right square**, **Is Editor Only Actor**, marks the Actor as editor-only where the engine honors that flag. Editor-only Actors can be excluded from cooked gameplay content, so use this carefully if other gameplay objects reference the Actor. Hiding something in the editor is not the same as marking it editor-only.
-
-### World Partition and HLOD
-
-The **bottom-left square**, **Is Spatially Loaded**, controls eligibility for World Partition spatial loading. Its effect depends on whether the world uses World Partition and how the world is configured. Changing the flag does not itself load every cell or alter unloaded Actors.
-
-The **bottom-right square**, **Include Actor in HLOD**, controls participation in supported Hierarchical Level of Detail generation. This does not immediately build new HLODs. The world must have an applicable HLOD setup and generation workflow.
-
-When preparing a large World Partition level, use the bottom two squares to review spatial loading and HLOD participation across loaded Actors. The four settings remain independent, and only eligible, instance-editable Actor properties can be changed.
-
----
-
-## Network
-
-## Expected limits
-
-Focus is an Editor-only workflow tool. Folder and selected-row changes affect eligible loaded Actors and are not automatically inherited by Actors added later. Supported native protections do not prevent arbitrary external tools or scripts.
-
-## Related source
-
-- [Main editor module](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
-- [Native quick properties](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp)
-- [Editor preferences](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusSettings.h)
-- [Interaction guards](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusInteractionGuard.h)
-- [Full README](https://github.com/mippi-the-dork/Focus/blob/main/README.md)
+For editable C++ property targets, transaction details and native constraints, [see Technical](TECHNICAL.md).
