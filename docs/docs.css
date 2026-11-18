@@ -172,6 +172,31 @@ code,kbd,pre,.baseline,.top-link,.source,.nav-label,.toc-inner>b,.kind-link{
 .kind-link{padding:5px 7px;color:#6f859c}.kind-link.active{color:#eaf8ff;background:rgba(47,147,255,.12)}
 .source{padding:6px 0 6px 8px;border-left:1px solid var(--line)}
 .markdown{color:#cbd7e3;font-size:14px;overflow-wrap:anywhere}
+/* Keep Markdown images and other embedded media inside the article column.
+   Natural-size assets may be very wide (the Focus hero is a banner); allow
+   them to shrink, but never upscale a small screenshot or distort its ratio. */
+.markdown img,
+.markdown video,
+.markdown iframe,
+.markdown svg,
+.markdown canvas{
+  display:block;
+  box-sizing:border-box;
+  max-width:100%;
+}
+.markdown img,
+.markdown video,
+.markdown svg,
+.markdown canvas{
+  width:auto;
+  height:auto;
+}
+.markdown img{
+  object-fit:contain;
+  margin:18px 0 24px;
+}
+.markdown iframe{width:100%;border:0}
+.markdown p:has(> img){max-width:100%}
 .markdown>h1:first-child{margin-top:0}
 .markdown h1,.markdown h2,.markdown h3,.markdown h4{
   position:relative;scroll-margin-top:calc(var(--header) + 18px);color:#fff;line-height:1.18;
