@@ -1,92 +1,46 @@
-# How Focus Works Internally — Technical
+# Focus Editor Architecture — Technical
 
-**Focus v2.1.0 | Unreal Engine 5.8.x | Windows 64-bit | Editor only**
+**Focus v2.1.0 · C++ source reference**
 
-Modules, Outliner, Mode, guard and render extension.
+## Module startup
 
-## Verified behavior
+`FFocusModule::StartupModule` registers editor callbacks and the Actor Browser column. `TryActivate` waits for `GEditor`, the actual Level Editor instance and the registered Focus editor mode. Before activating its non-widget mode, it invokes the normal default mode when no other editor mode is active. This avoids suppressing Unreal's standard transform gizmo during startup.
 
-FFocusModule registers the Actor Browser column, editor mode, input and Details guards, view extension and package save hooks.
+## Integration layers
 
-## Implementation layers
-
-| System | Responsibility |
+| Component | Role |
 | --- | --- |
-| FFocusModule | Editor registration, lifecycle, delegates and Outliner column |
-| FFocusColumn | Row controls, mixed state, compact miniwidgets, category menu |
-| UFocusEditorMode | Selection filtering and protected cut/delete |
-| FFocusTransformGuard | Transaction-scoped native transform protection |
-| FFocusCommandGuard | Supported standard editor commands |
-| FFocusInteractionGuard | Outliner/component rename, picker and drag/drop controls |
-| FFocusViewExtension | Solo via per-editor-view ShowOnlyPrimitives |
-| FocusQuick | Native editable-property read/write and component eligibility |
-| UFocusSettings | EditorPerProjectUserSettings preferences |
-## Native behavior and original reference
+| `FFocusColumn` | Outliner row widgets, category menu, mixed and eligible state |
+| `Focus` namespace | Saved and session Focus state, persistence, Undo/Redo |
+| `FocusQuick` | Native property definitions, validation, reads and writes |
+| `UFocusEditorMode` | Viewport selection filtering and selected cut/delete protection |
+| `FFocusTransformGuard` | Transaction-scoped standard editor transform rollback |
+| `FFocusCommandGuard` | Gating of supported native editor commands |
+| `FFocusInteractionGuard` | Native Slate Outliner/component editor interactions |
+| `FFocusViewExtension` | Solo via editor view's `ShowOnlyPrimitives` |
+| `UFocusSettings` | Editor per-project preference values |
 
-# How Focus Works
+## Editor event subscriptions
 
-Focus extends Unreal Engine's World Outliner with additional editor controls.
+The module listens for map opens, new Actors, added levels and object replacement to load saved state once objects are ready, including streamed Actor replacements after Blueprint recompilation. Details hooks preserve previous read-only and editing-enabled delegates. A core ticker reconciles transient editor state and discovers relevant views without scanning every widget every render frame.
 
-When a Focus control is used:
+## Unloading
 
-1. Focus determines the Actor, Folder, Group, hierarchy, or multi-selection represented by the clicked row.
-    
-2. The relevant Actor scope is resolved.
-    
-3. Focus applies the chosen control to the affected eligible Actors or Components.
-    
-4. For Visual and Interaction, Focus checks that control's persistence preference. Persistent edits follow the normal save workflow; session-only edits retain the prior saved value while changing the live editor state.
-    
-5. Unreal's transaction system records supported changes for Undo and Redo. Persistent Actor and Component values can be stored with the affected Actor or level packages.
-    
+`StopMode` unregisters callbacks/guards, resolves any in-progress temporary save overlays through `OnPackagePostSave`, removes the Focus default editor mode and destroys Focus mode when the level editor is still valid. Input processors and captured native editing hooks require safe teardown rather than leaked delegates.
 
-Focus protection operates entirely inside the editor.
+## Trust boundary
 
-Selection Lock and Delete/Cut protection are handled by the Focus editor mode. Transform Lock and Edit Lock use Unreal's native movement-lock behavior together with Focus's transform and property-change guards. Focus does not require the legacy editor-mode viewport-input interface, so its editor mode does not force Unreal Engine to disable Interactive Tools Framework (ITF) gizmos.
-
-Focus does not replace or configure Unreal's transform gizmo, and its editor protections depend on the editing operation using supported engine notifications. Specialized tools can operate outside those paths, as described in **Limitations**.
-
-Focus does not add gameplay components or runtime systems to the packaged game. Its session-only controls do not change the persistence of edits made directly through Unreal's Details panel or native Outliner commands.
+This is entirely editor-side integration. Native editor systems and plugins not intercepted by the guards can still modify Actors. No engine-source patch or packaged runtime module is required.
 
 ---
 
-# What Focus Does Not Do
+## Browse relevant source
 
-Focus is an **editor workflow utility**, not a permissions or security system.
+- [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
+- [FocusQuickProperties.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp)
+- [FocusInteractionGuard.h](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusInteractionGuard.h)
+- [FocusState.h](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusState.h)
 
-It does not:
+For usage and workflows, [see Design](DESIGN.md).
 
-- Prevent deliberate source-code changes
-    
-- Prevent scripts from modifying Actors
-    
-- Replace source control
-    
-- Implement user permissions
-    
-- Automatically check out files
-    
-- Prevent another developer from unlocking something
-    
-- Modify packaged game behavior
-    
-- Automatically apply Folder states to Actors added later
-    
-
-Focus is intended to prevent accidental editor interactions and make complex scenes easier to manage.
-
----
-
-# Limitations
-
-## Verification boundary
-
-These details are grounded in current v2.1.0 C++ source and the public README. Editor-specific combinations, such as external Actor saving and nonstandard editing modes, require validation in the target Unreal project.
-
-## Related source
-
-- [Main editor module](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
-- [Native quick properties](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp)
-- [Editor preferences](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusSettings.h)
-- [Interaction guards](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusInteractionGuard.h)
-- [Full README](https://github.com/mippi-the-dork/Focus/blob/main/README.md)
+**QA status:** Source-reviewed; no claim of exhaustive live-editor integration testing.

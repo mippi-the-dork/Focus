@@ -1,16 +1,12 @@
-# Full Quick-Property Reference — Technical
+# Complete Control Reference — Technical
 
-**Focus v2.1.0 | Unreal Engine 5.8.x | Windows 64-bit | Editor only**
+**Focus v2.1.0 · C++ source reference**
 
-28 native quick-property definitions.
+## All 28 native definitions
 
-## Verified behavior
+The following controls come directly from `FocusQuick::Definitions()`; they are not new Focus-owned runtime properties.
 
-FocusQuickProperties.cpp defines 28 properties over eight categories, plus Visual and Interaction controls.
-
-## Native property catalog (source-derived)
-
-| Category | Display label | Eligible scope | Property |
+| Group | Display label | Eligible target scope | Native property |
 | --- | --- | --- | --- |
 | Simulation | Simulate Physics | Primitive | `BodyInstance.bSimulatePhysics` |
 | Simulation | Enable Gravity | Primitive | `BodyInstance.bEnableGravity` |
@@ -18,13 +14,13 @@ FocusQuickProperties.cpp defines 28 properties over eight categories, plus Visua
 | Simulation | Ignore Radial Force | Primitive | `bIgnoreRadialForce` |
 | Simulation | Apply Impulse on Damage | Primitive | `bApplyImpulseOnDamage` |
 | Simulation | Async Physics Tick Enabled | Actor | `bAsyncPhysicsTickEnabled` |
-| PhysicsEvents | Generate Hit Events | Primitive | `BodyInstance.bNotifyRigidBodyCollision` |
-| PhysicsEvents | Generate Overlap Events | Primitive | `bGenerateOverlapEvents` |
-| PhysicsEvents | Generate Wake Events | Primitive | `BodyInstance.bGenerateWakeEvents` |
+| Physics Events | Generate Hit Events | Primitive | `BodyInstance.bNotifyRigidBodyCollision` |
+| Physics Events | Generate Overlap Events | Primitive | `bGenerateOverlapEvents` |
+| Physics Events | Generate Wake Events | Primitive | `BodyInstance.bGenerateWakeEvents` |
 | Lighting | Lighting Channel 0 | Lighting | `LightingChannels.bChannel0` |
 | Lighting | Lighting Channel 1 | Lighting | `LightingChannels.bChannel1` |
 | Lighting | Lighting Channel 2 | Lighting | `LightingChannels.bChannel2` |
-| Lighting | Cast Shadows | Lighting | `CastShadow` |
+| Lighting | Cast Shadows | Lighting | `CastShadow` (light component naming may differ) |
 | World | In Main World Only | Actor | `bIsMainWorldOnly` |
 | World | Is Editor Only Actor | Actor | `bIsEditorOnlyActor` |
 | World | Is Spatially Loaded | Actor | `bIsSpatiallyLoaded` |
@@ -32,146 +28,36 @@ FocusQuickProperties.cpp defines 28 properties over eight categories, plus Visua
 | Network | Net Load on Client | Actor | `bNetLoadOnClient` |
 | Network | Replicate Physics to Autonomous Proxy | Primitive | `bReplicatePhysicsToAutonomousProxy` |
 | Network | Static Mesh Replicate Movement | Actor | `bStaticMeshReplicateMovement` |
-| Navigation | Can Ever Affect Navigation | ActorComponent | `bCanEverAffectNavigation` |
+| Navigation | Can Ever Affect Navigation | Actor Component | `bCanEverAffectNavigation` |
 | Navigation | Dynamic Obstacle | Shape | `bDynamicObstacle` |
 | Navigation | Fill Collision Underneath for Navmesh | Primitive | `bFillCollisionUnderneathForNavmesh` |
 | Navigation | Rasterize as Filled Convex Volume | Primitive | `bRasterizeAsFilledConvexVolume` |
 | Mobility | Mobility | Scene | `Mobility` |
-| LOD | Forced LOD Model | Mesh | `ForcedLodModel` |
+| LOD | Forced LOD Model | Static/Skinned Mesh | `ForcedLodModel` |
 | LOD | Never Distance Cull | Primitive | `bNeverDistanceCull` |
 | LOD | Allow Cull Distance Volume | Primitive | `bAllowCullDistanceVolume` |
-## Native behavior and original reference
 
-### Native quick property editing
+## Quick-property API
 
-Optional controls operate on Unreal Engine's **native Actor and Component properties**, not copies stored by Focus. Each miniwidget segment shows the current aggregate state of eligible loaded Actors and components. A Mixed state is displayed only when applicable properties disagree, and unavailable or non-instance-editable properties appear dark gray without affecting adjacent controls.
+`FocusQuick::Definitions` defines stable label/symbol/scope/kind/property mappings. `GetTargets` discovers valid eligible components; `FindProperty` validates editability and handles nested property structures; `Read` obtains current values and `Write` modifies via native setters or reflection with editor notifications. The Outliner column aggregates eligible values for mixed states.
 
-The complete control reference appears below under **World Outliner Controls**, organized by category. Each control uses its corresponding native Unreal property where an eligible, instance-editable target exists.
+## Distinction from Focus-specific state
 
-**Hover any miniwidget segment** for an explanation of what the property controls, its current state, eligible targets, usage instructions, and relevant restrictions. The category checkbox tooltips in the header are shorter overviews that list the available controls; the miniwidget tooltips explain individual properties in more detail.
+The Visual/Interaction controls instead route through `Focus::EControl` and `Focus::Get/Set`. Their metadata and session-only behavior are not the same as the 28 quick-property definitions. No quick-property category toggling installs a new runtime component or authoring asset.
 
-Controls are available only when Unreal exposes the backing property as editable on the relevant placed Actor or Component. Focus uses native property setters or editor change notifications and transactions where supported. It does not silently change prerequisites to make an inapplicable property editable. Actors protected by Focus Edit Lock are skipped, and folder or selection operations apply only to currently loaded, eligible targets. A single Actor can contain several eligible components, so inspect the tooltip before making a bulk change.
+## Advanced caveats
+
+Forced LOD 0 is automatic and positive values address mesh LODs starting at index zero. Eligibility depends on the specific Actor class, registered component and instance-editable property. Some values can be written but still require suitable engine systems to produce an observable effect.
 
 ---
 
-### World Outliner Controls
+## Browse relevant source
 
-Focus adds its controls directly to the standard World Outliner.
+- [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
+- [FocusQuickProperties.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp)
+- [FocusInteractionGuard.h](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusInteractionGuard.h)
+- [FocusState.h](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusState.h)
 
-No additional editor window is required.
+For usage and workflows, [see Design](DESIGN.md).
 
-### Hide in Editor
-
-Hide Actors from editor viewports without affecting their Hidden in Game state. Focus can save this visibility choice or keep Focus-initiated changes session-only, according to the Hide in Editor persistence setting.
-
-### Hidden in Game
-
-Control Unreal's existing Hidden in Game property directly from the World Outliner. Session-only Focus edits can be enabled without changing the persistence of native Details or Outliner actions.
-
-### Solo
-
-Isolate Actors, folders, or hierarchies while working in the editor, with optional session-only Solo changes.
-
-### Selection Lock
-
-Prevent accidental viewport selection while keeping Actors selectable in the World Outliner. Focus-initiated Selection Lock changes can be saved or session-only.
-
-### Transform Lock
-
-Protect Actor location, rotation, and scale while leaving other properties editable. Transform Lock and Edit Lock share the Protection Lock persistence setting.
-
-### Edit Lock
-
-Protect supported Actor and Component editing while keeping their properties available for inspection. Edit Lock shares the Protection Lock persistence setting with Transform Lock.
-
-### Simulation
-
-Quickly manage physics behavior for eligible Actors and primitive components using six independently clickable segments in a radial ring:
-
-- **Simulate Physics:** Enable or disable rigid-body physics simulation on eligible primitive components. Physics simulation also depends on compatible collision and mobility settings.
-- **Enable Gravity:** Allow gravity to affect physics-simulated components. Enabling gravity does not automatically enable physics simulation.
-- **Ignore Radial Impulse:** Prevent instantaneous radial impulses from affecting supported primitive components.
-- **Ignore Radial Force:** Prevent ongoing radial forces from affecting supported primitive components, independently of radial impulses.
-- **Apply Impulse on Damage:** Allow eligible primitive components to receive an impulse from supported damage events; this does not itself configure damage or start simulation.
-- **Async Physics Tick Enabled:** Enable an Actor's asynchronous physics tick where supported; this is separate from its normal game-thread tick.
-
-### Physics Events
-
-Control physics event notifications with three stacked horizontal pills, from top to bottom:
-
-- **Generate Hit Events:** Enable rigid-body collision hit notifications where the component's collision setup supports the relevant contacts.
-- **Generate Overlap Events:** Enable overlap event generation, subject to the other object's collision responses and overlap settings.
-- **Generate Wake Events:** Enable physics wake and sleep notifications for eligible primitive components taking part in physics simulation.
-
-### Lighting
-
-Adjust lighting interactions using three upper channel bars and a lower shadow bar:
-
-- **Lighting Channel 0:** Include eligible lights and primitives in Channel 0 interactions.
-- **Lighting Channel 1:** Include eligible lights and primitives in Channel 1 interactions.
-- **Lighting Channel 2:** Include eligible lights and primitives in Channel 2 interactions.
-- **Cast Shadows:** Enable or disable shadow casting on supported light or primitive components, subject to relevant rendering and material settings.
-
-A light and a receiving primitive must have a compatible lighting channel for that channel to affect their interaction. Lighting channels do not override other lighting restrictions.
-
-### World
-
-Access four world-related Actor properties through a two-by-two grid:
-
-- **In Main World Only:** Restrict a supported Actor to the main world where Unreal respects this setting.
-- **Is Editor Only Actor:** Mark the Actor as editor-only so it is excluded from cooked gameplay content where supported. Check dependencies before enabling this on referenced Actors.
-- **Is Spatially Loaded:** Control whether the Actor participates in World Partition spatial loading where applicable.
-- **Include Actor in HLOD:** Control participation in automatic Hierarchical Level of Detail generation in supported worlds.
-
-### Network
-
-Manage three network-related properties through a triangular miniwidget:
-
-- **Net Load on Client:** Control whether a placed Actor is loaded on clients as part of networked level loading. This does not enable Actor replication.
-- **Replicate Physics to Autonomous Proxy:** Control physics-state replication to autonomous proxies on eligible primitive components. A suitable networking and physics setup is required.
-- **Static Mesh Replicate Movement:** Control movement replication for supported Static Mesh Actors. It does not enable replication for unrelated Actor or component types.
-
-### Navigation
-
-Access four navigation settings through the four circular points of the navigation miniwidget:
-
-- **Can Ever Affect Navigation (top):** Allow an eligible Actor component to contribute to navigation data.
-- **Dynamic Obstacle (right):** Mark an eligible shape component as a dynamic navigation obstacle where supported.
-- **Fill Collision Underneath for Navmesh (bottom):** Fill navigation data underneath eligible primitive collision according to the navmesh configuration.
-- **Rasterize as Filled Convex Volume (left):** Use filled convex-volume rasterization for supported primitive collision when generating navigation data.
-
-Changes to navigation settings may require appropriate collision geometry or navigation updates before their effects appear.
-
-### Mobility
-
-Set an eligible scene component's mobility with a single vertical pill divided into three sections:
-
-- **Static (top):** Keep the component in the Static mobility mode.
-- **Stationary (middle):** Choose Stationary mobility when supported by that component and its usage.
-- **Movable (bottom):** Choose Movable mobility to allow dynamic movement where appropriate.
-
-Click a section to assign that mobility to eligible components. The choices are mutually exclusive for each component. When the targets have different mobility values, the miniwidget shows a Mixed outline with neutral interior bands. Certain component types and lighting setups impose additional restrictions.
-
-### LOD
-
-Control mesh Level of Detail and distance culling from a forced-LOD number positioned above two horizontal bars:
-
-- **Forced LOD Model (top number):** `0` uses automatic LOD. Positive values follow Unreal's one-based forced-LOD convention: `1` selects mesh LOD 0, `2` selects mesh LOD 1, and so on. The number supports **left-click to increment**, **Alt + left-click to decrement**, **mouse wheel** to adjust, and **double-click** to enter a value directly. The input range is 0 to 255, but each mesh may support fewer LODs. Invalid forced values use the Alert color (red by default) and are explained in the tooltip.
-- **Never Distance Cull (first bar):** Prevent supported primitive components from being removed by distance-culling systems that honor this setting. This does not disable all visibility or streaming mechanisms.
-- **Allow Cull Distance Volume (second bar):** Allow eligible primitive components to be influenced by Cull Distance Volumes in the level.
-
-The two culling controls toggle independently. **Right-click** still opens the native Outliner context menu. Focus does not silently clamp an existing forced-LOD value to an available mesh LOD.
-
-### Hierarchy Support
-
-## Verification boundary
-
-These details are grounded in current v2.1.0 C++ source and the public README. Editor-specific combinations, such as external Actor saving and nonstandard editing modes, require validation in the target Unreal project.
-
-## Related source
-
-- [Main editor module](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
-- [Native quick properties](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp)
-- [Editor preferences](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusSettings.h)
-- [Interaction guards](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusInteractionGuard.h)
-- [Full README](https://github.com/mippi-the-dork/Focus/blob/main/README.md)
+**QA status:** Source-reviewed; no claim of exhaustive live-editor integration testing.

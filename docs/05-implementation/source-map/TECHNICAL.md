@@ -1,87 +1,41 @@
-# Data Ownership and Source Map — Technical
+# Source Code and Data Ownership — Technical
 
-**Focus v2.1.0 | Unreal Engine 5.8.x | Windows 64-bit | Editor only**
+**Focus v2.1.0 · C++ source reference**
 
-Where states live and which C++ files own behavior.
+## File ownership
 
-## Verified behavior
+| File | Main responsibility |
+| --- | --- |
+| `Focus.uplugin` | Module kind, loading phase, platform and plugin metadata |
+| `Focus.Build.cs` | Editor module dependencies |
+| `FocusModule.cpp` | Focus state, metadata transactions, save overlays, row widgets, native guards, Solo extension, module lifecycle |
+| `FocusQuickProperties.cpp/.h` | 28 native definitions, scope validation, read/write and setters |
+| `FocusSettings.h/.cpp` | Editor preferences, persistence choices and color handling |
+| `FocusState.h` | Public internal state/control API |
+| `FocusInteractionGuard.h` | Native Slate and component-editor event guarding |
+| `FocusEditorMode.cpp/.h` | Editor mode and selection/cut/delete safeguards |
 
-FocusModule.cpp owns Actor state and column; FocusQuickProperties.cpp maps native targets; FocusSettings.h owns settings; FocusInteractionGuard.h guards native widgets.
+## Persistence responsibilities
 
-## Code ownership
+`States` and `Temporary` are in-memory maps keyed by weak Actor references. `Focus.SharedState.V1` metadata is stored on the Actor's owning package. Native Hidden in Game and movement lock use native Actor properties. `OnPackagePreSave` and `OnPackagePostSave` are temporary serialization overlays; neither creates an independent user-authored Focus asset.
 
-- `FocusModule.cpp`: shared Actor flags, metadata, scope, undo/save overlays, row widgets, editor integration, Solo view extension.
-- `FocusQuickProperties.cpp`: definitions, applicability filtering, native setters, target component selection.
-- `FocusSettings.h/.cpp`: configurable colors and per-control persistence, including migration of old color defaults.
-- `FocusInteractionGuard.h`: Slate rename, component editor, drag/drop and picker gating.
-- `FocusEditorMode.cpp`: Selection Lock and cut/delete behavior.
-- `FocusState.h`: shared control API.
-## Native behavior and original reference
+## Rendering and inputs
 
-# How Focus Works
+`FFocusColumn` and compact Slate widgets render the Outliner mini-controls. A registered `IInputProcessor` intercepts supported native interactions, while `FFocusViewExtension` filters Solo primitives per editor view.
 
-Focus extends Unreal Engine's World Outliner with additional editor controls.
+## Integration and verification
 
-When a Focus control is used:
-
-1. Focus determines the Actor, Folder, Group, hierarchy, or multi-selection represented by the clicked row.
-    
-2. The relevant Actor scope is resolved.
-    
-3. Focus applies the chosen control to the affected eligible Actors or Components.
-    
-4. For Visual and Interaction, Focus checks that control's persistence preference. Persistent edits follow the normal save workflow; session-only edits retain the prior saved value while changing the live editor state.
-    
-5. Unreal's transaction system records supported changes for Undo and Redo. Persistent Actor and Component values can be stored with the affected Actor or level packages.
-    
-
-Focus protection operates entirely inside the editor.
-
-Selection Lock and Delete/Cut protection are handled by the Focus editor mode. Transform Lock and Edit Lock use Unreal's native movement-lock behavior together with Focus's transform and property-change guards. Focus does not require the legacy editor-mode viewport-input interface, so its editor mode does not force Unreal Engine to disable Interactive Tools Framework (ITF) gizmos.
-
-Focus does not replace or configure Unreal's transform gizmo, and its editor protections depend on the editing operation using supported engine notifications. Specialized tools can operate outside those paths, as described in **Limitations**.
-
-Focus does not add gameplay components or runtime systems to the packaged game. Its session-only controls do not change the persistence of edits made directly through Unreal's Details panel or native Outliner commands.
+This source map is organized by implementation ownership, not a compatibility promise for other plugins. Direct scripted changes or unusual editor modes may bypass the guarded path. Review Unreal version changes against the dependent editor APIs when maintaining Focus.
 
 ---
 
-# What Focus Does Not Do
+## Browse relevant source
 
-Focus is an **editor workflow utility**, not a permissions or security system.
+- [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
+- [FocusQuickProperties.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp)
+- [FocusInteractionGuard.h](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusInteractionGuard.h)
+- [FocusState.h](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusState.h)
 
-It does not:
+For usage and workflows, [see Design](DESIGN.md).
 
-- Prevent deliberate source-code changes
-    
-- Prevent scripts from modifying Actors
-    
-- Replace source control
-    
-- Implement user permissions
-    
-- Automatically check out files
-    
-- Prevent another developer from unlocking something
-    
-- Modify packaged game behavior
-    
-- Automatically apply Folder states to Actors added later
-    
-
-Focus is intended to prevent accidental editor interactions and make complex scenes easier to manage.
-
----
-
-# Limitations
-
-## Verification boundary
-
-These details are grounded in current v2.1.0 C++ source and the public README. Editor-specific combinations, such as external Actor saving and nonstandard editing modes, require validation in the target Unreal project.
-
-## Related source
-
-- [Main editor module](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
-- [Native quick properties](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp)
-- [Editor preferences](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusSettings.h)
-- [Interaction guards](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusInteractionGuard.h)
-- [Full README](https://github.com/mippi-the-dork/Focus/blob/main/README.md)
+**QA status:** Source-reviewed; no claim of exhaustive live-editor integration testing.
