@@ -128,7 +128,7 @@ Unlocked → Transform Lock → Edit Lock → Unlocked
 
 The visual state of the padlock indicates the current protection level. Both locked levels use the same **Protection Lock (Transform / Edit)** persistence checkbox, and the tooltip reports whether Focus changes are persistent or session-only.
 
-![Transform Lock and Edit Lock in Focus](Doc/Images/Focus-Locking.gif)
+![Transform Lock and Edit Lock in Focus](https://raw.githubusercontent.com/mippi-the-dork/Focus/main/Doc/Images/Focus-Locking.gif)
 
 ## Simulation
 

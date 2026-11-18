@@ -24,7 +24,7 @@ Control individual Actors or operate on supported folders, groups, attached hier
 ![Version](https://img.shields.io/badge/Version-2.1.0-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-![Focus controls in the Unreal Engine World Outliner](Doc/Images/Focus-Hero.png)
+![Focus controls in the Unreal Engine World Outliner](https://raw.githubusercontent.com/mippi-the-dork/Focus/main/Doc/Images/Focus-Hero.png)
 
 ---
 
