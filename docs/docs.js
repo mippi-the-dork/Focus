@@ -53,7 +53,9 @@
   };
   function canonicalPath(path){
     const normalized = normalize(path);
-    if (normalized === '02-visual-and-interaction/README.md' || normalized === '03-quick-properties/README.md')
+    if (normalized === '02-visual-and-interaction/README.md' || normalized === '03-quick-properties/README.md' ||
+        normalized.startsWith('03-quick-properties/eligibility/') ||
+        normalized.startsWith('05-implementation/reference/'))
       return '02-quick-actions/README.md';
     for (const [oldPrefix,newPrefix] of Object.entries(legacyRoutes)){
       if (normalized.startsWith(oldPrefix)) return newPrefix+normalized.slice(oldPrefix.length);
