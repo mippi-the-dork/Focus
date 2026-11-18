@@ -2,30 +2,32 @@
 
 **Focus v2.1.0 · Quick Actions · User guide**
 
-## What this category controls
+## Available controls
 
-Network exposes **Net Load on Client**, **Replicate Physics to Autonomous Proxy**, and **Static Mesh Replicate Movement**.
+| Quick Action | Meaning | Doesn't replace |
+| --- | --- | --- |
+| **Net Load on Client** | Whether a placed Actor participates in loading on clients | Actor replication configuration |
+| **Replicate Physics to Autonomous Proxy** | Physics-state replication setting on eligible Primitive Components | Suitable replication roles, ownership and physics setup |
+| **Static Mesh Replicate Movement** | Movement-replication flag on compatible Static Mesh Actors | Replication on unrelated Actor classes |
 
-These are targeted native settings, not a one-click replication setup. If the Actor's replication, ownership, or component physics are not otherwise configured correctly, toggling one field will not solve network synchronization.
+## Workflow: check a networked Static Mesh Actor
 
-## Example
+1. Configure the Actor's normal replication, authority and ownership in Unreal; Focus does not set all of these.
+2. Enable **Network** in the Outliner Focus header.
+3. Hover the desired micro-widget segment to confirm its native purpose and eligibility.
+4. Toggle **Static Mesh Replicate Movement** only if its eligible Actor instance exposes that property.
+5. Run a multi-client PIE test and verify movement on client instances. A highlighted button alone does not prove the replicated state arrived.
 
-For a networked Static Mesh Actor, configure its general Actor replication normally, then use Focus for the specific movement or physics replication option if supported. Validate in multi-client PIE.
+## Understand unavailable versus ineffective
 
-## Network controls
+An Actor without the relevant instance-editable property may show **Not Applicable**. A compatible property that is enabled can still be ineffective if the network driver, ownership, or physics configuration doesn't support the scenario.
 
-Focus exposes three narrow native networking options rather than a complete replication editor.
+**Replicate Physics to Autonomous Proxy** is Primitive Component scoped, unlike the Actor-scoped Net Load on Client. A mixed folder might have both eligible and ineligible components.
 
-- **Net Load on Client:** whether a placed Actor loads on clients as part of networked level loading. It does not activate replication.
-- **Replicate Physics to Autonomous Proxy:** permits a compatible Primitive Component physics state to replicate to autonomous proxies when the gameplay setup supports it.
-- **Static Mesh Replicate Movement:** controls the corresponding Static Mesh Actor movement-replication setting. It does not apply to every arbitrary Actor type.
+## Target scope, state and saving
 
-For a networked test, first configure the Actor's broader replication, ownership, movement and physics settings, then use Focus for the specific property. Verify behavior in multi-instance PIE; a lit segment cannot prove a packet was sent.
+These Quick Actions operate on **currently loaded, eligible Actors**, including compatible attached descendants, nested folders, groups and selected Outliner rows. Hover for the state and number of eligible targets. **Mixed** means values differ across those targets; **Not Applicable** means no editable target exists.
 
-## Shared Quick Action behavior
+Native-property changes respect Edit Lock, support Unreal transactions/Undo and follow normal Actor/Component save behavior. They are not part of Focus's separate Visual/Interaction session-only persistence system. See [Quick Actions overview](../README.md) and [Settings and Saving](../../03-settings-and-saving/README.md).
 
-Quick Actions apply to **currently loaded eligible Actors**, including applicable attached descendants, nested folders, native groups and selected rows. If the row is part of a multi-selection, the action can cover the other selected rows. A Mixed control means different eligible targets disagree, while Not Applicable means no editable compatible target exists. An Edit-Locked Actor is skipped by native quick-property writes.
-
-For the full eligibility and saved/temporary editing rules, see [Quick Actions overview](../README.md) and [Settings and Saving](../../03-settings-and-saving/README.md).
-
-For the Unreal implementation and exact property mapping, [read Technical](TECHNICAL.md).
+For native properties and the exact Actor/Primitive eligibility rules, [read Technical](TECHNICAL.md).

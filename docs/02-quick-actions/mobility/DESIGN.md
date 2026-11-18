@@ -2,30 +2,38 @@
 
 **Focus v2.1.0 · Quick Actions · User guide**
 
-## What this category controls
+## Choose a mobility mode
 
-Mobility offers **S** (Static), **T** (Stationary) and **M** (Movable) for eligible Scene Components.
+The compact Mobility widget contains **three vertically arranged choices**, top to bottom:
 
-- **Static:** Nonmoving authored geometry.
-- **Stationary:** Restricted movement appropriate to applicable Unreal systems.
-- **Movable:** Content that can move as allowed by its component and engine setup.
+| Choice | Native mode | Typical use |
+| --- | --- | --- |
+| **Top — S** | Static | Nonmoving content |
+| **Middle — T** | Stationary | Engine-supported limited movement/use cases |
+| **Bottom — M** | Movable | Objects that need to move |
 
-## Usage
+Hover the segment to confirm the label, then click the option you want. This is a **three-choice selector**, not a button you repeatedly cycle.
 
-Enable Mobility, hover the three options, and choose the one you intend. For several Actors, click the appropriate value on a selected row to apply it to the current eligible selection. Different Scene Components inside the same Actor can be eligible.
+## Workflow: prepare a mesh to simulate physics
 
-Mobility choices interact with physics simulation, light settings and construction. Changing Mobility alone does not enable Simulate Physics.
+1. Enable **Mobility** in Focus's Outliner header menu.
+2. On an Actor with a suitable Scene Component, choose **Movable** using the bottom segment.
+3. Enable **Simulation** separately, and configure collision and Simulate Physics on appropriate Primitive Components.
+4. Test in PIE/simulation, and confirm which component is moving. Changing Mobility alone will not activate physics simulation.
+5. If your Actor has multiple eligible Scene Components, verify the resulting state of each component rather than assuming only the root was changed.
 
-## Mobility: Static, Stationary or Movable
+## Mixed and unavailable states
 
-Focus presents **S**, **T**, and **M** for eligible Scene Components. Hover each choice to confirm the selection. Static is for nonmoving content, Stationary allows certain restricted changes, and Movable supports dynamic movement where Unreal allows it. The correct choice depends on the component, physics and lighting setup.
+If a folder or Actor contains several eligible components with different mobility, the combined result can be **Mixed**. Clicking one option applies it to the eligible target set. A non-component Actor without an editable Scene Component can show **Not Applicable**.
 
-To change a group, select the appropriate Actor/folder and click the desired mobility option. This affects eligible Scene Components, not just an Actor's root in all cases.
+## Constraints
 
-## Shared Quick Action behavior
+Unreal may restrict changing component mobility based on component setup and other systems. A configured value is not a guarantee that lighting or physics will work as expected; inspect those features separately.
 
-Quick Actions apply to **currently loaded eligible Actors**, including applicable attached descendants, nested folders, native groups and selected rows. If the row is part of a multi-selection, the action can cover the other selected rows. A Mixed control means different eligible targets disagree, while Not Applicable means no editable compatible target exists. An Edit-Locked Actor is skipped by native quick-property writes.
+## Target scope, state and saving
 
-For the full eligibility and saved/temporary editing rules, see [Quick Actions overview](../README.md) and [Settings and Saving](../../03-settings-and-saving/README.md).
+These Quick Actions operate on **currently loaded, eligible Actors**, including compatible attached descendants, nested folders, groups and selected Outliner rows. Hover for the state and number of eligible targets. **Mixed** means values differ across those targets; **Not Applicable** means no editable target exists.
 
-For the Unreal implementation and exact property mapping, [read Technical](TECHNICAL.md).
+Native-property changes respect Edit Lock, support Unreal transactions/Undo and follow normal Actor/Component save behavior. They are not part of Focus's separate Visual/Interaction session-only persistence system. See [Quick Actions overview](../README.md) and [Settings and Saving](../../03-settings-and-saving/README.md).
+
+For `USceneComponent::SetMobility`, native target discovery and update notifications, [read Technical](TECHNICAL.md).

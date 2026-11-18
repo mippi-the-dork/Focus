@@ -2,41 +2,36 @@
 
 **Focus v2.1.0 · Quick Actions · User guide**
 
-## What this category controls
+## Available controls
 
-| Control | Meaning |
-| --- | --- |
-| Can Ever Affect Navigation | Allow eligible Actor Components to contribute navigation data |
-| Dynamic Obstacle | Mark eligible Shape Components as navigation obstacles |
-| Fill Collision Underneath for Navmesh | Fill area beneath compatible primitive collision |
-| Rasterize as Filled Convex Volume | Treat appropriate primitive collision as a filled convex volume |
+| Quick Action | Appropriate target | Purpose |
+| --- | --- | --- |
+| **Can Ever Affect Navigation** | Eligible Actor Component | Permit contribution to navigation data |
+| **Dynamic Obstacle** | Eligible Shape Component | Treat as a dynamic obstacle in supported nav generation |
+| **Fill Collision Underneath for Navmesh** | Eligible Primitive Component | Fill beneath collision when supported by the nav system |
+| **Rasterize as Filled Convex Volume** | Eligible Primitive Component | Rasterize geometry as a filled convex shape when supported |
 
-## Example
+## Workflow: prevent decorative collision from affecting routes
 
-If decorative collision is contaminating navigation, disable its navigation contribution through Focus and rebuild/inspect the navmesh. For a volume intended as a dynamic obstacle, check Dynamic Obstacle and the actual navigation settings.
+1. Inspect the level's current NavMesh so you have a baseline.
+2. Enable **Navigation** in the Focus header.
+3. Select the loaded Actor that has the relevant registered, editable component.
+4. Disable **Can Ever Affect Navigation** for the intended component(s).
+5. Rebuild or update navigation using Unreal's normal workflow, then inspect the resulting navmesh and AI pathing.
+6. Undo or restore the previous value if the geometry should contribute after all.
 
-Toggling a property does not guarantee an immediate or successful navigation rebuild.
+## Workflow: configure a dynamic obstacle
 
-## Navigation controls
+For a compatible Shape Component, enable **Dynamic Obstacle** and verify its collision/navigation configuration. The native property is only one prerequisite; it does not create a navmesh or an AI move request.
 
-| Control | Intended effect |
-| --- | --- |
-| Can Ever Affect Navigation | Eligible Actor Component may contribute navigation data |
-| Dynamic Obstacle | Eligible Shape Component contributes as a dynamic obstacle where supported |
-| Fill Collision Underneath for Navmesh | Fill navigable space beneath compatible primitive collision |
-| Rasterize as Filled Convex Volume | Treat compatible primitive geometry as a filled convex region for navigation rasterization |
+## Why a toggle doesn't change the visible NavMesh
 
-These affect inputs to navigation generation. They do not guarantee an immediate navmesh rebuild or a valid navigation path.
+Navigation data is built and updated by Unreal's navigation system; Focus only changes native configuration fields. Check navmesh generation settings, collision geometry, editor/PIE update policy and whether the component is registered. **Not Applicable** typically means the required component/property isn't editable.
 
+## Target scope, state and saving
 
-## A practical scene example
+These Quick Actions operate on **currently loaded, eligible Actors**, including compatible attached descendants, nested folders, groups and selected Outliner rows. Hover for the state and number of eligible targets. **Mixed** means values differ across those targets; **Not Applicable** means no editable target exists.
 
-You have decorative collision that should not modify walking routes. Disable its navigation contribution. For a collision volume intended to carve a dynamic area, review Dynamic Obstacle. Verify the generated NavMesh visually in Unreal rather than assuming the toggle alone accomplished the intended navigation result.
+Native-property changes respect Edit Lock, support Unreal transactions/Undo and follow normal Actor/Component save behavior. They are not part of Focus's separate Visual/Interaction session-only persistence system. See [Quick Actions overview](../README.md) and [Settings and Saving](../../03-settings-and-saving/README.md).
 
-## Shared Quick Action behavior
-
-Quick Actions apply to **currently loaded eligible Actors**, including applicable attached descendants, nested folders, native groups and selected rows. If the row is part of a multi-selection, the action can cover the other selected rows. A Mixed control means different eligible targets disagree, while Not Applicable means no editable compatible target exists. An Edit-Locked Actor is skipped by native quick-property writes.
-
-For the full eligibility and saved/temporary editing rules, see [Quick Actions overview](../README.md) and [Settings and Saving](../../03-settings-and-saving/README.md).
-
-For the Unreal implementation and exact property mapping, [read Technical](TECHNICAL.md).
+For exact component scopes and native setter behavior, [read Technical](TECHNICAL.md).
