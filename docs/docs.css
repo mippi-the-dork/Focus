@@ -210,6 +210,19 @@ code,kbd,pre,.baseline,.top-link,.source,.nav-label,.toc-inner>b,.kind-link{
   max-width:760px;margin-top:8px;color:var(--muted);
   font-size:12px;line-height:1.6;
 }
+.markdown figure.doc-media figcaption .media-capture-instructions{
+  display:block;
+  margin-top:8px;
+  padding:8px 10px;
+  border-left:2px solid rgba(103,232,255,.4);
+  background:rgba(103,232,255,.035);
+  color:var(--muted);
+  line-height:1.55;
+}
+.markdown figure.doc-media .media-capture-instructions strong{
+  color:var(--cyan);
+  font-weight:650;
+}
 .markdown>h1:first-child{margin-top:0}
 .markdown h1,.markdown h2,.markdown h3,.markdown h4{
   position:relative;scroll-margin-top:calc(var(--header) + 18px);color:#fff;line-height:1.18;

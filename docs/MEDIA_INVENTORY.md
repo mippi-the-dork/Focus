@@ -1,5 +1,9 @@
 # Focus Documentation Media Inventory
 
+Each media slot includes **two distinct lines beneath its image**: a normal reader-facing caption, followed by **Capture instructions · Image** or **Capture instructions · GIF** with the precise framing, states, sequence, or diagram contents needed. The second line is intentionally visible during this documentation-production phase.
+
+The detailed capture requirements are also stored in [the media registry](assets/media-slots.json) under `capture_instructions`, keyed by stable media ID.
+
 The site's current artwork, screenshots and GIFs should show real Focus editor behavior. The new figure placements display the supplied neutral placeholder until their dedicated assets are ready. Reader-facing captions already describe the eventual examples, and should remain accurate after replacement.
 
 **Image** is a still screenshot or diagram; **GIF** is an animation of a sequence or interaction. A GIF slot currently displays the same static PNG placeholder as an image slot.
