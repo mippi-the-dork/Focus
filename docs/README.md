@@ -4,7 +4,9 @@
 
 Focus is a set of compact **Quick Actions for Unreal Engine's World Outliner**. It brings visibility, interaction protection and 28 native Actor/Component properties into the Outliner so you can manage the current level without repeatedly searching through Details panels.
 
-![Focus controls shown in the Unreal Engine World Outliner](https://raw.githubusercontent.com/mippi-the-dork/Focus/main/Doc/Images/Focus-Hero.png)
+![Focus Quick Actions in Unreal Engine's World Outliner](https://raw.githubusercontent.com/mippi-the-dork/Focus/main/Doc/Images/Focus-Hero.png?v=3)
+
+*Focus puts visibility, protection and native property controls directly into the World Outliner.*
 
 ## What can I do with Focus?
 
