@@ -25,10 +25,13 @@ Force-LOD handling is not a custom LOD renderer. Cull flags are native propertie
 
 ---
 
-## Shared implementation contracts
+## Mesh LOD eligibility
 
-For the eight native-property categories, `FocusQuick::GetTargets` finds valid, registered and instance-editable Actor/Component targets. `FocusQuick::FindProperty` respects native `CanEditChange`, EditConst and EditCondition restrictions. Writes are wrapped in Unreal transactions and dispatch native setters or property-change notifications; Edit Lock skips Actor targets. Visual and Interaction use `Focus::Get/Set`, including distinct persistence options.
+`FocusQuick::GetAvailableLODCount` checks mesh LOD availability for each eligible Static/Skinned Mesh Component. `0` is automatic, `n` requests mesh LOD index `n-1`. The numeric mini-widget accepts 0–255, but exceeding a mesh's available LOD count is diagnosed with an alert rather than interpreted as a new LOD. Distance-cull properties target different Primitive Component fields.
 
-Refer to [FocusQuickProperties.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp) and [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp).
+## Source references
 
-For steps and expected behavior, [read Design](DESIGN.md).
+- [FocusQuickProperties.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp)
+- [FocusModule.cpp](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
+
+For user interaction, [read Design](DESIGN.md). The [Verification Matrix](../../VERIFICATION_MATRIX.md) contains unperformed UE and website checks.
