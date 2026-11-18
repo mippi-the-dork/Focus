@@ -9,7 +9,8 @@
       "page": "01-getting-started/overview/DESIGN.md",
       "final_asset": "assets/media/overview-outliner.png",
       "alt": "Focus controls displayed in the Unreal Engine World Outliner",
-      "caption": "Focus adds compact controls alongside Actors, keeping visibility and protection decisions within the Outliner."
+      "caption": "Focus adds compact controls alongside Actors, keeping visibility and protection decisions within the Outliner.",
+      "capture_instructions": "Capture the Unreal Editor with the World Outliner visible, several Actors and folders listed, and Focus’s Visual and Interaction controls clearly legible beside the Actor names. Include a mixture of enabled and disabled states."
     },
     {
       "id": "overview-editor-integration",
@@ -17,7 +18,8 @@
       "page": "01-getting-started/overview/TECHNICAL.md",
       "final_asset": "assets/media/overview-editor-integration.png",
       "alt": "Diagram of Focus integrations with Unreal Engine editor systems",
-      "caption": "The Focus Editor module coordinates Outliner widgets, editor interaction guards, viewport filtering and Actor state."
+      "caption": "The Focus Editor module coordinates Outliner widgets, editor interaction guards, viewport filtering and Actor state.",
+      "capture_instructions": "Create a labeled architecture diagram with FFocusModule at the center, connected to the Scene Outliner column, native selection/transform/edit guards, Solo view extension, settings, and Actor package state. Separate UI, editor hooks, and data storage visually."
     },
     {
       "id": "installation-plugin-folder",
@@ -25,7 +27,8 @@
       "page": "01-getting-started/install/DESIGN.md",
       "final_asset": "assets/media/installation-plugin-folder.png",
       "alt": "Focus plugin folder installed in an Unreal Engine project",
-      "caption": "A project installation places the Focus plugin folder directly beneath the project’s Plugins directory."
+      "caption": "A project installation places the Focus plugin folder directly beneath the project’s Plugins directory.",
+      "capture_instructions": "Show File Explorer at YourProject/Plugins/Focus with Focus.uplugin, Source, Resources and other actual top-level plugin files visible. Include enough of the address bar and parent folder to make the installation location unambiguous."
     },
     {
       "id": "first-use-controls",
@@ -33,7 +36,8 @@
       "page": "01-getting-started/first-use/DESIGN.md",
       "final_asset": "assets/media/first-use-controls.gif",
       "alt": "Animation showing Focus controls being enabled and used for the first time",
-      "caption": "The initial workflow reveals the Focus column, adjusts its visible categories and applies an action to a test Actor."
+      "caption": "The initial workflow reveals the Focus column, adjusts its visible categories and applies an action to a test Actor.",
+      "capture_instructions": "Record a short seamless sequence in the Unreal Editor: reveal the Focus column, open its category menu, enable one additional category, hover a control, then toggle an action on a disposable test Actor. Keep the Outliner and viewport visible throughout."
     },
     {
       "id": "first-use-row-state",
@@ -41,7 +45,8 @@
       "page": "01-getting-started/first-use/TECHNICAL.md",
       "final_asset": "assets/media/first-use-row-state.png",
       "alt": "Diagram showing Focus evaluating a selected Outliner row and its eligible Actors",
-      "caption": "A row’s quick-action state is derived from the eligible loaded Actors in its resolved scope."
+      "caption": "A row’s quick-action state is derived from the eligible loaded Actors in its resolved scope.",
+      "capture_instructions": "Create a simple diagram with one Outliner folder leading to three loaded Actors: two have a control enabled and one disabled. Show how these eligible values resolve to the parent row’s Mixed state, while an ineligible Actor is excluded."
     },
     {
       "id": "quick-actions-category-menu",
@@ -49,7 +54,8 @@
       "page": "02-quick-actions/README.md",
       "final_asset": "assets/media/quick-actions-category-menu.png",
       "alt": "Focus Quick Actions category menu in the World Outliner",
-      "caption": "The category menu controls which of the ten Quick Actions groups appear in the Outliner column."
+      "caption": "The category menu controls which of the ten Quick Actions groups appear in the Outliner column.",
+      "capture_instructions": "Capture the Focus column-header category menu expanded to show all ten named categories, with Visual and Interaction enabled and several optional groups checked. Include the adjacent Outliner columns so readers understand where the menu is located."
     },
     {
       "id": "visual-editor-vs-game",
@@ -57,7 +63,8 @@
       "page": "02-quick-actions/visual/DESIGN.md",
       "final_asset": "assets/media/visual-editor-vs-game.png",
       "alt": "Side-by-side comparison of Hide in Editor and Hidden in Game",
-      "caption": "Hide in Editor changes the editing view, while Hidden in Game configures a separate native Actor property."
+      "caption": "Hide in Editor changes the editing view, while Hidden in Game configures a separate native Actor property.",
+      "capture_instructions": "Use a two-panel Unreal Editor comparison of the same Actor: one panel demonstrates Hide in Editor while retaining its Hidden in Game setting, and the other demonstrates Hidden in Game while the Actor remains visible in the editing viewport. Keep the relevant Focus controls or Details values legible."
     },
     {
       "id": "visual-solo-primitive-filter",
@@ -65,7 +72,8 @@
       "page": "02-quick-actions/visual/TECHNICAL.md",
       "final_asset": "assets/media/visual-solo-primitive-filter.png",
       "alt": "Diagram of Solo filtering visible primitives in an Unreal Editor viewport",
-      "caption": "Solo narrows the editor view to selected primitive scene IDs without rewriting the hidden state of unrelated Actors."
+      "caption": "Solo narrows the editor view to selected primitive scene IDs without rewriting the hidden state of unrelated Actors.",
+      "capture_instructions": "Draw an editor-view diagram with several Actor primitives, a Solo selection, and an arrow to the resulting ShowOnlyPrimitives set. Indicate that non-primitive contributions such as lighting and volumes can remain and that unrelated Actors’ saved hidden flags are unchanged."
     },
     {
       "id": "interaction-mixed-protection",
@@ -73,7 +81,8 @@
       "page": "02-quick-actions/interaction/DESIGN.md",
       "final_asset": "assets/media/interaction-mixed-protection.png",
       "alt": "Focus protection widget displaying different lock levels across a folder",
-      "caption": "A mixed protection state shows that eligible Actors do not currently share the same protection level."
+      "caption": "A mixed protection state shows that eligible Actors do not currently share the same protection level.",
+      "capture_instructions": "Capture an expanded Outliner folder containing at least three loaded Actors with Unlocked, Transform Lock, and Edit Lock states. Show the folder’s Mixed protection indicator and the individual child states in the same frame."
     },
     {
       "id": "interaction-native-guards",
@@ -81,7 +90,8 @@
       "page": "02-quick-actions/interaction/TECHNICAL.md",
       "final_asset": "assets/media/interaction-native-guards.png",
       "alt": "Diagram of Focus selection, transform, command and Details editing guards",
-      "caption": "Focus enforces its editing protections through multiple native editor integration paths rather than a single global lock."
+      "caption": "Focus enforces its editing protections through multiple native editor integration paths rather than a single global lock.",
+      "capture_instructions": "Create a branching diagram from Interaction protection to viewport selection, transform edits, Details edits, Outliner commands, and component hierarchy operations. Label the native Focus editor mode and guard paths, and mark scripting/custom tools as outside universal lock enforcement."
     },
     {
       "id": "simulation-controls",
@@ -89,7 +99,8 @@
       "page": "02-quick-actions/simulation/DESIGN.md",
       "final_asset": "assets/media/simulation-controls.png",
       "alt": "Simulation Quick Actions micro-widget showing its six controls",
-      "caption": "The Simulation category exposes physics, gravity, impulse and asynchronous ticking settings in one compact group."
+      "caption": "The Simulation category exposes physics, gravity, impulse and asynchronous ticking settings in one compact group.",
+      "capture_instructions": "Capture the Simulation category enabled in the Focus column, preferably with an eligible physics mesh selected. Frame all six Simulation micro-controls together and hover one to show its actual tooltip and eligible-target information."
     },
     {
       "id": "simulation-prop-physics",
@@ -97,7 +108,8 @@
       "page": "02-quick-actions/simulation/DESIGN.md",
       "final_asset": "assets/media/simulation-prop-physics.gif",
       "alt": "Animation of a mesh being configured for physics and gravity using Focus",
-      "caption": "An eligible movable mesh can be configured to simulate physics and respond to world gravity through separate controls."
+      "caption": "An eligible movable mesh can be configured to simulate physics and respond to world gravity through separate controls.",
+      "capture_instructions": "Record a movable physics-enabled mesh in a simple viewport: show Simulate Physics and Enable Gravity toggled through Focus, then Play/Simulate so the mesh visibly falls onto a floor. End by returning to the editor with the controls visible."
     },
     {
       "id": "simulation-component-scopes",
@@ -105,7 +117,8 @@
       "page": "02-quick-actions/simulation/TECHNICAL.md",
       "final_asset": "assets/media/simulation-component-scopes.png",
       "alt": "Diagram distinguishing Actor-scoped and Primitive Component-scoped simulation controls",
-      "caption": "Async Physics Tick applies to Actors, while the remaining Simulation controls target compatible Primitive Components."
+      "caption": "Async Physics Tick applies to Actors, while the remaining Simulation controls target compatible Primitive Components.",
+      "capture_instructions": "Create a labeled Actor/component hierarchy diagram showing Async Physics Tick on the Actor and the remaining five Simulation settings targeting registered Primitive Components. Include a non-primitive component to illustrate an ineligible target."
     },
     {
       "id": "physics-events-controls",
@@ -113,7 +126,8 @@
       "page": "02-quick-actions/physics-events/DESIGN.md",
       "final_asset": "assets/media/physics-events-controls.png",
       "alt": "Physics Events micro-widget showing hit, overlap and wake event controls",
-      "caption": "The Physics Events category exposes the three native notification settings for eligible primitive components."
+      "caption": "The Physics Events category exposes the three native notification settings for eligible primitive components.",
+      "capture_instructions": "Capture a compatible Primitive Component’s Actor row with the Physics Events category enabled and all three hit, overlap, and wake controls visible. Hover one control so its label and scope can be read."
     },
     {
       "id": "physics-events-overlap",
@@ -121,7 +135,8 @@
       "page": "02-quick-actions/physics-events/DESIGN.md",
       "final_asset": "assets/media/physics-events-overlap.gif",
       "alt": "Animation showing overlap generation being enabled and tested in Play",
-      "caption": "Overlap notifications require a compatible collision setup as well as the Generate Overlap Events setting."
+      "caption": "Overlap notifications require a compatible collision setup as well as the Generate Overlap Events setting.",
+      "capture_instructions": "Record two simple collision primitives: first show the Generate Overlap Events control and collision response setup, then enter Play and move one object through the other with an obvious on-screen Blueprint/debug message confirming the overlap callback."
     },
     {
       "id": "physics-events-path",
@@ -129,7 +144,8 @@
       "page": "02-quick-actions/physics-events/TECHNICAL.md",
       "final_asset": "assets/media/physics-events-path.png",
       "alt": "Diagram of primitive collision and physics event generation paths",
-      "caption": "Hit, overlap and wake notifications originate from distinct native properties and require corresponding engine conditions."
+      "caption": "Hit, overlap and wake notifications originate from distinct native properties and require corresponding engine conditions.",
+      "capture_instructions": "Make a three-lane diagram for Hit, Overlap, and Wake events. Each lane should show its Focus flag, the relevant collision/physics prerequisite, and the event produced by Unreal when those conditions are met."
     },
     {
       "id": "lighting-controls",
@@ -137,7 +153,8 @@
       "page": "02-quick-actions/lighting/DESIGN.md",
       "final_asset": "assets/media/lighting-controls.png",
       "alt": "Lighting Quick Actions category displaying channels and shadow settings",
-      "caption": "Lighting Channel 0, 1 and 2 can be adjusted independently of the Cast Shadows setting."
+      "caption": "Lighting Channel 0, 1 and 2 can be adjusted independently of the Cast Shadows setting.",
+      "capture_instructions": "Capture a World Outliner containing an eligible light and mesh with the Lighting category enabled. Show the three lighting-channel segments and Cast Shadows together, preferably with differing channel states that make the independent choices obvious."
     },
     {
       "id": "lighting-channel-example",
@@ -145,7 +162,8 @@
       "page": "02-quick-actions/lighting/DESIGN.md",
       "final_asset": "assets/media/lighting-channel-example.png",
       "alt": "Comparison showing a light and selected meshes sharing a lighting channel",
-      "caption": "Matching channel selections allow compatible lights and primitives to interact without changing the other channel flags."
+      "caption": "Matching channel selections allow compatible lights and primitives to interact without changing the other channel flags.",
+      "capture_instructions": "Create two side-by-side viewport captures with the same light and props: one with matching channel assignments so selected props receive the light, and one with mismatched assignments showing the different result. Add readable callouts for the light and mesh channel settings."
     },
     {
       "id": "world-controls",
@@ -153,7 +171,8 @@
       "page": "02-quick-actions/world/DESIGN.md",
       "final_asset": "assets/media/world-controls.png",
       "alt": "World Quick Actions showing main-world, editor-only, spatial-loading and HLOD flags",
-      "caption": "The World category places four Actor-level configuration choices directly in the Outliner."
+      "caption": "The World category places four Actor-level configuration choices directly in the Outliner.",
+      "capture_instructions": "Capture the World category’s four controls on a loaded Actor row, with its tooltip identifying one of the Actor-level properties. Include enough of the Outliner to demonstrate where these choices sit in the Focus column."
     },
     {
       "id": "world-partition",
@@ -161,7 +180,8 @@
       "page": "02-quick-actions/world/DESIGN.md",
       "final_asset": "assets/media/world-partition.png",
       "alt": "World Partition example showing an Actor’s spatial-loading setting",
-      "caption": "Spatial loading is an Actor configuration decision whose result depends on the surrounding World Partition setup."
+      "caption": "Spatial loading is an Actor configuration decision whose result depends on the surrounding World Partition setup.",
+      "capture_instructions": "Show a World Partition-enabled level with a loaded Actor selected, its Focus Is Spatially Loaded control visible, and corresponding World Partition/Details context. Use labels to distinguish the stored setting from the Actor’s currently loaded state."
     },
     {
       "id": "world-native-flags",
@@ -169,7 +189,8 @@
       "page": "02-quick-actions/world/TECHNICAL.md",
       "final_asset": "assets/media/world-native-flags.png",
       "alt": "Diagram showing World Quick Actions flowing to Actor properties and engine subsystems",
-      "caption": "Focus updates native Actor flags; World Partition, HLOD generation and cooking interpret those flags independently."
+      "caption": "Focus updates native Actor flags; World Partition, HLOD generation and cooking interpret those flags independently.",
+      "capture_instructions": "Create a diagram of the four World category Actor properties branching to the systems that interpret them: world context, cook/editor-only filtering, World Partition streaming, and HLOD generation. Clearly show Focus as property authoring, not the subsystem executor."
     },
     {
       "id": "network-controls",
@@ -177,7 +198,8 @@
       "page": "02-quick-actions/network/DESIGN.md",
       "final_asset": "assets/media/network-controls.png",
       "alt": "Network Quick Actions displaying the available replication-related settings",
-      "caption": "Network actions expose three specific native configuration values without replacing the rest of Unreal’s replication setup."
+      "caption": "Network actions expose three specific native configuration values without replacing the rest of Unreal’s replication setup.",
+      "capture_instructions": "Capture the Network category enabled on an eligible Actor, with its three micro-controls and a tooltip visible. Include a Static Mesh Actor or component setup that demonstrates at least one valid property target."
     },
     {
       "id": "network-scopes",
@@ -185,7 +207,8 @@
       "page": "02-quick-actions/network/TECHNICAL.md",
       "final_asset": "assets/media/network-scopes.png",
       "alt": "Diagram showing Actor-level and Primitive Component-level network property targets",
-      "caption": "The Network category uses different target scopes for Actor loading, movement replication and physics-to-proxy settings."
+      "caption": "The Network category uses different target scopes for Actor loading, movement replication and physics-to-proxy settings.",
+      "capture_instructions": "Diagram an Actor with its Primitive Component. Map Net Load on Client and Static Mesh Replicate Movement to the Actor, and Replicate Physics to Autonomous Proxy to the eligible Primitive Component. Add a separate note showing that networking authority/roles are configured elsewhere."
     },
     {
       "id": "navigation-controls",
@@ -193,7 +216,8 @@
       "page": "02-quick-actions/navigation/DESIGN.md",
       "final_asset": "assets/media/navigation-controls.png",
       "alt": "Navigation Quick Actions displaying the navigation contribution and obstacle flags",
-      "caption": "The Navigation category exposes native component settings that influence how Unreal builds and updates navigation data."
+      "caption": "The Navigation category exposes native component settings that influence how Unreal builds and updates navigation data.",
+      "capture_instructions": "Capture the four Navigation micro-controls on an Actor containing an appropriate collision/shape component, with one unavailable state if possible. Include a tooltip so the distinction between eligible component types is visible."
     },
     {
       "id": "navigation-navmesh",
@@ -201,7 +225,8 @@
       "page": "02-quick-actions/navigation/DESIGN.md",
       "final_asset": "assets/media/navigation-navmesh.gif",
       "alt": "Animation comparing navmesh results before and after changing navigation contribution",
-      "caption": "Disabling navigation contribution on selected collision can remove its influence after Unreal updates the navigation data."
+      "caption": "Disabling navigation contribution on selected collision can remove its influence after Unreal updates the navigation data.",
+      "capture_instructions": "Record a viewport with NavMesh visualization enabled, focusing on decorative collision that currently influences navigation. Show Can Ever Affect Navigation switched off in Focus, update/rebuild navigation, and reveal the resulting NavMesh difference using the same camera framing."
     },
     {
       "id": "mobility-options",
@@ -209,7 +234,8 @@
       "page": "02-quick-actions/mobility/DESIGN.md",
       "final_asset": "assets/media/mobility-options.png",
       "alt": "Mobility micro-widget showing its Static, Stationary and Movable choices",
-      "caption": "The three vertically arranged Mobility choices map directly to Unreal’s native Scene Component mobility values."
+      "caption": "The three vertically arranged Mobility choices map directly to Unreal’s native Scene Component mobility values.",
+      "capture_instructions": "Capture the full three-segment Mobility control in the Outliner with Static (S), Stationary (T), and Movable (M) readable. Show at least one selected option, and include a tooltip identifying the native mobility value."
     },
     {
       "id": "mobility-bulk",
@@ -217,7 +243,8 @@
       "page": "02-quick-actions/mobility/DESIGN.md",
       "final_asset": "assets/media/mobility-bulk.gif",
       "alt": "Animation applying Movable to eligible Scene Components with Focus",
-      "caption": "Changing Mobility across a selected scope prepares eligible components for workflows that require movement."
+      "caption": "Changing Mobility across a selected scope prepares eligible components for workflows that require movement.",
+      "capture_instructions": "Record selecting several loaded Scene Component Actors in the Outliner, clicking the Movable segment, then inspecting one or two affected components in Details. Include an Undo step that visibly restores their previous mobility values."
     },
     {
       "id": "lod-controls",
@@ -225,7 +252,8 @@
       "page": "02-quick-actions/lod/DESIGN.md",
       "final_asset": "assets/media/lod-controls.png",
       "alt": "LOD Quick Actions displaying Forced LOD and distance-culling options",
-      "caption": "The LOD category combines mesh LOD selection with two separate distance-culling flags."
+      "caption": "The LOD category combines mesh LOD selection with two separate distance-culling flags.",
+      "capture_instructions": "Capture a mesh Actor’s LOD category with the numeric Forced LOD value and both distance-culling toggles visible. Show a mesh with multiple authored LODs so the example is meaningful, and keep the corresponding Outliner row label readable."
     },
     {
       "id": "lod-gestures",
@@ -233,7 +261,8 @@
       "page": "02-quick-actions/lod/DESIGN.md",
       "final_asset": "assets/media/lod-gestures.gif",
       "alt": "Animation of click, Alt-click, mouse-wheel and double-click input on Forced LOD",
-      "caption": "The Forced LOD value can be stepped directly or entered numerically, with zero restoring automatic LOD selection."
+      "caption": "The Forced LOD value can be stepped directly or entered numerically, with zero restoring automatic LOD selection.",
+      "capture_instructions": "Record close-up interaction with the Forced LOD number: single-click increment, Alt-click decrement, mouse-wheel change, double-click opening numeric entry, typing a value, and finally entering 0 to restore automatic LOD. Use on-screen input labels so each gesture is identifiable."
     },
     {
       "id": "lod-range",
@@ -241,7 +270,8 @@
       "page": "02-quick-actions/lod/TECHNICAL.md",
       "final_asset": "assets/media/lod-range.png",
       "alt": "Diagram comparing a requested Forced LOD value against a mesh’s available authored LODs",
-      "caption": "Focus checks the authored LOD range and indicates when a requested forced level exceeds a target mesh’s available data."
+      "caption": "Focus checks the authored LOD range and indicates when a requested forced level exceeds a target mesh’s available data.",
+      "capture_instructions": "Create a diagram showing a mesh with authored LOD 0, 1, and 2; compare Focus forced values 0 (Auto), 1, 2, 3, and an invalid higher value. Show the alert state for the out-of-range request."
     },
     {
       "id": "settings-overview",
@@ -249,7 +279,8 @@
       "page": "03-settings-and-saving/README.md",
       "final_asset": "assets/media/settings-overview.png",
       "alt": "Diagram comparing category visibility, control colors and persistence options",
-      "caption": "Visibility controls the Outliner layout, colors communicate state, and persistence determines which Focus edits are saved."
+      "caption": "Visibility controls the Outliner layout, colors communicate state, and persistence determines which Focus edits are saved.",
+      "capture_instructions": "Create a three-column annotated comparison: Focus category menu for visibility, Editor Preferences color swatches for state presentation, and Visual/Interaction persistence options. Clearly label that these settings control different things."
     },
     {
       "id": "settings-category-visibility",
@@ -257,7 +288,8 @@
       "page": "03-settings-and-saving/categories/DESIGN.md",
       "final_asset": "assets/media/settings-category-visibility.png",
       "alt": "Focus category visibility menu with several Quick Actions groups enabled",
-      "caption": "The header menu lets each editor user choose which Quick Actions categories occupy space in their Outliner."
+      "caption": "The header menu lets each editor user choose which Quick Actions categories occupy space in their Outliner.",
+      "capture_instructions": "Capture the Focus column-header menu with several optional categories checked and others unchecked. Show the resized column containing only the enabled category groups, ideally with the Reset to Visual + Interaction command visible."
     },
     {
       "id": "settings-state-colors",
@@ -265,7 +297,8 @@
       "page": "03-settings-and-saving/colors/DESIGN.md",
       "final_asset": "assets/media/settings-state-colors.png",
       "alt": "Focus controls showing enabled, disabled, mixed, unavailable and alert colors",
-      "caption": "Distinct visual states help differentiate active settings, mixed selections, unavailable properties and important warnings."
+      "caption": "Distinct visual states help differentiate active settings, mixed selections, unavailable properties and important warnings.",
+      "capture_instructions": "Capture a small group of Outliner Actors/folders arranged to exhibit Enabled, Disabled, Mixed, Not Applicable, and Alert states. Provide direct labels or a nearby Focus preferences color panel showing how the palette maps to those states."
     },
     {
       "id": "settings-persistence-workflow",
@@ -273,7 +306,8 @@
       "page": "03-settings-and-saving/persistence/DESIGN.md",
       "final_asset": "assets/media/settings-persistence-workflow.gif",
       "alt": "Animation changing Solo persistence and temporarily isolating Actors",
-      "caption": "With Solo configured as session-only, the editing view can be isolated without replacing the previously saved Solo state."
+      "caption": "With Solo configured as session-only, the editing view can be isolated without replacing the previously saved Solo state.",
+      "capture_instructions": "Record opening Focus preferences, disabling Solo persistence, then Soloing a group of Actors and saving a disposable level. Show that the temporary editor view is active, then reopen/reload to demonstrate the previously saved Solo state returns."
     },
     {
       "id": "settings-package-overlay",
@@ -281,7 +315,8 @@
       "page": "03-settings-and-saving/persistence/TECHNICAL.md",
       "final_asset": "assets/media/settings-package-overlay.png",
       "alt": "Diagram of Focus temporarily restoring persistent Actor values during package serialization",
-      "caption": "During a package save, Focus substitutes recorded persistent values for active session-only native changes before restoring the live editor state."
+      "caption": "During a package save, Focus substitutes recorded persistent values for active session-only native changes before restoring the live editor state.",
+      "capture_instructions": "Create a timeline diagram with three phases: live editor session-only value, PreSave temporary substitution of the saved baseline in the Actor package, and PostSave restoration of the live temporary value. Distinguish metadata from native Actor properties."
     },
     {
       "id": "settings-restore-temporary",
@@ -289,7 +324,8 @@
       "page": "03-settings-and-saving/restore/DESIGN.md",
       "final_asset": "assets/media/settings-restore-temporary.gif",
       "alt": "Animation restoring temporarily hidden, Soloed and protected Actors",
-      "caption": "Restore Temporary Changes reverts tracked session-only Focus edits while leaving unrelated persistent changes intact."
+      "caption": "Restore Temporary Changes reverts tracked session-only Focus edits while leaving unrelated persistent changes intact.",
+      "capture_instructions": "Record a disposable level where Hide in Editor, Solo, and a lock are changed with persistence off; open the Focus column-header menu and run Restore Temporary Changes. Show the Actors returning to their prior states while an unrelated saved change remains."
     },
     {
       "id": "workflows-hierarchy",
@@ -297,7 +333,8 @@
       "page": "04-workflows-and-implementation/README.md",
       "final_asset": "assets/media/workflows-hierarchy.png",
       "alt": "Outliner hierarchy showing a loaded folder, attachments and mixed selected Actors",
-      "caption": "A Quick Action can apply across eligible loaded members of a folder, group, attachment hierarchy or selection."
+      "caption": "A Quick Action can apply across eligible loaded members of a folder, group, attachment hierarchy or selection.",
+      "capture_instructions": "Capture a World Outliner with an expanded parent folder, a nested folder, attached Actors, and several selected rows. Highlight the loaded members that a Focus bulk action would affect and show an optional Mixed parent indicator."
     },
     {
       "id": "workflows-bulk-lock",
@@ -305,7 +342,8 @@
       "page": "04-workflows-and-implementation/workflows/DESIGN.md",
       "final_asset": "assets/media/workflows-bulk-lock.gif",
       "alt": "Animation applying Selection and Transform Lock to a completed Outliner folder",
-      "caption": "Bulk protection makes finished environment content harder to select or transform accidentally during adjacent work."
+      "caption": "Bulk protection makes finished environment content harder to select or transform accidentally during adjacent work.",
+      "capture_instructions": "Record selecting a completed environment folder and applying Selection Lock, then Transform Lock via Focus. Demonstrate that ordinary viewport picking/transforming is blocked, and finally select a protected Actor from the Outliner to show the intentional exception."
     },
     {
       "id": "workflows-scope-resolution",
@@ -313,7 +351,8 @@
       "page": "04-workflows-and-implementation/workflows/TECHNICAL.md",
       "final_asset": "assets/media/workflows-scope-resolution.png",
       "alt": "Diagram of row scope resolution across folders, attachments, groups and selected Actors",
-      "caption": "Focus resolves its action targets from loaded Actor relationships rather than only from Outliner rows currently visible on screen."
+      "caption": "Focus resolves its action targets from loaded Actor relationships rather than only from Outliner rows currently visible on screen.",
+      "capture_instructions": "Make a scope-resolution flowchart: clicked row / selected rows → loaded Actors in folders, groups, and attachment hierarchies → deduplicated eligible targets → resulting On, Off, Mixed, or Not Applicable state. Indicate that collapsed/filtered rows still count."
     },
     {
       "id": "architecture-editor-layers",
@@ -321,7 +360,8 @@
       "page": "04-workflows-and-implementation/architecture/TECHNICAL.md",
       "final_asset": "assets/media/architecture-editor-layers.png",
       "alt": "Architecture diagram linking the Focus module, Outliner column, editor guards and view extension",
-      "caption": "The editor module coordinates presentation, input protection, state persistence and view filtering through Unreal’s native interfaces."
+      "caption": "The editor module coordinates presentation, input protection, state persistence and view filtering through Unreal’s native interfaces.",
+      "capture_instructions": "Create a technical architecture diagram with FFocusModule, FFocusColumn, FocusQuick, UFocusEditorMode, transform/command/interaction guards, FFocusViewExtension, UFocusSettings, and the Actor/package state. Use labeled arrows for registration, reading, writes, and viewport filtering."
     },
     {
       "id": "source-map-data-ownership",
@@ -329,7 +369,8 @@
       "page": "04-workflows-and-implementation/source-map/TECHNICAL.md",
       "final_asset": "assets/media/source-map-data-ownership.png",
       "alt": "Diagram of Focus user settings, Actor package metadata and native Actor properties",
-      "caption": "Focus stores preferences separately from Actor state, while native quick properties remain part of the Actor and Component data they modify."
+      "caption": "Focus stores preferences separately from Actor state, while native quick properties remain part of the Actor and Component data they modify.",
+      "capture_instructions": "Create a three-part ownership diagram: per-editor user settings for category visibility/colors/persistence, Focus.SharedState.V1 metadata in Actor/External Actor packages, and native Actor/Component properties for the eight quick-property categories. Show temporary baselines separately in memory."
     },
     {
       "id": "support-mixed-unavailable",
@@ -337,7 +378,8 @@
       "page": "05-support-and-troubleshooting/faq/DESIGN.md",
       "final_asset": "assets/media/support-mixed-unavailable.png",
       "alt": "Comparison of Mixed and Not Applicable states in Focus’s Outliner column",
-      "caption": "Mixed indicates differing eligible values, while Not Applicable indicates that the target lacks an editable matching property."
+      "caption": "Mixed indicates differing eligible values, while Not Applicable indicates that the target lacks an editable matching property.",
+      "capture_instructions": "Capture two Outliner rows side by side or stacked: a folder with eligible child Actors in differing states showing Mixed, and an Actor without an eligible component showing Not Applicable. Include each control tooltip to clarify the difference."
     },
     {
       "id": "support-unavailable-tooltip",
@@ -345,7 +387,8 @@
       "page": "05-support-and-troubleshooting/troubleshooting/DESIGN.md",
       "final_asset": "assets/media/support-unavailable-tooltip.png",
       "alt": "Focus control tooltip explaining why a micro-widget is unavailable for an Actor",
-      "caption": "Eligibility tooltips help distinguish unavailable properties from controls that are simply switched off."
+      "caption": "Eligibility tooltips help distinguish unavailable properties from controls that are simply switched off.",
+      "capture_instructions": "Capture a Focus control hovered on an Actor lacking a suitable editable component, with the actual disabled/unavailable icon and tooltip visible. Keep a nearby eligible Actor in frame for comparison."
     },
     {
       "id": "support-plugin-update",
@@ -353,7 +396,8 @@
       "page": "05-support-and-troubleshooting/updating/DESIGN.md",
       "final_asset": "assets/media/support-plugin-update.png",
       "alt": "Focus release folder located inside an Unreal Engine project’s Plugins directory",
-      "caption": "Replacing the full Focus folder while Unreal is closed avoids mixing files from incompatible plugin releases."
+      "caption": "Replacing the full Focus folder while Unreal is closed avoids mixing files from incompatible plugin releases.",
+      "capture_instructions": "Show File Explorer at YourProject/Plugins/Focus after extracting a release, with Focus.uplugin at the correct directory level. Include the release ZIP or a small callout identifying that the entire previous plugin folder is replaced while the editor is closed."
     },
     {
       "id": "roadmap-milestones",
@@ -361,7 +405,8 @@
       "page": "ROADMAP.md",
       "final_asset": "assets/media/roadmap-milestones.png",
       "alt": "Timeline showing Focus v1.0, v2.0 and planned v3.0 capabilities",
-      "caption": "Focus evolved from Visual and Interaction controls in v1.0 to broader native Quick Actions in v2.0, with extensibility planned for v3.0."
+      "caption": "Focus evolved from Visual and Interaction controls in v1.0 to broader native Quick Actions in v2.0, with extensibility planned for v3.0.",
+      "capture_instructions": "Create a clean horizontal timeline with v1.0 Released (Visual, Interaction), v2.0 Released (eight more Quick Action categories and session-only Focus editing), and v3.0 Planned (new categories, provider API, Widget Builder). Use a visually distinct Planned treatment."
     },
     {
       "id": "roadmap-extension-api",
@@ -369,7 +414,8 @@
       "page": "ROADMAP.md",
       "final_asset": "assets/media/roadmap-extension-api.png",
       "alt": "Conceptual architecture of Focus categories, third-party providers and the Quick Widget Builder",
-      "caption": "The planned extension registry would provide a shared foundation for built-in actions, plugin contributions and user-authored widgets."
+      "caption": "The planned extension registry would provide a shared foundation for built-in actions, plugin contributions and user-authored widgets.",
+      "capture_instructions": "Create a conceptual, clearly labeled Planned architecture diagram: Focus Quick Actions registry in the center; built-in providers and third-party plugin providers register categories/micro-widgets; the Quick Widget Builder supplies data-driven definitions; all feed the same Outliner rendering/eligibility/transaction system."
     }
   ]
 }
