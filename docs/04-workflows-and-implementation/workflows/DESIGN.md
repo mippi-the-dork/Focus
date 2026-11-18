@@ -4,6 +4,13 @@
 
 ## Workflow 1: Protect finished architecture
 
+<!-- Media target: GIF | workflows-bulk-lock | docs/assets/media/workflows-bulk-lock.gif -->
+<figure class="doc-media" data-kind="gif" data-media-id="workflows-bulk-lock">
+  <img src="../../assets/media-placeholder.png" alt="Animation applying Selection and Transform Lock to a completed Outliner folder" loading="lazy">
+  <figcaption>Bulk protection makes finished environment content harder to select or transform accidentally during adjacent work.</figcaption>
+</figure>
+
+
 Imagine a level where a hallway is approved but adjacent rooms remain under construction.
 
 1. Put finished meshes under a clearly named Outliner folder.

@@ -7,6 +7,13 @@
 
 ## At a glance
 
+<!-- Media target: IMAGE | roadmap-milestones | docs/assets/media/roadmap-milestones.png -->
+<figure class="doc-media" data-kind="image" data-media-id="roadmap-milestones">
+  <img src="assets/media-placeholder.png" alt="Timeline showing Focus v1.0, v2.0 and planned v3.0 capabilities" loading="lazy">
+  <figcaption>Focus evolved from Visual and Interaction controls in v1.0 to broader native Quick Actions in v2.0, with extensibility planned for v3.0.</figcaption>
+</figure>
+
+
 | Milestone | Status | What changed / is planned |
 | --- | --- | --- |
 | **v1.0 — The essentials** | Released · historical | The original **Visual** and **Interaction** Quick Actions: visibility, Solo, and protection workflows |
@@ -92,6 +99,13 @@ The existing source is not yet a plugin extension system:
 Therefore, public registration must be designed **below the existing UI**, rather than exposing the static definition array as an API and assuming third-party categories will automatically work.
 
 ### Proposed API architecture (subject to design review)
+
+<!-- Media target: IMAGE | roadmap-extension-api | docs/assets/media/roadmap-extension-api.png -->
+<figure class="doc-media" data-kind="image" data-media-id="roadmap-extension-api">
+  <img src="assets/media-placeholder.png" alt="Conceptual architecture of Focus categories, third-party providers and the Quick Widget Builder" loading="lazy">
+  <figcaption>The planned extension registry would provide a shared foundation for built-in actions, plugin contributions and user-authored widgets.</figcaption>
+</figure>
+
 
 | Contract | Purpose |
 | --- | --- |

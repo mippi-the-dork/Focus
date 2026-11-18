@@ -17,6 +17,13 @@
 
 ## Persistence responsibilities
 
+<!-- Media target: IMAGE | source-map-data-ownership | docs/assets/media/source-map-data-ownership.png -->
+<figure class="doc-media" data-kind="image" data-media-id="source-map-data-ownership">
+  <img src="../../assets/media-placeholder.png" alt="Diagram of Focus user settings, Actor package metadata and native Actor properties" loading="lazy">
+  <figcaption>Focus stores preferences separately from Actor state, while native quick properties remain part of the Actor and Component data they modify.</figcaption>
+</figure>
+
+
 `States` and `Temporary` are in-memory maps keyed by weak Actor references. `Focus.SharedState.V1` metadata is stored on the Actor's owning package. Native Hidden in Game and movement lock use native Actor properties. `OnPackagePreSave` and `OnPackagePostSave` are temporary serialization overlays; neither creates an independent user-authored Focus asset.
 
 ## Rendering and inputs

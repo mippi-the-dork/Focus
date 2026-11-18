@@ -6,6 +6,13 @@
 
 ### From a precompiled release
 
+<!-- Media target: IMAGE | support-plugin-update | docs/assets/media/support-plugin-update.png -->
+<figure class="doc-media" data-kind="image" data-media-id="support-plugin-update">
+  <img src="../../assets/media-placeholder.png" alt="Focus release folder located inside an Unreal Engine project’s Plugins directory" loading="lazy">
+  <figcaption>Replacing the full Focus folder while Unreal is closed avoids mixing files from incompatible plugin releases.</figcaption>
+</figure>
+
+
 1. Close the Unreal Editor.
 2. Download the new compatible ZIP from [Focus Releases](https://github.com/mippi-the-dork/Focus/releases).
 3. Remove the old `YourProject/Plugins/Focus/` folder.

@@ -8,6 +8,13 @@
 
 ## Integration layers
 
+<!-- Media target: IMAGE | architecture-editor-layers | docs/assets/media/architecture-editor-layers.png -->
+<figure class="doc-media" data-kind="image" data-media-id="architecture-editor-layers">
+  <img src="../../assets/media-placeholder.png" alt="Architecture diagram linking the Focus module, Outliner column, editor guards and view extension" loading="lazy">
+  <figcaption>The editor module coordinates presentation, input protection, state persistence and view filtering through Unreal’s native interfaces.</figcaption>
+</figure>
+
+
 | Component | Role |
 | --- | --- |
 | `FFocusColumn` | Outliner row widgets, category menu, mixed and eligible state |
