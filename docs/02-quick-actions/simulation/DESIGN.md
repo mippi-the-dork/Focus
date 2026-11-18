@@ -2,42 +2,43 @@
 
 **Focus v2.1.0 · Quick Actions · User guide**
 
-## What this category controls
+## Available controls
 
-| Control | Purpose | Important limitation |
+| Quick Action | Meaning | Needed for a visible result |
 | --- | --- | --- |
-| Simulate Physics | Allow eligible primitives to move under physics | Needs compatible mobility and collision |
-| Enable Gravity | Apply world gravity to a simulated primitive | Does not start physics simulation |
-| Ignore Radial Impulse | Ignore instantaneous radial impulses | Does not also ignore sustained radial force |
-| Ignore Radial Force | Ignore continuous radial force | Separate from impulse |
-| Apply Impulse on Damage | Permit damage-triggered physical impulse | Does not enable damage events itself |
-| Async Physics Tick Enabled | Allow Actor async physics tick | Not the same as ordinary Actor Tick |
+| **Simulate Physics** | Enable rigid-body physics on eligible primitives | Compatible primitive/collision/mobility |
+| **Enable Gravity** | Allow world gravity on a simulated body | Simulate Physics must also be appropriate |
+| **Ignore Radial Impulse** | Ignore a one-time radial impulse | Something must actually apply an impulse |
+| **Ignore Radial Force** | Ignore continuous radial force | A radial force source/effect |
+| **Apply Impulse on Damage** | Allow a supported damage impulse | Damage and compatible physics setup |
+| **Async Physics Tick Enabled** | Enable Actor async physics ticking where supported | A compatible Actor/physics tick implementation |
 
-## Practical example
+These controls edit Unreal's native values, not a custom simulation system.
 
-To make a prop fall, start with an eligible Primitive Component that can simulate and has an appropriate collision setup. Enable **Simulate Physics** and **Enable Gravity**, then test in a supported simulation context.
+## Workflow: make a prop respond to gravity
 
-A white enabled icon describes a property value, not proof that physics can currently run.
+1. Enable the **Simulation** category through the Focus column-header menu.
+2. Use a Static Mesh Actor with a compatible Primitive Component, collision and mobility.
+3. Enable **Simulate Physics** and **Enable Gravity** for the eligible component(s).
+4. Test under simulation/Play. If the prop remains stationary, inspect collision, body setup and mobility in Unreal's Details panel.
+5. Undo the Focus change or restore the original values if the prop should remain static.
 
-## Using these controls
+## Targets and unavailable controls
 
-Enable the **Simulation** and **Physics Events** categories from Focus's column-header menu. Hover each part of the compact symbol before clicking. Apply a choice to an Actor, an attachment hierarchy, or a loaded folder. Component-targeted controls apply to *each eligible component* within that Actor.
+Most Simulation actions require **eligible registered Primitive Components**. **Async Physics Tick Enabled** is Actor-level, so it can be applicable even when no primitive body exists. A row with an Actor but no compatible editable component may show some controls as **Not Applicable**.
 
-For a physics prop, first make its collision and mobility suitable for simulation, then enable Simulate Physics. Enable Gravity if it should fall. If you need Blueprint hit events, enable Generate Hit Events, confirm collision channels and responses, and test in Play.
+## Common questions
 
+**Gravity is enabled, but nothing falls.** Gravity does not enable physics simulation by itself.
 
-## Why nothing happens
+**Why can I change Ignore Radial Force but still receive an impulse?** Force and impulse are separate properties.
 
-An enabled flag can be valid even when the rest of Unreal's setup makes it ineffective. Gravity without physics simulation does not make a static object fall. Hit events without suitable contacts will not fire. Unavailable segments mean Focus could not find an eligible editable target.
+**Why does an enabled icon not prove the simulation works?** The icon reflects the native setting; actual runtime body creation and simulation depend on Unreal configuration.
 
----
+## Scope, state and saving
 
-For editable C++ property targets, transaction details and native constraints, [see Technical](TECHNICAL.md).
+A row can represent one Actor or a loaded folder, attachment hierarchy, group or selection. Focus resolves eligible targets across that scope, even if Outliner children are collapsed or hidden by a search filter. **Mixed** means applicable targets disagree; **Not Applicable** means no editable matching property or control target exists. New Actors and unloaded World Partition Actors do not inherit previous bulk actions.
 
-## Shared Quick Action behavior
+For the six Visual/Interaction controls, review **Editor Preferences → Plugins → Focus** for session-only persistence. The other eight Quick Actions categories change native Unreal properties using ordinary save and Undo/Redo behavior. See the [Quick Actions overview](../README.md) and [Saving guide](../../03-settings-and-saving/README.md).
 
-Quick Actions apply to **currently loaded eligible Actors**, including applicable attached descendants, nested folders, native groups and selected rows. If the row is part of a multi-selection, the action can cover the other selected rows. A Mixed control means different eligible targets disagree, while Not Applicable means no editable compatible target exists. An Edit-Locked Actor is skipped by native quick-property writes.
-
-For the full eligibility and saved/temporary editing rules, see [Quick Actions overview](../README.md) and [Settings and Saving](../../03-settings-and-saving/README.md).
-
-For the Unreal implementation and exact property mapping, [read Technical](TECHNICAL.md).
+For the precise BodyInstance properties and native setters, [read Technical](TECHNICAL.md).

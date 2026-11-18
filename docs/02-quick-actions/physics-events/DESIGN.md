@@ -2,26 +2,34 @@
 
 **Focus v2.1.0 · Quick Actions · User guide**
 
-## What this category controls
+## Available controls
 
-| Control | Purpose | Requires |
+| Quick Action | What you configure | Additional Unreal prerequisites |
 | --- | --- | --- |
-| Generate Hit Events | Receive supported rigid-body collision hit notifications | Compatible collision/contacts |
-| Generate Overlap Events | Receive component overlap notifications | Both objects' collision responses permit overlap |
-| Generate Wake Events | Receive physics wake/sleep event notifications | A compatible body participating in simulation |
+| **Generate Hit Events** | Rigid-body collision hit notifications | Compatible collision and contact behavior |
+| **Generate Overlap Events** | Overlap event generation on a primitive | Both objects' collision/overlap settings |
+| **Generate Wake Events** | Physics wake/sleep notifications | A body supporting physics simulation |
 
-## Workflow: checking an overlap
+## Workflow: investigate a missing overlap
 
-Enable **Generate Overlap Events** on an eligible Primitive Component through the Outliner. Verify its collision profile and the other object's collision response. Then test the Blueprint or C++ event in Play.
+1. Enable the **Physics Events** category.
+2. Select an Actor with a registered, editable Primitive Component; activate **Generate Overlap Events**.
+3. Inspect **both** participants' collision responses in Details. An overlap event needs a compatible interaction, not merely an enabled checkbox.
+4. In PIE, cause the objects to overlap and observe the Blueprint/C++ event handler.
+5. If no event arrives, check collision profile, component registration, binding and overlap setup before changing unrelated Focus flags.
 
-This category configures event generation; it does not author event handlers or create collision geometry. An enabled flag alone does not guarantee a callback.
+## Workflow: hit versus overlap
 
+**Generate Hit Events** concerns contact/hit notifications. **Generate Overlap Events** concerns overlap notifications. They are not interchangeable, and enabling one does not create event logic for the other.
 
+## Why a segment may be unavailable
 
-## Shared Quick Action behavior
+These actions target compatible, registered **Primitive Components**, not all Actor types. An Actor without a suitable editable component shows **Not Applicable**, not Off. An Edit-Locked Actor is excluded from native quick-property writes.
 
-Quick Actions apply to **currently loaded eligible Actors**, including applicable attached descendants, nested folders, native groups and selected rows. If the row is part of a multi-selection, the action can cover the other selected rows. A Mixed control means different eligible targets disagree, while Not Applicable means no editable compatible target exists. An Edit-Locked Actor is skipped by native quick-property writes.
+## Scope, state and saving
 
-For the full eligibility and saved/temporary editing rules, see [Quick Actions overview](../README.md) and [Settings and Saving](../../03-settings-and-saving/README.md).
+A row can represent one Actor or a loaded folder, attachment hierarchy, group or selection. Focus resolves eligible targets across that scope, even if Outliner children are collapsed or hidden by a search filter. **Mixed** means applicable targets disagree; **Not Applicable** means no editable matching property or control target exists. New Actors and unloaded World Partition Actors do not inherit previous bulk actions.
 
-For the Unreal implementation and exact property mapping, [read Technical](TECHNICAL.md).
+For the six Visual/Interaction controls, review **Editor Preferences → Plugins → Focus** for session-only persistence. The other eight Quick Actions categories change native Unreal properties using ordinary save and Undo/Redo behavior. See the [Quick Actions overview](../README.md) and [Saving guide](../../03-settings-and-saving/README.md).
+
+For native notification fields and setters, [read Technical](TECHNICAL.md).

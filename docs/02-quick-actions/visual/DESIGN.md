@@ -2,73 +2,45 @@
 
 **Focus v2.1.0 · Quick Actions · User guide**
 
-## What this category controls
+![The Visual controls in Focus's World Outliner](https://raw.githubusercontent.com/mippi-the-dork/Focus/main/Doc/Images/Focus-Controls.png)
 
-Visual contains **Hide in Editor**, **Hidden in Game**, and **Solo**. Those are three distinct choices, not three names for hiding. Hide in Editor changes the viewport presentation of an Actor, Hidden in Game controls the native gameplay property, and Solo isolates rendered primitive components in editor views.
+## Choose the right control
 
-## When to choose each
+| Control | Use it when | What it does not change |
+| --- | --- | --- |
+| **Hide in Editor** | You want an Actor out of the way while editing | The Actor's native Hidden in Game choice |
+| **Hidden in Game** | You intentionally want to configure gameplay visibility | The independent editor-hidden control |
+| **Solo** | You want to see a working subset of the level | Other Actors' saved Hidden in Game flags |
 
-| You want to... | Use |
-| --- | --- |
-| Clear visual clutter while building a scene | Hide in Editor |
-| Configure the Actor's ordinary in-game hidden property | Hidden in Game |
-| Concentrate on a few Actors without hiding everything else one at a time | Solo |
+Hover a control to confirm its exact purpose and current state. Click it on the relevant Actor or folder; if that row belongs to a multi-selection, the action applies to the eligible selected scope.
 
-You can click any of these on an Actor, folder or multi-selection; actions affect eligible **loaded** Actors. An actor already hidden in the editor will not reappear just because it is Soloed.
+## Workflow: temporarily isolate a room
 
-## Two independent visibility settings
+![Focus Solo in action](https://raw.githubusercontent.com/mippi-the-dork/Focus/main/Doc/Images/Focus-Solo.gif)
 
-**Hide in Editor** controls whether an Actor appears in editor viewports. It is useful for reducing visual noise without changing the Actor's gameplay visibility choice.
+1. Open **Editor Preferences → Plugins → Focus**. If the isolation is only for this session, turn **Solo persistence off** before using it.
+2. Find the working room's folder in the Outliner and use **Solo**.
+3. Work on its loaded Actors. Solo filters **rendered primitive components** in editor views; lights and volumes may still contribute to the scene.
+4. Turn off Solo or use **Restore Temporary Changes** from the Focus header menu if you made session-only edits.
+5. Review the full scene before saving/publishing your level.
 
-**Hidden in Game** changes the Actor's native Hidden in Game setting. Use it when you intentionally want that runtime property configured. Hiding an Actor in the editor does **not** automatically set Hidden in Game, and the reverse is also true.
+**Important:** Solo does not reveal an Actor that is already hidden with Hide in Editor.
 
+## Workflow: distinguish editor and gameplay visibility
 
-## Use them
+Hide a decorative Actor in the editor, then inspect its native **Hidden in Game** value in Details: these are separate decisions. If you intend a gameplay-visible Actor to remain hidden only during editing, avoid changing Hidden in Game.
 
-Select an Actor or folder in the Outliner and toggle the appropriate Focus visual segment. Hover first when unsure which is which. A mixed folder means some eligible Actors are hidden while others are not. Toggle mixed to apply one consistent state to the loaded scope.
+## When an action seems ineffective
 
+- **Solo isn't fully isolated:** it filters primitives rather than suppressing every light or volume contribution.
+- **The setting returns after a reload:** check whether Focus persistence was disabled and whether the Actor package was actually saved.
+- **Hidden in Game won't toggle:** check for **Edit Lock** on the Actor.
+- **A folder is only partly changed:** some Actors may be unloaded, newly added or outside the resolved scope.
 
-## Example
+## Scope, state and saving
 
-You can hide decorative geometry in the editor while leaving it set to appear in game. Conversely, you can see a debug Actor while editing but mark it Hidden in Game.
+A row can represent one Actor or a loaded folder, attachment hierarchy, group or selection. Focus resolves eligible targets across that scope, even if Outliner children are collapsed or hidden by a search filter. **Mixed** means applicable targets disagree; **Not Applicable** means no editable matching property or control target exists. New Actors and unloaded World Partition Actors do not inherit previous bulk actions.
 
+For the six Visual/Interaction controls, review **Editor Preferences → Plugins → Focus** for session-only persistence. The other eight Quick Actions categories change native Unreal properties using ordinary save and Undo/Redo behavior. See the [Quick Actions overview](../README.md) and [Saving guide](../../03-settings-and-saving/README.md).
 
-## Saving matters
-
-These two Focus controls have separate persistence checkboxes. Turning persistence off makes **Focus-initiated** changes temporary for the editor session. Native Details panel changes still save normally; use **Restore Temporary Changes** to discard eligible temporary Focus changes. Edit-Locked Actors are not changed by the Focus Hidden in Game toggle.
-
----
-
-## Isolate without hiding the rest permanently
-
-**Solo** makes the selected Actor or collection the focus of the editor viewport. Unlike selecting **Hide in Editor** on every other Actor, it does not require you to change all those Actors' visibility settings.
-
-
-## Typical workflow
-
-1. Solo a folder containing the area you are decorating.
-2. Continue selecting and inspecting its loaded Actors.
-3. Add another Solo scope if you need to compare several sections.
-4. Turn off the Solo states when finished to restore the normal view.
-
-You can Solo an Actor, attachment hierarchy, folder, group or multiple selection. Mixed state tells you that only part of the scope is Soloed.
-
-
-## What Solo will and will not hide
-
-Focus primarily isolates **rendered primitive components** in editor viewports. Lighting, volumes and other scene contributions can still influence what you see. An Actor explicitly hidden in the editor does not become visible simply because it is Soloed.
-
-
-## Persistence
-
-Solo can be persistent or session-only depending on Focus settings. It does not turn on **Hidden in Game**. When a persistent Solo state is saved, the related Actor package is part of the save workflow.
-
----
-
-## Shared Quick Action behavior
-
-Quick Actions apply to **currently loaded eligible Actors**, including applicable attached descendants, nested folders, native groups and selected rows. If the row is part of a multi-selection, the action can cover the other selected rows. A Mixed control means different eligible targets disagree, while Not Applicable means no editable compatible target exists. An Edit-Locked Actor is skipped by native quick-property writes.
-
-For the full eligibility and saved/temporary editing rules, see [Quick Actions overview](../README.md) and [Settings and Saving](../../03-settings-and-saving/README.md).
-
-For the Unreal implementation and exact property mapping, [read Technical](TECHNICAL.md).
+For editor rendering, state metadata and package-save implementation, [read Technical](TECHNICAL.md).
