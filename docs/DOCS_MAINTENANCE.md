@@ -18,7 +18,8 @@ Never fill both pages with the same copied README material or generic text under
 ## Roadmap and audit
 
 - [Roadmap](ROADMAP.md) contains proposed product development directions. Label all unimplemented features **Planned**, and do not list them among current Quick Actions until they ship.
-- [Documentation Audit](DOCUMENTATION_AUDIT.md) tracks editorial gaps, known verification limits and improvement priorities. Revise its status entries when improvements are actually delivered.
+- [Documentation Audit](DOCUMENTATION_AUDIT.md) tracks editorial gaps, improvements and remaining priorities.
+- [Verification Matrix](VERIFICATION_MATRIX.md) records required Unreal Editor and website tests. A source review must never be counted as a passed editor test. Revise its status entries when improvements are actually delivered.
 
 ## Adding or changing features
 
