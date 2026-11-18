@@ -1,53 +1,31 @@
-# Category Visibility — Design
+# Category Visibility and Column Layout — Design
 
-**Focus v2.1.0 | Unreal Engine 5.8.x | Windows 64-bit | Editor only**
+**Focus v2.1.0 · Unreal Engine 5.8.x · Editor only**
 
-Configure which column groups are displayed.
+## Start with the controls you need
 
-## Verified behavior
+Focus has ten groups in a fixed order: **Visual**, **Interaction**, **Simulation**, **Physics Events**, **Lighting**, **World**, **Network**, **Navigation**, **Mobility**, and **LOD**.
 
-Visual and Interaction are visible by default; eight other groups are optional. Visibility is stored in per-project Editor user config.
+Only Visual and Interaction are enabled by default. The other eight are optional because showing every control makes the Outliner column wider.
 
-## Category state storage
+## Customize your Outliner
 
-Visibility flags are read and written under `Focus.CategoryVisibility` in `GEditorPerProjectIni`; the column width is calculated from enabled category widgets, and hidden groups do not reserve gaps. Header reset restores Visual + Interaction only, without changing level state.
-## Usage and workflows
+1. Open the World Outliner and locate the Focus header.
+2. Open its category menu.
+3. Check the groups you frequently use. Uncheck those that add clutter.
+4. Inspect the row icons. They appear or disappear immediately and the Focus column adjusts its width.
+5. Use **Reset to Visual + Interaction** to restore the compact default.
 
-### Configurable categories
+The menu explains the purpose and available controls in each category. Enabling a category **does not change any Actor or Component property**. It merely makes its quick controls available in the column.
 
-Focus adds a column to Unreal Engine's World Outliner. Open the **three-dots (`...`) menu at the far right of the Focus column header** to choose which categories appear. Each category has a checkbox, and hovering it shows the category's purpose and a complete list of controls it contains. Changes take effect immediately and persist in your editor-per-project preferences without altering the level.
+## Example layouts
 
-**Visual and Interaction are visible by default.** The other eight categories, **Simulation, Physics Events, Lighting, World, Network, Navigation, Mobility, and LOD**, are hidden by default. The menu's **Reset to Visual + Interaction** button restores the default set. **Restore Temporary Changes** separately discards outstanding session-only Visual and Interaction edits without changing category visibility or persistence preferences. The category order is fixed.
+For environment art, start with Visual, Interaction, Lighting and LOD. For a gameplay blockout, add Simulation, Physics Events and Navigation. Technical designers may also want World and Network. These are workflow suggestions, not separate Focus presets.
 
-Each category uses a distinct miniwidget:
+## Does this travel with my level?
 
-| Category | Layout |
-|---|---|
-| Visual | Visibility controls and Solo icon |
-| Interaction | Selection Lock and a three-level protection selector |
-| Simulation | Six individually clickable triangles around a central opening, clockwise from the top |
-| Physics Events | Three evenly stacked horizontal pills |
-| Lighting | Three upright channel bars above one full-width shadow bar |
-| World | Four equally sized squares in a two-by-two grid |
-| Network | Three angular pieces arranged in a radial triangle |
-| Navigation | Four circular controls arranged north, east, south, and west |
-| Mobility | Three stacked sections of one vertical pill |
-| LOD | A centered forced-LOD number above two culling bars |
+Category visibility is an **editor-per-project user preference**. It does not add Actors, change levels, or affect what another teammate sees in a packaged build.
 
-Miniwidgets have separate hover and click targets for each option. Their geometry and spacing remain consistent as property states change. They fit Unreal's standard 20-unit Outliner rows and remain vertically centered at larger row heights, including those configured with Stem. The Focus column resizes to the visible categories, without leaving gaps for hidden ones.
+---
 
-Category spacing is intentionally compact around Simulation and Network: 4 units before Simulation, 7 after Simulation, 6 before Network, and 4 after Network. The original Visual-to-Interaction gap remains 3 units; all other existing spacing rules are preserved.
-
-### State colors
-
-## Expected limits
-
-Focus is an Editor-only workflow tool. Folder and selected-row changes affect eligible loaded Actors and are not automatically inherited by Actors added later. Supported native protections do not prevent arbitrary external tools or scripts.
-
-## Related source
-
-- [Main editor module](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
-- [Native quick properties](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp)
-- [Editor preferences](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusSettings.h)
-- [Interaction guards](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusInteractionGuard.h)
-- [Full README](https://github.com/mippi-the-dork/Focus/blob/main/README.md)
+For exact native settings, serialization and recovery, [see Technical](TECHNICAL.md).

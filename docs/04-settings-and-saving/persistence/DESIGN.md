@@ -1,88 +1,42 @@
-# Session-Only and Persistent Edits — Design
+# Persistent and Session-Only Editing — Design
 
-**Focus v2.1.0 | Unreal Engine 5.8.x | Windows 64-bit | Editor only**
+**Focus v2.1.0 · Unreal Engine 5.8.x · Editor only**
 
-What persists, what is temporary, and save behavior.
+## The most important choice in Focus
 
-## Verified behavior
+You can use some Focus controls for **temporary editor organization** or for **changes you intend to save**. That distinction matters when working in shared levels, with Perforce, or with One File Per Actor.
 
-Shared state is serialized as Focus.SharedState.V1 metadata in each Actor's package, including External Actors. Pre-save and post-save hooks protect native temporary values.
+Open **Editor Preferences → Plugins → Focus → Visual & Interaction Persistence**. There are two convenient parent groups, **Visual (all)** and **Interaction (all)**, plus separate settings for the underlying controls.
 
-## Exact storage behavior
+| Control | Can be session-only through Focus? |
+| --- | --- |
+| Hide in Editor | Yes |
+| Hidden in Game | Yes |
+| Solo | Yes |
+| Selection Lock | Yes |
+| Transform Lock / Edit Lock | Yes, as one Protection persistence choice |
+| Simulation, Physics Events, Lighting, World, Network, Navigation, Mobility, LOD | No; these edit native properties normally |
 
-The key `Focus.SharedState.V1` uses a strict five-character state payload in Actor-package metadata: Selection, Transform, Edit, Solo, Editor-hidden. Temporary baselines are kept in memory, while Hidden in Game and native movement lock are Actor properties. During a package save, Focus temporarily substitutes prior persistent values for session-only native edits, then restores the displayed temporary values post-save. This is relevant to One File Per Actor, Save All and autosaves.
+All Visual and Interaction persistence options default **On** for new configurations.
 
-**Limitation:** Interrupted saves, other plugins, dirty packages and native actor edits still need project-specific QA before claiming all checkouts are avoided.
-## Usage and workflows
+## Persistent example
 
-### Visual and Interaction persistence
+You Transform Lock a finished building and leave that control's persistence enabled. Save the affected Actor or level packages. Reopening the level can restore the saved Focus lock state.
 
-Open **Edit > Editor Preferences > Plugins > Focus** and expand **Visual & Interaction Persistence** to choose whether changes made through Focus's Visual and Interaction micro-widgets are saved with the affected Actor or level. **All five persistence options are enabled by default.** The Visual and Interaction parent checkboxes switch all child options in their group; each child can also be configured independently.
+## Session-only example
 
-| Category | Independently configurable controls |
-|---|---|
-| Visual | Hide in Editor, Hidden in Game, Solo |
-| Interaction | Selection Lock, Protection Lock (Transform Lock and Edit Lock share one setting) |
+You temporarily Solo a room or hide distractions while working. Disable persistence for the corresponding Focus control first. Changes through that Focus control remain active in the current editor session without replacing the last saved value. To discard outstanding temporary edits, choose **Restore Temporary Changes** from Focus's header menu.
 
-- **Persistence On:** Focus changes use their normal saved behavior. Save the affected Actor or level package to keep those changes across reloads and editor sessions.
-- **Persistence Off:** Changes made through the corresponding **Focus micro-widget** are session-only. The live editor value changes, but Focus retains the previous persistent value for later saves and reloads. Session-only Hidden in Game clicks are designed not to dirty an otherwise clean Actor package or request checkout on their own.
-- **Off to On:** The current value stays as it is. Any outstanding temporary change becomes eligible for the next ordinary save. Switching persistence on does not automatically save the Actor or level.
-- **Native editing:** Changes made through Unreal Engine's own Details panel, native Outliner commands, or other native editing paths retain Unreal's normal save and checkout behavior. Focus's persistence setting does not make those tools session-only. A later native edit to the same property supersedes that property's temporary Focus change.
+## Two common misconceptions
 
-The other eight categories, **Simulation, Physics Events, Lighting, World, Network, Navigation, Mobility, and LOD**, continue to edit native properties persistently. Their behavior and colors are not governed by Visual and Interaction persistence settings.
+**Turning persistence off is not Undo.** It does not instantly reverse a value already changed. **Turning it back on** keeps the current value and makes it eligible for the next save.
 
-Use **Restore Temporary Changes** in the Focus header menu to discard outstanding session-only Focus edits across currently loaded Actors and return those controls to their pre-temporary values. This operation does not change persistence preferences, commit changes, or undo unrelated native edits. It applies to tracked temporary changes, not just the currently selected Outliner row.
+**The setting does not change Unreal's native Details panel.** If you edit Hidden in Game or movement lock through Unreal's own Details/Outliner controls, those native changes follow normal save behavior.
 
-Session-only editing of native properties such as Hidden in Game and movement locking requires additional save-workflow testing. See **Limitations** before relying on this behavior for production levels.
+## Perforce and OFPA caution
 
-### Native quick property editing
-
----
-
-# Saving Focus Settings
-
-Focus separates **editor interface preferences**, **persistent Actor settings**, and **session-only Visual and Interaction edits**:
-
-- **Interface preferences:** Category visibility, Visual and Interaction persistence checkboxes, and both state-color palettes are saved as editor-per-project user preferences. They do not modify Actors or levels.
-- **Persistent Focus edits:** With a Visual or Interaction persistence checkbox enabled, changes made through its Focus control can be stored with the affected Actor or level package when you save.
-- **Session-only Focus edits:** With that checkbox disabled, changes made through the corresponding Focus control remain active in the editor but are not intended to replace the last persistent value on disk. This affects only Focus-initiated Visual and Interaction edits; native Details and Outliner edits retain normal Unreal saving behavior.
-- **Other quick-property categories:** Simulation, Physics Events, Lighting, World, Network, Navigation, Mobility, and LOD change native properties with Unreal's regular persistent behavior.
-
-The persistent Visual and Interaction states include **Hide in Editor, Hidden in Game, Solo, Selection Lock, Transform Lock, and Edit Lock**. Hidden in Game and native movement locking use Actor properties; Focus's other Visual and Interaction states use saved Actor-package metadata.
-
-For projects using External Actors / One File Per Actor, that metadata is stored in the corresponding Actor package. Otherwise, it is typically stored with the level package. To keep persistent changes across level reloads, editor sessions, or source-control syncs, save the affected packages using Unreal's normal workflow.
-
-**Switching persistence off does not immediately reset a property.** Switching it back on does not restore an older value either. The current value is kept and becomes eligible for the next normal save. To discard outstanding session-only changes instead, use **Restore Temporary Changes** from the Focus header menu.
-
-> [!WARNING]  
-> **Session-only native property editing requires save-workflow validation.**
->
-> Hidden in Game and movement locking are native Unreal properties. Focus isolates temporary values during package saves, but Save All, autosaves, World Partition / External Actors, Undo/Redo, and interrupted saves should be tested in your project before relying on the behavior for production levels. A previously dirty Actor may still appear in the save list due to unrelated changes.
+Temporary Focus changes are designed not to commit their native property values to package saves. That does not guarantee an Actor never requests checkout: an unrelated property change can dirty its package. Validate the save workflow on a disposable level in your project, especially Save All, autosave, external Actor packages, interruption and Undo.
 
 ---
 
-# Installation
-
----
-
-### Session-Only Native Properties
-
-Session-only **Hidden in Game** and native movement locking use package pre-save and post-save handling to avoid writing temporary values as persistent property changes. This needs in-editor validation across Save All, autosaves, External Actors / World Partition, Undo/Redo, and interrupted or failed saves. On a disposable level, confirm that Focus-only temporary edits do not request checkout on an otherwise clean Actor, that unrelated native edits save correctly, and that reloading restores the last persistent values.
-
-An Actor already marked dirty for unrelated reasons can still appear in Unreal's save or checkout workflows. Focus's persistence options do not suppress native Details panel or Outliner edits, and they do not prevent other plugins or tools from dirtying a package.
-
----
-
-# Troubleshooting
-
-## Expected limits
-
-Focus is an Editor-only workflow tool. Folder and selected-row changes affect eligible loaded Actors and are not automatically inherited by Actors added later. Supported native protections do not prevent arbitrary external tools or scripts.
-
-## Related source
-
-- [Main editor module](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusModule.cpp)
-- [Native quick properties](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusQuickProperties.cpp)
-- [Editor preferences](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusSettings.h)
-- [Interaction guards](https://github.com/mippi-the-dork/Focus/blob/main/Source/Focus/Private/FocusInteractionGuard.h)
-- [Full README](https://github.com/mippi-the-dork/Focus/blob/main/README.md)
+For exact native settings, serialization and recovery, [see Technical](TECHNICAL.md).
