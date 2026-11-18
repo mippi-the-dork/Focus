@@ -184,6 +184,9 @@
     pages.push({title:'Documentation Audit',path:'DOCUMENTATION_AUDIT.md',kind:'Document',
       summary:'Documentation quality findings, prioritized fixes and verification gaps',
       search:'audit documentation improvements quality gaps testing screenshots search'});
+    pages.push({title:'Verification Matrix',path:'VERIFICATION_MATRIX.md',kind:'Document',
+      summary:'Native Unreal Editor and website QA checklists with explicit results',
+      search:'verification matrix qa tests perforce one file per actor world partition focus website'});
     state.pages=pages;
     state.byPath=new Map(pages.map(p=>[p.path,p]));
   }
