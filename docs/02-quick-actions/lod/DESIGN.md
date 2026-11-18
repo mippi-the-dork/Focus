@@ -4,6 +4,13 @@
 
 ## Available controls
 
+<!-- Media target: IMAGE | lod-controls | docs/assets/media/lod-controls.png -->
+<figure class="doc-media" data-kind="image" data-media-id="lod-controls">
+  <img src="../../assets/media-placeholder.png" alt="LOD Quick Actions displaying Forced LOD and distance-culling options" loading="lazy">
+  <figcaption>The LOD category combines mesh LOD selection with two separate distance-culling flags.</figcaption>
+</figure>
+
+
 | Quick Action | Meaning | What it doesn't guarantee |
 | --- | --- | --- |
 | **Forced LOD Model** | Override a compatible mesh's automatic LOD choice | Cannot create missing mesh LODs |
@@ -11,6 +18,13 @@
 | **Allow Cull Distance Volume** | Permit applicable Cull Distance Volumes to affect the primitive | No effect without a suitable volume |
 
 ## How to operate the Forced LOD number
+
+<!-- Media target: GIF | lod-gestures | docs/assets/media/lod-gestures.gif -->
+<figure class="doc-media" data-kind="gif" data-media-id="lod-gestures">
+  <img src="../../assets/media-placeholder.png" alt="Animation of click, Alt-click, mouse-wheel and double-click input on Forced LOD" loading="lazy">
+  <figcaption>The Forced LOD value can be stepped directly or entered numerically, with zero restoring automatic LOD selection.</figcaption>
+</figure>
+
 
 | Input | Result |
 | --- | --- |

@@ -4,6 +4,13 @@
 
 ## Available controls
 
+<!-- Media target: IMAGE | lighting-controls | docs/assets/media/lighting-controls.png -->
+<figure class="doc-media" data-kind="image" data-media-id="lighting-controls">
+  <img src="../../assets/media-placeholder.png" alt="Lighting Quick Actions category displaying channels and shadow settings" loading="lazy">
+  <figcaption>Lighting Channel 0, 1 and 2 can be adjusted independently of the Cast Shadows setting.</figcaption>
+</figure>
+
+
 | Quick Action | Effect |
 | --- | --- |
 | **Lighting Channel 0** | Enable/disable channel 0 for eligible lights or primitives |
@@ -14,6 +21,13 @@
 Lighting channels and Cast Shadows are independent. Changing a channel preserves the other channel settings.
 
 ## Workflow: light only selected props
+
+<!-- Media target: IMAGE | lighting-channel-example | docs/assets/media/lighting-channel-example.png -->
+<figure class="doc-media" data-kind="image" data-media-id="lighting-channel-example">
+  <img src="../../assets/media-placeholder.png" alt="Comparison showing a light and selected meshes sharing a lighting channel" loading="lazy">
+  <figcaption>Matching channel selections allow compatible lights and primitives to interact without changing the other channel flags.</figcaption>
+</figure>
+
 
 1. Enable **Lighting** in the Focus header menu.
 2. Select a compatible light Actor and enable **Channel 1** on its light component.

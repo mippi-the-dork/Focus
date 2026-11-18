@@ -8,6 +8,13 @@
 
 ## Integration surfaces
 
+<!-- Media target: IMAGE | overview-editor-integration | docs/assets/media/overview-editor-integration.png -->
+<figure class="doc-media" data-kind="image" data-media-id="overview-editor-integration">
+  <img src="../../assets/media-placeholder.png" alt="Diagram of Focus integrations with Unreal Engine editor systems" loading="lazy">
+  <figcaption>The Focus Editor module coordinates Outliner widgets, editor interaction guards, viewport filtering and Actor state.</figcaption>
+</figure>
+
+
 `FFocusModule` registers a column with `FSceneOutlinerModule::OnCreateActorBrowserColumns()`, initializes non-widget `UFocusEditorMode`, installs an input guard, registers Details view hooks and creates a view extension for Solo. Nothing about these editor interfaces implies a packaged-game dependency.
 
 ## Data ownership

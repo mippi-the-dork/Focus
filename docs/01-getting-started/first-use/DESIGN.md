@@ -4,6 +4,13 @@
 
 ## Try Focus safely
 
+<!-- Media target: GIF | first-use-controls | docs/assets/media/first-use-controls.gif -->
+<figure class="doc-media" data-kind="gif" data-media-id="first-use-controls">
+  <img src="../../assets/media-placeholder.png" alt="Animation showing Focus controls being enabled and used for the first time" loading="lazy">
+  <figcaption>The initial workflow reveals the Focus column, adjusts its visible categories and applies an action to a test Actor.</figcaption>
+</figure>
+
+
 Use a disposable test level or a few simple Actors first.
 
 1. Open **Window → Outliner** and locate the **Focus** column.

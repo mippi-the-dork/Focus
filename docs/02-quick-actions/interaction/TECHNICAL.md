@@ -18,6 +18,13 @@
 
 ## Edit Lock routing
 
+<!-- Media target: IMAGE | interaction-native-guards | docs/assets/media/interaction-native-guards.png -->
+<figure class="doc-media" data-kind="image" data-media-id="interaction-native-guards">
+  <img src="../../assets/media-placeholder.png" alt="Diagram of Focus selection, transform, command and Details editing guards" loading="lazy">
+  <figcaption>Focus enforces its editing protections through multiple native editor integration paths rather than a single global lock.</figcaption>
+</figure>
+
+
 `FFocusModule::BindView` wraps a Details view's `FIsPropertyReadOnly` and `FIsPropertyEditingEnabled` delegates, preserving the original handlers. `FFocusInteractionGuard` wraps eligible Outliner renames, component add/rename paths and structural drag/drop interactions. `FFocusCommandGuard` handles supported editor commands.
 
 

@@ -4,6 +4,13 @@
 
 ## Choose an installation method
 
+<!-- Media target: IMAGE | installation-plugin-folder | docs/assets/media/installation-plugin-folder.png -->
+<figure class="doc-media" data-kind="image" data-media-id="installation-plugin-folder">
+  <img src="../../assets/media-placeholder.png" alt="Focus plugin folder installed in an Unreal Engine project" loading="lazy">
+  <figcaption>A project installation places the Focus plugin folder directly beneath the project’s Plugins directory.</figcaption>
+</figure>
+
+
 The easiest option is a matching **Fab installation** or a **precompiled GitHub Release**. If you want to inspect or change the code, install the source instead.
 
 ### Precompiled release

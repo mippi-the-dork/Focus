@@ -6,6 +6,13 @@ Quick Actions are the compact controls Focus places inside Unreal Engine's **Wor
 
 ## How to use the controls
 
+<!-- Media target: IMAGE | quick-actions-category-menu | docs/assets/media/quick-actions-category-menu.png -->
+<figure class="doc-media" data-kind="image" data-media-id="quick-actions-category-menu">
+  <img src="../assets/media-placeholder.png" alt="Focus Quick Actions category menu in the World Outliner" loading="lazy">
+  <figcaption>The category menu controls which of the ten Quick Actions groups appear in the Outliner column.</figcaption>
+</figure>
+
+
 1. Open the World Outliner and find the Focus column.
 2. Use the column-header category menu to display the categories you need. **Visual** and **Interaction** are displayed by default; the other eight are optional.
 3. Hover a symbol to read its exact action, current state, and number of eligible targets. A control can be On, Off, Mixed or Not Applicable.
