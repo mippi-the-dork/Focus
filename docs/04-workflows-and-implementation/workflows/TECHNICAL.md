@@ -7,7 +7,7 @@
 <!-- Media target: IMAGE | workflows-scope-resolution | docs/assets/media/workflows-scope-resolution.png -->
 <figure class="doc-media" data-kind="image" data-media-id="workflows-scope-resolution">
   <img src="../../assets/media-placeholder.png" alt="Diagram of row scope resolution across folders, attachments, groups and selected Actors" loading="lazy">
-  <figcaption>Focus resolves its action targets from loaded Actor relationships rather than only from Outliner rows currently visible on screen.</figcaption>
+  <figcaption>Focus resolves its action targets from loaded Actor relationships rather than only from Outliner rows currently visible on screen.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Make a scope-resolution flowchart: clicked row / selected rows → loaded Actors in folders, groups, and attachment hierarchies → deduplicated eligible targets → resulting On, Off, Mixed, or Not Applicable state. Indicate that collapsed/filtered rows still count.</span></figcaption>
 </figure>
 
 

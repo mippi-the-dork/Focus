@@ -20,7 +20,7 @@
 <!-- Media target: IMAGE | source-map-data-ownership | docs/assets/media/source-map-data-ownership.png -->
 <figure class="doc-media" data-kind="image" data-media-id="source-map-data-ownership">
   <img src="../../assets/media-placeholder.png" alt="Diagram of Focus user settings, Actor package metadata and native Actor properties" loading="lazy">
-  <figcaption>Focus stores preferences separately from Actor state, while native quick properties remain part of the Actor and Component data they modify.</figcaption>
+  <figcaption>Focus stores preferences separately from Actor state, while native quick properties remain part of the Actor and Component data they modify.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Create a three-part ownership diagram: per-editor user settings for category visibility/colors/persistence, Focus.SharedState.V1 metadata in Actor/External Actor packages, and native Actor/Component properties for the eight quick-property categories. Show temporary baselines separately in memory.</span></figcaption>
 </figure>
 
 

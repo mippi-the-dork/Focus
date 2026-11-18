@@ -19,7 +19,7 @@ The state cache is held in `TMap<TWeakObjectPtr<AActor>, FFlags> States`, with s
 <!-- Media target: IMAGE | settings-package-overlay | docs/assets/media/settings-package-overlay.png -->
 <figure class="doc-media" data-kind="image" data-media-id="settings-package-overlay">
   <img src="../../assets/media-placeholder.png" alt="Diagram of Focus temporarily restoring persistent Actor values during package serialization" loading="lazy">
-  <figcaption>During a package save, Focus substitutes recorded persistent values for active session-only native changes before restoring the live editor state.</figcaption>
+  <figcaption>During a package save, Focus substitutes recorded persistent values for active session-only native changes before restoring the live editor state.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Create a timeline diagram with three phases: live editor session-only value, PreSave temporary substitution of the saved baseline in the Actor package, and PostSave restoration of the live temporary value. Distinguish metadata from native Actor properties.</span></figcaption>
 </figure>
 
 

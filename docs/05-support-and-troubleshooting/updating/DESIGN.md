@@ -9,7 +9,7 @@
 <!-- Media target: IMAGE | support-plugin-update | docs/assets/media/support-plugin-update.png -->
 <figure class="doc-media" data-kind="image" data-media-id="support-plugin-update">
   <img src="../../assets/media-placeholder.png" alt="Focus release folder located inside an Unreal Engine project’s Plugins directory" loading="lazy">
-  <figcaption>Replacing the full Focus folder while Unreal is closed avoids mixing files from incompatible plugin releases.</figcaption>
+  <figcaption>Replacing the full Focus folder while Unreal is closed avoids mixing files from incompatible plugin releases.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Show File Explorer at YourProject/Plugins/Focus after extracting a release, with Focus.uplugin at the correct directory level. Include the release ZIP or a small callout identifying that the entire previous plugin folder is replaced while the editor is closed.</span></figcaption>
 </figure>
 
 

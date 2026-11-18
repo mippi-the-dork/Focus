@@ -7,7 +7,7 @@
 <!-- Media target: IMAGE | mobility-options | docs/assets/media/mobility-options.png -->
 <figure class="doc-media" data-kind="image" data-media-id="mobility-options">
   <img src="../../assets/media-placeholder.png" alt="Mobility micro-widget showing its Static, Stationary and Movable choices" loading="lazy">
-  <figcaption>The three vertically arranged Mobility choices map directly to Unreal’s native Scene Component mobility values.</figcaption>
+  <figcaption>The three vertically arranged Mobility choices map directly to Unreal’s native Scene Component mobility values.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Capture the full three-segment Mobility control in the Outliner with Static (S), Stationary (T), and Movable (M) readable. Show at least one selected option, and include a tooltip identifying the native mobility value.</span></figcaption>
 </figure>
 
 
@@ -26,7 +26,7 @@ Hover the segment to confirm the label, then click the option you want. This is 
 <!-- Media target: GIF | mobility-bulk | docs/assets/media/mobility-bulk.gif -->
 <figure class="doc-media" data-kind="gif" data-media-id="mobility-bulk">
   <img src="../../assets/media-placeholder.png" alt="Animation applying Movable to eligible Scene Components with Focus" loading="lazy">
-  <figcaption>Changing Mobility across a selected scope prepares eligible components for workflows that require movement.</figcaption>
+  <figcaption>Changing Mobility across a selected scope prepares eligible components for workflows that require movement.<span class="media-capture-instructions"><strong>Capture instructions · GIF:</strong> Record selecting several loaded Scene Component Actors in the Outliner, clicking the Movable segment, then inspecting one or two affected components in Details. Include an Undo step that visibly restores their previous mobility values.</span></figcaption>
 </figure>
 
 

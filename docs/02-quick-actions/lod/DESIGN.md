@@ -7,7 +7,7 @@
 <!-- Media target: IMAGE | lod-controls | docs/assets/media/lod-controls.png -->
 <figure class="doc-media" data-kind="image" data-media-id="lod-controls">
   <img src="../../assets/media-placeholder.png" alt="LOD Quick Actions displaying Forced LOD and distance-culling options" loading="lazy">
-  <figcaption>The LOD category combines mesh LOD selection with two separate distance-culling flags.</figcaption>
+  <figcaption>The LOD category combines mesh LOD selection with two separate distance-culling flags.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Capture a mesh Actor’s LOD category with the numeric Forced LOD value and both distance-culling toggles visible. Show a mesh with multiple authored LODs so the example is meaningful, and keep the corresponding Outliner row label readable.</span></figcaption>
 </figure>
 
 
@@ -22,7 +22,7 @@
 <!-- Media target: GIF | lod-gestures | docs/assets/media/lod-gestures.gif -->
 <figure class="doc-media" data-kind="gif" data-media-id="lod-gestures">
   <img src="../../assets/media-placeholder.png" alt="Animation of click, Alt-click, mouse-wheel and double-click input on Forced LOD" loading="lazy">
-  <figcaption>The Forced LOD value can be stepped directly or entered numerically, with zero restoring automatic LOD selection.</figcaption>
+  <figcaption>The Forced LOD value can be stepped directly or entered numerically, with zero restoring automatic LOD selection.<span class="media-capture-instructions"><strong>Capture instructions · GIF:</strong> Record close-up interaction with the Forced LOD number: single-click increment, Alt-click decrement, mouse-wheel change, double-click opening numeric entry, typing a value, and finally entering 0 to restore automatic LOD. Use on-screen input labels so each gesture is identifiable.</span></figcaption>
 </figure>
 
 

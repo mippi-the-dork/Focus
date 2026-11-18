@@ -11,7 +11,7 @@ Open **Edit → Plugins**, search for Focus, enable it if necessary and restart 
 <!-- Media target: IMAGE | support-unavailable-tooltip | docs/assets/media/support-unavailable-tooltip.png -->
 <figure class="doc-media" data-kind="image" data-media-id="support-unavailable-tooltip">
   <img src="../../assets/media-placeholder.png" alt="Focus control tooltip explaining why a micro-widget is unavailable for an Actor" loading="lazy">
-  <figcaption>Eligibility tooltips help distinguish unavailable properties from controls that are simply switched off.</figcaption>
+  <figcaption>Eligibility tooltips help distinguish unavailable properties from controls that are simply switched off.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Capture a Focus control hovered on an Actor lacking a suitable editable component, with the actual disabled/unavailable icon and tooltip visible. Keep a nearby eligible Actor in frame for comparison.</span></figcaption>
 </figure>
 
 

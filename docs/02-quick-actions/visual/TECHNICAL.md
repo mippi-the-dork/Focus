@@ -29,7 +29,7 @@ Editor-hidden and Solo have saved metadata flags when persistence is enabled. Hi
 <!-- Media target: IMAGE | visual-solo-primitive-filter | docs/assets/media/visual-solo-primitive-filter.png -->
 <figure class="doc-media" data-kind="image" data-media-id="visual-solo-primitive-filter">
   <img src="../../assets/media-placeholder.png" alt="Diagram of Solo filtering visible primitives in an Unreal Editor viewport" loading="lazy">
-  <figcaption>Solo narrows the editor view to selected primitive scene IDs without rewriting the hidden state of unrelated Actors.</figcaption>
+  <figcaption>Solo narrows the editor view to selected primitive scene IDs without rewriting the hidden state of unrelated Actors.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Draw an editor-view diagram with several Actor primitives, a Solo selection, and an arrow to the resulting ShowOnlyPrimitives set. Indicate that non-primitive contributions such as lighting and volumes can remain and that unrelated Actors’ saved hidden flags are unchanged.</span></figcaption>
 </figure>
 
 

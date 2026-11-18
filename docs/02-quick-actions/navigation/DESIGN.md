@@ -7,7 +7,7 @@
 <!-- Media target: IMAGE | navigation-controls | docs/assets/media/navigation-controls.png -->
 <figure class="doc-media" data-kind="image" data-media-id="navigation-controls">
   <img src="../../assets/media-placeholder.png" alt="Navigation Quick Actions displaying the navigation contribution and obstacle flags" loading="lazy">
-  <figcaption>The Navigation category exposes native component settings that influence how Unreal builds and updates navigation data.</figcaption>
+  <figcaption>The Navigation category exposes native component settings that influence how Unreal builds and updates navigation data.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Capture the four Navigation micro-controls on an Actor containing an appropriate collision/shape component, with one unavailable state if possible. Include a tooltip so the distinction between eligible component types is visible.</span></figcaption>
 </figure>
 
 
@@ -23,7 +23,7 @@
 <!-- Media target: GIF | navigation-navmesh | docs/assets/media/navigation-navmesh.gif -->
 <figure class="doc-media" data-kind="gif" data-media-id="navigation-navmesh">
   <img src="../../assets/media-placeholder.png" alt="Animation comparing navmesh results before and after changing navigation contribution" loading="lazy">
-  <figcaption>Disabling navigation contribution on selected collision can remove its influence after Unreal updates the navigation data.</figcaption>
+  <figcaption>Disabling navigation contribution on selected collision can remove its influence after Unreal updates the navigation data.<span class="media-capture-instructions"><strong>Capture instructions · GIF:</strong> Record a viewport with NavMesh visualization enabled, focusing on decorative collision that currently influences navigation. Show Can Ever Affect Navigation switched off in Focus, update/rebuild navigation, and reveal the resulting NavMesh difference using the same camera framing.</span></figcaption>
 </figure>
 
 

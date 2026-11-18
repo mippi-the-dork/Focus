@@ -39,7 +39,7 @@
 <!-- Media target: IMAGE | support-mixed-unavailable | docs/assets/media/support-mixed-unavailable.png -->
 <figure class="doc-media" data-kind="image" data-media-id="support-mixed-unavailable">
   <img src="../../assets/media-placeholder.png" alt="Comparison of Mixed and Not Applicable states in Focus’s Outliner column" loading="lazy">
-  <figcaption>Mixed indicates differing eligible values, while Not Applicable indicates that the target lacks an editable matching property.</figcaption>
+  <figcaption>Mixed indicates differing eligible values, while Not Applicable indicates that the target lacks an editable matching property.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Capture two Outliner rows side by side or stacked: a folder with eligible child Actors in differing states showing Mixed, and an Actor without an eligible component showing Not Applicable. Include each control tooltip to clarify the difference.</span></figcaption>
 </figure>
 
 

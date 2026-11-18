@@ -7,7 +7,7 @@
 <!-- Media target: GIF | settings-restore-temporary | docs/assets/media/settings-restore-temporary.gif -->
 <figure class="doc-media" data-kind="gif" data-media-id="settings-restore-temporary">
   <img src="../../assets/media-placeholder.png" alt="Animation restoring temporarily hidden, Soloed and protected Actors" loading="lazy">
-  <figcaption>Restore Temporary Changes reverts tracked session-only Focus edits while leaving unrelated persistent changes intact.</figcaption>
+  <figcaption>Restore Temporary Changes reverts tracked session-only Focus edits while leaving unrelated persistent changes intact.<span class="media-capture-instructions"><strong>Capture instructions · GIF:</strong> Record a disposable level where Hide in Editor, Solo, and a lock are changed with persistence off; open the Focus column-header menu and run Restore Temporary Changes. Show the Actors returning to their prior states while an unrelated saved change remains.</span></figcaption>
 </figure>
 
 

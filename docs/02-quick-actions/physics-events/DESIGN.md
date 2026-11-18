@@ -7,7 +7,7 @@
 <!-- Media target: IMAGE | physics-events-controls | docs/assets/media/physics-events-controls.png -->
 <figure class="doc-media" data-kind="image" data-media-id="physics-events-controls">
   <img src="../../assets/media-placeholder.png" alt="Physics Events micro-widget showing hit, overlap and wake event controls" loading="lazy">
-  <figcaption>The Physics Events category exposes the three native notification settings for eligible primitive components.</figcaption>
+  <figcaption>The Physics Events category exposes the three native notification settings for eligible primitive components.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Capture a compatible Primitive Component’s Actor row with the Physics Events category enabled and all three hit, overlap, and wake controls visible. Hover one control so its label and scope can be read.</span></figcaption>
 </figure>
 
 
@@ -22,7 +22,7 @@
 <!-- Media target: GIF | physics-events-overlap | docs/assets/media/physics-events-overlap.gif -->
 <figure class="doc-media" data-kind="gif" data-media-id="physics-events-overlap">
   <img src="../../assets/media-placeholder.png" alt="Animation showing overlap generation being enabled and tested in Play" loading="lazy">
-  <figcaption>Overlap notifications require a compatible collision setup as well as the Generate Overlap Events setting.</figcaption>
+  <figcaption>Overlap notifications require a compatible collision setup as well as the Generate Overlap Events setting.<span class="media-capture-instructions"><strong>Capture instructions · GIF:</strong> Record two simple collision primitives: first show the Generate Overlap Events control and collision response setup, then enter Play and move one object through the other with an obvious on-screen Blueprint/debug message confirming the overlap callback.</span></figcaption>
 </figure>
 
 

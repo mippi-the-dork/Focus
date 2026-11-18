@@ -7,7 +7,7 @@
 <!-- Media target: IMAGE | simulation-controls | docs/assets/media/simulation-controls.png -->
 <figure class="doc-media" data-kind="image" data-media-id="simulation-controls">
   <img src="../../assets/media-placeholder.png" alt="Simulation Quick Actions micro-widget showing its six controls" loading="lazy">
-  <figcaption>The Simulation category exposes physics, gravity, impulse and asynchronous ticking settings in one compact group.</figcaption>
+  <figcaption>The Simulation category exposes physics, gravity, impulse and asynchronous ticking settings in one compact group.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Capture the Simulation category enabled in the Focus column, preferably with an eligible physics mesh selected. Frame all six Simulation micro-controls together and hover one to show its actual tooltip and eligible-target information.</span></figcaption>
 </figure>
 
 
@@ -27,7 +27,7 @@ These controls edit Unreal's native values, not a custom simulation system.
 <!-- Media target: GIF | simulation-prop-physics | docs/assets/media/simulation-prop-physics.gif -->
 <figure class="doc-media" data-kind="gif" data-media-id="simulation-prop-physics">
   <img src="../../assets/media-placeholder.png" alt="Animation of a mesh being configured for physics and gravity using Focus" loading="lazy">
-  <figcaption>An eligible movable mesh can be configured to simulate physics and respond to world gravity through separate controls.</figcaption>
+  <figcaption>An eligible movable mesh can be configured to simulate physics and respond to world gravity through separate controls.<span class="media-capture-instructions"><strong>Capture instructions · GIF:</strong> Record a movable physics-enabled mesh in a simple viewport: show Simulate Physics and Enable Gravity toggled through Focus, then Play/Simulate so the mesh visibly falls onto a floor. End by returning to the editor with the controls visible.</span></figcaption>
 </figure>
 
 

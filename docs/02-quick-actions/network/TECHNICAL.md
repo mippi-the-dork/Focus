@@ -7,7 +7,7 @@
 <!-- Media target: IMAGE | network-scopes | docs/assets/media/network-scopes.png -->
 <figure class="doc-media" data-kind="image" data-media-id="network-scopes">
   <img src="../../assets/media-placeholder.png" alt="Diagram showing Actor-level and Primitive Component-level network property targets" loading="lazy">
-  <figcaption>The Network category uses different target scopes for Actor loading, movement replication and physics-to-proxy settings.</figcaption>
+  <figcaption>The Network category uses different target scopes for Actor loading, movement replication and physics-to-proxy settings.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Diagram an Actor with its Primitive Component. Map Net Load on Client and Static Mesh Replicate Movement to the Actor, and Replicate Physics to Autonomous Proxy to the eligible Primitive Component. Add a separate note showing that networking authority/roles are configured elsewhere.</span></figcaption>
 </figure>
 
 

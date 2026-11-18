@@ -17,7 +17,7 @@ Use **Solo** on the loaded Actors or folder you want to inspect. It filters rend
 <!-- Media target: IMAGE | workflows-hierarchy | docs/assets/media/workflows-hierarchy.png -->
 <figure class="doc-media" data-kind="image" data-media-id="workflows-hierarchy">
   <img src="../assets/media-placeholder.png" alt="Outliner hierarchy showing a loaded folder, attachments and mixed selected Actors" loading="lazy">
-  <figcaption>A Quick Action can apply across eligible loaded members of a folder, group, attachment hierarchy or selection.</figcaption>
+  <figcaption>A Quick Action can apply across eligible loaded members of a folder, group, attachment hierarchy or selection.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Capture a World Outliner with an expanded parent folder, a nested folder, attached Actors, and several selected rows. Highlight the loaded members that a Focus bulk action would affect and show an optional Mixed parent indicator.</span></figcaption>
 </figure>
 
 

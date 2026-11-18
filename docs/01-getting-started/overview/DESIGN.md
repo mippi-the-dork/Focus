@@ -7,7 +7,7 @@
 <!-- Media target: IMAGE | overview-outliner | docs/assets/media/overview-outliner.png -->
 <figure class="doc-media" data-kind="image" data-media-id="overview-outliner">
   <img src="../../assets/media-placeholder.png" alt="Focus controls displayed in the Unreal Engine World Outliner" loading="lazy">
-  <figcaption>Focus adds compact controls alongside Actors, keeping visibility and protection decisions within the Outliner.</figcaption>
+  <figcaption>Focus adds compact controls alongside Actors, keeping visibility and protection decisions within the Outliner.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Capture the Unreal Editor with the World Outliner visible, several Actors and folders listed, and Focus’s Visual and Interaction controls clearly legible beside the Actor names. Include a mixture of enabled and disabled states.</span></figcaption>
 </figure>
 
 

@@ -11,7 +11,7 @@
 <!-- Media target: IMAGE | first-use-row-state | docs/assets/media/first-use-row-state.png -->
 <figure class="doc-media" data-kind="image" data-media-id="first-use-row-state">
   <img src="../../assets/media-placeholder.png" alt="Diagram showing Focus evaluating a selected Outliner row and its eligible Actors" loading="lazy">
-  <figcaption>A row’s quick-action state is derived from the eligible loaded Actors in its resolved scope.</figcaption>
+  <figcaption>A row’s quick-action state is derived from the eligible loaded Actors in its resolved scope.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Create a simple diagram with one Outliner folder leading to three loaded Actors: two have a control enabled and one disabled. Show how these eligible values resolve to the parent row’s Mixed state, while an ineligible Actor is excluded.</span></figcaption>
 </figure>
 
 

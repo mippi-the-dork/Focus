@@ -13,7 +13,7 @@ Only Visual and Interaction are enabled by default. The other eight are optional
 <!-- Media target: IMAGE | settings-category-visibility | docs/assets/media/settings-category-visibility.png -->
 <figure class="doc-media" data-kind="image" data-media-id="settings-category-visibility">
   <img src="../../assets/media-placeholder.png" alt="Focus category visibility menu with several Quick Actions groups enabled" loading="lazy">
-  <figcaption>The header menu lets each editor user choose which Quick Actions categories occupy space in their Outliner.</figcaption>
+  <figcaption>The header menu lets each editor user choose which Quick Actions categories occupy space in their Outliner.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Capture the Focus column-header menu with several optional categories checked and others unchecked. Show the resized column containing only the enabled category groups, ideally with the Reset to Visual + Interaction command visible.</span></figcaption>
 </figure>
 
 

@@ -9,7 +9,7 @@ Quick Actions are the compact controls Focus places inside Unreal Engine's **Wor
 <!-- Media target: IMAGE | quick-actions-category-menu | docs/assets/media/quick-actions-category-menu.png -->
 <figure class="doc-media" data-kind="image" data-media-id="quick-actions-category-menu">
   <img src="../assets/media-placeholder.png" alt="Focus Quick Actions category menu in the World Outliner" loading="lazy">
-  <figcaption>The category menu controls which of the ten Quick Actions groups appear in the Outliner column.</figcaption>
+  <figcaption>The category menu controls which of the ten Quick Actions groups appear in the Outliner column.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Capture the Focus column-header category menu expanded to show all ten named categories, with Visual and Interaction enabled and several optional groups checked. Include the adjacent Outliner columns so readers understand where the menu is located.</span></figcaption>
 </figure>
 
 

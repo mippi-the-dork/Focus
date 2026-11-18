@@ -7,7 +7,7 @@
 <!-- Media target: GIF | first-use-controls | docs/assets/media/first-use-controls.gif -->
 <figure class="doc-media" data-kind="gif" data-media-id="first-use-controls">
   <img src="../../assets/media-placeholder.png" alt="Animation showing Focus controls being enabled and used for the first time" loading="lazy">
-  <figcaption>The initial workflow reveals the Focus column, adjusts its visible categories and applies an action to a test Actor.</figcaption>
+  <figcaption>The initial workflow reveals the Focus column, adjusts its visible categories and applies an action to a test Actor.<span class="media-capture-instructions"><strong>Capture instructions · GIF:</strong> Record a short seamless sequence in the Unreal Editor: reveal the Focus column, open its category menu, enable one additional category, hover a control, then toggle an action on a disposable test Actor. Keep the Outliner and viewport visible throughout.</span></figcaption>
 </figure>
 
 
