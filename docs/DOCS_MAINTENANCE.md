@@ -37,3 +37,11 @@ Use GitHub repository **Settings → Pages → Deploy from a branch → main →
 ## Maintaining version accuracy
 
 Update `site-manifest.json`, the home page and relevant feature references when a new Focus version ships. If behavior is specific to an older release, label it historical rather than mixing it into the current user manual. Source links to `main` always reflect the newest code; use a release tag or commit when citing a prior implementation.
+
+## Visual media replacements
+
+See [Documentation Media Inventory](MEDIA_INVENTORY.md) and the machine-readable [media slot registry](assets/media-slots.json). Each entry declares whether its final asset should be a **static image** or an **animated GIF**. The current media slot uses the same supplied neutral PNG placeholder for both formats; this is intentional and not proof that the animation is complete.
+
+Replace each placeholder with an authentic Focus editor image or animation using the intended filename under `docs/assets/media/`. Keep the existing reader-facing caption aligned with the demonstrated behavior and update alt text if the final framing differs. Verify the media at desktop and mobile widths, and use the versioned asset path so GitHub Pages refreshes the image reliably.
+
+The genuine Focus hero, controls screenshot, Solo GIF and Locking GIF are already available and should not be replaced with placeholders.
