@@ -11,7 +11,7 @@ Open **Editor Preferences → Plugins → Focus** to customize control colors an
 <!-- Media target: IMAGE | settings-overview | docs/assets/media/settings-overview.png -->
 <figure class="doc-media" data-kind="image" data-media-id="settings-overview">
   <img src="../assets/media-placeholder.png" alt="Diagram comparing category visibility, control colors and persistence options" loading="lazy">
-  <figcaption>Visibility controls the Outliner layout, colors communicate state, and persistence determines which Focus edits are saved.</figcaption>
+  <figcaption>Visibility controls the Outliner layout, colors communicate state, and persistence determines which Focus edits are saved.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Create a three-column annotated comparison: Focus category menu for visibility, Editor Preferences color swatches for state presentation, and Visual/Interaction persistence options. Clearly label that these settings control different things.</span></figcaption>
 </figure>
 
 

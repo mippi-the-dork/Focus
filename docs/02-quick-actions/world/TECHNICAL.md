@@ -7,7 +7,7 @@
 <!-- Media target: IMAGE | world-native-flags | docs/assets/media/world-native-flags.png -->
 <figure class="doc-media" data-kind="image" data-media-id="world-native-flags">
   <img src="../../assets/media-placeholder.png" alt="Diagram showing World Quick Actions flowing to Actor properties and engine subsystems" loading="lazy">
-  <figcaption>Focus updates native Actor flags; World Partition, HLOD generation and cooking interpret those flags independently.</figcaption>
+  <figcaption>Focus updates native Actor flags; World Partition, HLOD generation and cooking interpret those flags independently.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Create a diagram of the four World category Actor properties branching to the systems that interpret them: world context, cook/editor-only filtering, World Partition streaming, and HLOD generation. Clearly show Focus as property authoring, not the subsystem executor.</span></figcaption>
 </figure>
 
 

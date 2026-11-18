@@ -7,7 +7,7 @@
 <!-- Media target: IMAGE | world-controls | docs/assets/media/world-controls.png -->
 <figure class="doc-media" data-kind="image" data-media-id="world-controls">
   <img src="../../assets/media-placeholder.png" alt="World Quick Actions showing main-world, editor-only, spatial-loading and HLOD flags" loading="lazy">
-  <figcaption>The World category places four Actor-level configuration choices directly in the Outliner.</figcaption>
+  <figcaption>The World category places four Actor-level configuration choices directly in the Outliner.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Capture the World category’s four controls on a loaded Actor row, with its tooltip identifying one of the Actor-level properties. Include enough of the Outliner to demonstrate where these choices sit in the Focus column.</span></figcaption>
 </figure>
 
 
@@ -25,7 +25,7 @@ These are **Actor-level** options. They do not edit every component separately.
 <!-- Media target: IMAGE | world-partition | docs/assets/media/world-partition.png -->
 <figure class="doc-media" data-kind="image" data-media-id="world-partition">
   <img src="../../assets/media-placeholder.png" alt="World Partition example showing an Actor’s spatial-loading setting" loading="lazy">
-  <figcaption>Spatial loading is an Actor configuration decision whose result depends on the surrounding World Partition setup.</figcaption>
+  <figcaption>Spatial loading is an Actor configuration decision whose result depends on the surrounding World Partition setup.<span class="media-capture-instructions"><strong>Capture instructions · Image:</strong> Show a World Partition-enabled level with a loaded Actor selected, its Focus Is Spatially Loaded control visible, and corresponding World Partition/Details context. Use labels to distinguish the stored setting from the Actor’s currently loaded state.</span></figcaption>
 </figure>
 
 
